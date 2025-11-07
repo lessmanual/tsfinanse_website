@@ -1,0 +1,93 @@
+{
+	"meta": {
+		"generatedAt": "2025-11-05T14:54:50.841Z",
+		"tasksAnalyzed": 10,
+		"totalTasks": 10,
+		"analysisCount": 10,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Implement Core Routing Infrastructure",
+			"complexityScore": 3,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Based on the current single-page structure, break this task into the following subtasks: 1. Install `react-router-dom`. 2. Wrap the App in `BrowserRouter` within `src/main.tsx`. 3. Implement the main router configuration in `App.tsx`. 4. Create placeholder components for each new legal page and a 404 page. 5. Refactor all `<a>` tags in `Footer.tsx` and other components to use the `<Link>` component.",
+			"reasoning": "Codebase analysis confirms that no routing solution currently exists. The task involves installing and configuring a standard library (`react-router-dom`), which is a well-documented process. It touches several files (`main.tsx`, `App.tsx`, `Footer.tsx`) and requires creating new placeholder files, but the logic itself is not complex. The complexity is low as it follows a standard pattern for React applications."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Integrate Business Data and Financial Disclaimers",
+			"complexityScore": 1,
+			"recommendedSubtasks": 2,
+			"expansionPrompt": "Break this task into two distinct subtasks: 1. Update all placeholder business information (NIP, REGON, address, etc.) in `src/components/Footer.tsx`. 2. Add the new financial disclaimer section and text to the footer.",
+			"reasoning": "This is primarily a content update task. Analysis of `src/components/Footer.tsx` would show hardcoded placeholder text that simply needs to be replaced. There is no complex logic or new functionality involved, making the implementation effort minimal. The only dependency is having the correct, finalized data available."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Implement Legal Document Pages and Content",
+			"complexityScore": 2,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break this task down by creating one subtask for each legal page: 1. Create and populate `PrivacyPolicy.tsx`. 2. Create and populate `CookiePolicy.tsx`. 3. Create and populate `TermsOfService.tsx`. 4. Create and populate `RodoInfo.tsx`. 5. Create a shared `LegalPageLayout.tsx` component to ensure consistent styling, headings, and a 'back to home' link.",
+			"reasoning": "This task depends on the routing from Task 1. It involves populating existing placeholder components with provided text. The complexity is low as it's mostly a copy-paste operation of content into JSX. Introducing a Markdown loader would slightly increase complexity, but assuming direct JSX implementation, it's very straightforward."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Implement Cookie Consent Banner and Logic",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break this integration into the following steps: 1. Add the CookieBot SDK script to `index.html`. 2. Create a `useCookieConsent` hook to manage the state and conditionally load other scripts. 3. Implement the logic to only inject the Google Analytics 4 script after consent is granted. 4. Verify the banner displays correctly and test the accept/reject logic using browser developer tools.",
+			"reasoning": "Integrating a third-party service like CookieBot and adding conditional logic for script loading is moderately complex. Codebase analysis confirms no consent management is in place. The task requires handling external scripts, managing consent state, and ensuring other scripts (GA4) respect that state. This involves more than just UI work and has legal compliance implications, increasing the need for careful testing."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Integrate Contact Form with n8n and RODO Compliance",
+			"complexityScore": 6,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Expand this into the following subtasks: 1. Install and set up `react-hook-form` in `ContactForm.tsx`. 2. Implement all form fields and client-side validation rules. 3. Add the two RODO consent checkboxes and the Art. 13 clause. 4. Create the `onSubmit` handler to send validated data to the n8n webhook URL from environment variables. 5. Implement user feedback states for loading, success, and error. 6. Write end-to-end tests for validation and successful submission.",
+			"reasoning": "Analysis shows a non-functional form component and a missing `react-hook-form` dependency. This task is complex because it combines front-end state management (validation, UI feedback), asynchronous API communication (POST to n8n), and RODO compliance (consent checkboxes and data structure). Handling all edge cases (network errors, validation errors) correctly requires significant effort."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Optimize All Website Images",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break this optimization effort into: 1. Use `@squoosh/cli` or a similar tool to convert and resize all key images (logo, hero) into WebP/AVIF formats. 2. Refactor the `Hero.tsx` component to use the `<picture>` element with `srcset`. 3. Audit all other images on the site, apply `loading=\"lazy\"`, and add `width`/`height` attributes. 4. Perform before-and-after performance analysis using Lighthouse to validate improvements.",
+			"reasoning": "Codebase analysis reveals large, unoptimized PNGs are in use. The task requires both an external process (image conversion) and code modification. Refactoring `<img>` tags to use the more complex `<picture>` element with `srcset` requires care. The complexity is medium because it involves multiple steps, new HTML elements, and requires performance measurement to confirm success. It's not just a code change but a full asset pipeline adjustment."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Perform Code Cleanup and Optimization",
+			"complexityScore": 4,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Divide this task into logical cleanup stages: 1. Audit `src/components/ui` and identify all unused shadcn/ui components. 2. Audit `package.json` for unused dependencies (`recharts`, etc.). 3. Create a dedicated branch, uninstall all identified packages and delete unused component files. 4. Perform a full regression test of the entire application to ensure no functionality was broken.",
+			"reasoning": "Codebase analysis confirms the presence of numerous unused shadcn/ui components and extraneous packages. The task itself (deleting files and running `npm uninstall`) is simple. The complexity and risk come from the manual audit process and the potential for accidentally removing something essential. The high requirement for thorough regression testing elevates this from a trivial task to one that requires careful management."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Implement Foundational SEO Meta Tags and Schema.org",
+			"complexityScore": 7,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Structure this task as follows: 1. Install `react-helmet-async` and configure its provider. 2. Create a generic `Seo.tsx` component to manage dynamic titles, descriptions, and canonical URLs. 3. Implement the `Organization` schema with data from Task 2. 4. Implement the `FAQPage` schema within `FAQ.tsx`. 5. Implement the `LoanOrCredit` and `FinancialService` schemas on the main page. 6. Validate all schemas using the Rich Results Test tool.",
+			"reasoning": "Codebase analysis shows a bare `index.html` with no advanced SEO tags. This task is complex because it requires not only installing a new library but also correctly structuring multiple, distinct JSON-LD schemas according to specific standards. It involves data aggregation (from Task 2), dynamic content based on routes, and careful formatting to pass validation. The level of detail and potential for errors in the schema data is high."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Set Up Prerendering for SPA",
+			"complexityScore": 7,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break this task into four stages: 1. Research and confirm `react-snap` is the best tool for a Vite-based project, or if a Vite-native plugin is better. 2. Install and configure the chosen prerendering tool. 3. Modify the `build` script in `package.json` and run a test build. 4. Thoroughly inspect the `dist` folder and test the output with JavaScript disabled to ensure all pages are rendered correctly, especially pages with third-party scripts (Cookie Banner).",
+			"reasoning": "While the task description suggests a simple `react-snap` implementation, prerendering SPAs can introduce subtle and hard-to-debug issues. `react-snap`'s compatibility with Vite needs verification. The complexity is high due to the risk of issues with hydration, third-party scripts (like CookieBot from Task 4), or routing. This is an architectural change to the build process, not just an application code change, and it carries a significant risk of requiring extensive troubleshooting."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Create Partner Program Page",
+			"complexityScore": 3,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down the development of this new page: 1. Create the new component file `ProgramPartnerski.tsx` and add its route `/program-partnerski` in `App.tsx`. 2. Build the content structure of the page, including the hero, commission details, and process sections. 3. Add the partner-specific FAQ section. 4. Implement the final CTA and add a link to the new page in the site's footer.",
+			"reasoning": "This task is for building a new, self-contained page. It relies on the routing infrastructure from Task 1. The complexity is low-to-medium as it involves standard component creation, content layout, and styling. No complex logic or external integrations are required, making it a straightforward feature addition once the design/content is finalized."
+		}
+	]
+}

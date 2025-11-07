@@ -1,0 +1,675 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "Implement Core Routing Infrastructure",
+        "description": "Install and configure client-side routing using React Router to enable navigation between the homepage and new legal document pages, fixing all broken links.",
+        "details": "Install `react-router-dom` version 6.x. In `src/main.tsx`, wrap the `<App />` component with `<BrowserRouter>`. In `src/App.tsx`, define the routes using `createBrowserRouter` and `RouterProvider` or `<Routes>` and `<Route>`. Create placeholder components for `/polityka-prywatnosci`, `/polityka-cookies`, `/regulamin`, and `/rodo`. Update all `<a>` tags in `Footer.tsx` and other navigation components to use the `<Link>` component from `react-router-dom`. Implement a basic `NotFound.tsx` component for a 404 page.",
+        "testStrategy": "Verify that navigating to `/`, `/polityka-prywatnosci`, etc., renders the correct component. Check that all links in the footer and navigation now use client-side routing and do not cause a full page reload. Confirm that an invalid URL correctly displays the 404 page.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install react-router-dom dependency",
+            "description": "Add the `react-router-dom` library to the project's dependencies to enable client-side routing capabilities.",
+            "dependencies": [],
+            "details": "Execute `npm install react-router-dom@6` or `yarn add react-router-dom@6` in the project's root directory to install version 6.x of the library.",
+            "status": "pending",
+            "testStrategy": "After installation, verify that `react-router-dom` is present in the `dependencies` section of the `package.json` file.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Wrap the App component with BrowserRouter",
+            "description": "Integrate the router at the root of the React application by wrapping the main `<App />` component with the `<BrowserRouter>` provider in `src/main.tsx`.",
+            "dependencies": [
+              1
+            ],
+            "details": "Modify `src/main.tsx` to import `BrowserRouter` from `react-router-dom` and update the `ReactDOM.render` call to render `<BrowserRouter><App /></BrowserRouter>`.",
+            "status": "pending",
+            "testStrategy": "Run the application and ensure that the homepage still renders correctly without any console errors related to the router context.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Create Placeholder Components for Legal and 404 Pages",
+            "description": "Create new placeholder component files for the legal document pages (`/polityka-prywatnosci`, `/polityka-cookies`, `/regulamin`, `/rodo`) and a `NotFound` page for handling 404 errors.",
+            "dependencies": [],
+            "details": "Create the following files: `src/components/PrivacyPolicy.tsx`, `src/components/CookiePolicy.tsx`, `src/components/TermsOfService.tsx`, `src/components/RodoInfo.tsx`, and `src/components/NotFound.tsx`. Each file should export a simple React component that renders a heading with the page's title.",
+            "status": "pending",
+            "testStrategy": "Confirm that all five new component files exist in the specified directories and that each can be imported without errors into another file.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement Main Router Configuration in App.tsx",
+            "description": "Define the application's routes in `App.tsx` using React Router components to map URL paths to their corresponding page components, including the homepage, legal pages, and the 404 page.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "In `src/App.tsx`, import `Routes` and `Route` from `react-router-dom`, as well as the newly created placeholder components. Define a `<Route>` for each path (`/`, `/polityka-prywatnosci`, etc.) pointing to the correct element. Add a catch-all route `path=\"*\"` rendering the `NotFound` component.",
+            "status": "pending",
+            "testStrategy": "Manually navigate to each defined URL in the browser (e.g., `/regulamin`, `/non-existent-page`). Verify that the correct placeholder component or the `NotFound` component is rendered for each corresponding path.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Refactor HTML <a> tags to React Router <Link> components",
+            "description": "Update all internal navigation links, primarily within `Footer.tsx` and other navigation components, from standard `<a>` tags to the `<Link>` component to enable client-side routing and prevent full page reloads.",
+            "dependencies": [
+              4
+            ],
+            "details": "Search the codebase for `<a>` tags with internal `href` attributes, focusing on `Footer.tsx`. Import `Link` from `react-router-dom` and replace `<a href=\"/path\">` with `<Link to=\"/path\">` for all relevant links.",
+            "status": "pending",
+            "testStrategy": "Click on the updated links in the site's footer. Verify that the URL changes and the correct component renders without a full browser refresh (confirm this by observing the network tab in browser dev tools).",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 3,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Based on the current single-page structure, break this task into the following subtasks: 1. Install `react-router-dom`. 2. Wrap the App in `BrowserRouter` within `src/main.tsx`. 3. Implement the main router configuration in `App.tsx`. 4. Create placeholder components for each new legal page and a 404 page. 5. Refactor all `<a>` tags in `Footer.tsx` and other components to use the `<Link>` component.",
+        "updatedAt": "2025-11-05T15:04:31.192Z"
+      },
+      {
+        "id": "2",
+        "title": "Integrate Business Data and Financial Disclaimers",
+        "description": "Update all placeholder business information (NIP, REGON, address, phone) across the site and add legally required financial disclaimers to the footer.",
+        "details": "In `src/components/Footer.tsx`, replace placeholder text with the actual NIP, REGON, KRS (if applicable), full postal address, and phone number. Add a new RODO contact email `rodo@tsfinanse.com`. Add a new section in the footer for financial disclaimers, including text for 'non-bank institution notice' and 'RRSO disclosure placeholder'. Ensure this data is also populated in the `Organization` schema (Task 8).",
+        "testStrategy": "Visually inspect the website footer to confirm all placeholder text has been replaced with correct, final data. Verify the financial disclaimers are present and legible. Cross-reference the displayed data with the official company registration documents.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Update Placeholder Business Information in Footer",
+            "description": "Replace all placeholder company data such as NIP, REGON, address, and phone number in the site's footer with the actual, finalized business information. Also, add the new RODO contact email.",
+            "dependencies": [],
+            "details": "Modify the `src/components/Footer.tsx` component. Find and replace the placeholder text for NIP, REGON, KRS, full postal address, and phone number with the official company data. Add the new RODO contact email `rodo@tsfinanse.com` in the contact section of the footer.",
+            "status": "pending",
+            "testStrategy": "Visually inspect the rendered footer on the website. Verify that all placeholder values have been replaced with the correct business data. Cross-reference the displayed information with the official company registration documents to ensure accuracy. Confirm the new RODO email is present.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Add Financial Disclaimers Section to Footer",
+            "description": "Implement a new section in the footer to display legally required financial disclaimers, including specific text for the 'non-bank institution notice' and a placeholder for the 'RRSO disclosure'.",
+            "dependencies": [],
+            "details": "In `src/components/Footer.tsx`, add a new designated section for legal disclaimers. Populate this section with the provided text for the 'non-bank institution notice' and the 'RRSO disclosure placeholder'. Ensure this new section's styling is consistent with the existing footer design.",
+            "status": "pending",
+            "testStrategy": "Review the website's footer to confirm the presence of the new financial disclaimers section. Verify that the text for both the 'non-bank institution notice' and the 'RRSO disclosure placeholder' is correctly displayed and legible.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 1,
+        "recommendedSubtasks": 2,
+        "expansionPrompt": "Break this task into two distinct subtasks: 1. Update all placeholder business information (NIP, REGON, address, etc.) in `src/components/Footer.tsx`. 2. Add the new financial disclaimer section and text to the footer.",
+        "updatedAt": "2025-11-05T15:57:13.128Z"
+      },
+      {
+        "id": "3",
+        "title": "Implement Legal Document Pages and Content",
+        "description": "Create dedicated pages for the Privacy Policy, Cookie Policy, Terms of Service, and RODO Information, populating them with the lawyer-provided content.",
+        "details": "Populate the placeholder components created in Task 1 (`PrivacyPolicy.tsx`, `CookiePolicy.tsx`, `TermsOfService.tsx`, `RodoInfo.tsx`) with the final legal text provided by the RODO lawyer. The content can be stored as JSX within the components or loaded from Markdown files using a library like `react-markdown`. Ensure pages have clear headings, readable typography, and a link back to the homepage.",
+        "testStrategy": "Navigate to each legal page (`/polityka-prywatnosci`, `/polityka-cookies`, `/regulamin`, `/rodo`) and verify the content renders correctly and matches the source documents from the lawyer. Check for any formatting issues. Ensure the 'Back to Home' link works.",
+        "priority": "high",
+        "dependencies": [
+          "1"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Populate Privacy Policy Page (PrivacyPolicy.tsx)",
+            "description": "Fill the existing `PrivacyPolicy.tsx` component with the official Privacy Policy content provided by the RODO lawyer. This page must use the shared legal page layout for consistency.",
+            "dependencies": [
+              5
+            ],
+            "details": "Import and use the `LegalPageLayout` component. Pass the title 'Polityka Prywatności' as a prop. Inside the layout, embed the legal text using appropriate JSX tags for headings, paragraphs, and lists (`<h1>`, `<p>`, `<ul>`, `<li>`).",
+            "status": "pending",
+            "testStrategy": "Navigate to `/polityka-prywatnosci`. Confirm the page title is correct, the content matches the source document, formatting is readable, and the shared 'Back to Home' link from the layout is present and working.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Populate Cookie Policy Page (CookiePolicy.tsx)",
+            "description": "Fill the existing `CookiePolicy.tsx` component with the official Cookie Policy content provided by the RODO lawyer. This page must use the shared legal page layout.",
+            "dependencies": [
+              5
+            ],
+            "details": "Import and use the `LegalPageLayout` component. Pass the title 'Polityka Cookies' as a prop. Inside the layout, embed the legal text using appropriate JSX tags for headings, paragraphs, and lists.",
+            "status": "pending",
+            "testStrategy": "Navigate to `/polityka-cookies`. Confirm the page title is correct, the content matches the source document, formatting is readable, and the shared 'Back to Home' link from the layout is present and working.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Populate Terms of Service Page (TermsOfService.tsx)",
+            "description": "Fill the existing `TermsOfService.tsx` component with the official Terms of Service content provided by the RODO lawyer. This page must use the shared legal page layout.",
+            "dependencies": [
+              5
+            ],
+            "details": "Import and use the `LegalPageLayout` component. Pass the title 'Regulamin' as a prop. Inside the layout, embed the legal text using appropriate JSX tags for headings, paragraphs, and lists.",
+            "status": "pending",
+            "testStrategy": "Navigate to `/regulamin`. Confirm the page title is correct, the content matches the source document, formatting is readable, and the shared 'Back to Home' link from the layout is present and working.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Populate RODO Information Page (RodoInfo.tsx)",
+            "description": "Fill the existing `RodoInfo.tsx` component with the official RODO Information Clause content provided by the RODO lawyer. This page must use the shared legal page layout.",
+            "dependencies": [
+              5
+            ],
+            "details": "Import and use the `LegalPageLayout` component. Pass the title 'Klauzula Informacyjna RODO' as a prop. Inside the layout, embed the legal text using appropriate JSX tags for headings and paragraphs.",
+            "status": "pending",
+            "testStrategy": "Navigate to `/rodo`. Confirm the page title is correct, the content matches the source document, formatting is readable, and the shared 'Back to Home' link from the layout is present and working.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Create Shared `LegalPageLayout.tsx` Component",
+            "description": "Create a reusable `LegalPageLayout.tsx` component to ensure a consistent appearance for all legal document pages. It will provide a standardized header, content area, and navigation link.",
+            "dependencies": [],
+            "details": "The component should accept `title` (string) and `children` (ReactNode) as props. It will render a wrapper `div`, an `<h1>` for the title, a `main` content area for the `children`, and a React Router `<Link to='/'>` with the text 'Back to Home'.",
+            "status": "pending",
+            "testStrategy": "Manually test the component by wrapping it around a simple `<p>` tag in a temporary route. Verify that the title and child content are rendered correctly and the navigation link works.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 2,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break this task down by creating one subtask for each legal page: 1. Create and populate `PrivacyPolicy.tsx`. 2. Create and populate `CookiePolicy.tsx`. 3. Create and populate `TermsOfService.tsx`. 4. Create and populate `RodoInfo.tsx`. 5. Create a shared `LegalPageLayout.tsx` component to ensure consistent styling, headings, and a 'back to home' link."
+      },
+      {
+        "id": "4",
+        "title": "Implement Cookie Consent Banner and Logic",
+        "description": "Integrate a GDPR/ePrivacy compliant cookie consent banner that allows users to accept or reject non-essential cookies and logs their consent.",
+        "details": "Integrate CookieBot using their JavaScript SDK and the provided ID. Configure it to categorize cookies (essential, analytics). Ensure the Google Analytics 4 script is only loaded *after* the user gives consent for analytics cookies. Create a `CookieBanner.tsx` component that displays the banner. The banner must link to the `/polityka-cookies` page. Consent status should be logged as per RODO requirements (handled by CookieBot).",
+        "testStrategy": "On first visit in an incognito window, verify the cookie banner appears. Click 'Reject' and confirm no analytics cookies are set (using browser dev tools). Clear cookies, revisit, click 'Accept', and confirm the GA4 script loads and cookies are set. Verify the link to the cookie policy works.",
+        "priority": "high",
+        "dependencies": [
+          "3"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Add CookieBot SDK Script to index.html",
+            "description": "Integrate the core CookieBot JavaScript SDK by adding its script tag to the main HTML file, which is the foundational step for enabling the consent banner.",
+            "dependencies": [],
+            "details": "Locate the `public/index.html` file and insert the CookieBot SDK `<script>` tag within the `<head>` section. Ensure the `data-cbid` attribute is populated with the correct ID provided in the task details.",
+            "status": "pending",
+            "testStrategy": "After deployment, load the application and open the browser's developer tools. In the 'Network' tab, filter for 'uc.js' to confirm the CookieBot script is successfully fetched. In the 'Elements' tab, verify the script tag is present in the document head.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Create `useCookieConsent` Hook for State Management",
+            "description": "Develop a custom React hook to encapsulate the logic for interacting with the CookieBot API. This hook will listen for consent events and provide the application with the current consent status for different cookie categories.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create a new file at `src/hooks/useCookieConsent.ts`. The hook should add an event listener for the `CookiebotOnConsentReady` global event. It will expose a state variable indicating whether consent for the 'analytics' category has been given.",
+            "status": "pending",
+            "testStrategy": "In a development environment, use `console.log` inside the hook to output the `window.Cookiebot.consent` object when the `CookiebotOnConsentReady` event fires. Test both accept and reject scenarios to see the logged object change.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Implement Conditional GA4 Script Injection",
+            "description": "Use the `useCookieConsent` hook to ensure the Google Analytics 4 (GA4) tracking script is only loaded into the page *after* the user has given explicit consent for analytics cookies.",
+            "dependencies": [
+              2
+            ],
+            "details": "In the main `App.tsx` component, utilize the `useCookieConsent` hook. Create a `useEffect` hook that triggers when the analytics consent status changes to `true`. Inside this effect, dynamically create a `<script>` element with the GA4 code and append it to the document's head.",
+            "status": "pending",
+            "testStrategy": "Using the browser's Network tab, first load the page and reject cookies; confirm no request for Google Analytics is made. Then, clear site data, reload, accept cookies, and verify that the `gtag.js` or `analytics.js` script is now loaded.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Verify Banner Display and Test Consent Flow",
+            "description": "Conduct end-to-end testing to verify the entire cookie consent mechanism. This includes checking the banner's appearance, button functionality, and ensuring that non-essential scripts and cookies are correctly blocked or allowed based on user choice.",
+            "dependencies": [
+              1,
+              3
+            ],
+            "details": "In an incognito window, perform the full user flow. Verify the banner appears automatically. Check that the link to `/polityka-cookies` is correct. Use browser developer tools (Application -> Cookies) to inspect cookie creation after both rejecting and accepting consent.",
+            "status": "pending",
+            "testStrategy": "1. Open in incognito: banner should show. 2. Click 'Reject': verify no analytics cookies are set. 3. Clear cookies/storage, reload. 4. Click 'Accept': verify GA4 script loads and analytics cookies are set. 5. Check console for any errors from the SDK or script injection logic.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Break this integration into the following steps: 1. Add the CookieBot SDK script to `index.html`. 2. Create a `useCookieConsent` hook to manage the state and conditionally load other scripts. 3. Implement the logic to only inject the Google Analytics 4 script after consent is granted. 4. Verify the banner displays correctly and test the accept/reject logic using browser developer tools."
+      },
+      {
+        "id": "5",
+        "title": "Integrate Contact Form with n8n and RODO Compliance",
+        "description": "Make the contact form functional by connecting it to an n8n webhook, implementing client-side validation, and adding required RODO consent checkboxes.",
+        "details": "Re-install `react-hook-form` (`npm install react-hook-form`) for validation. In `src/components/ContactForm.tsx`, implement the form with fields: name, email, phone, company, message. Add two checkboxes: one required for 'data processing consent' (Art. 6.1.a RODO) and one optional for 'marketing consent'. Display the Art. 13 informational clause below the form, with links to the privacy policy. On submit, validate the form and then send a POST request to the n8n webhook URL (`VITE_N8N_WEBHOOK_URL` from .env) using `fetch` or `axios`. Handle success and error states, showing appropriate messages to the user.",
+        "testStrategy": "Test form validation by trying to submit with empty required fields or an invalid email. Successfully submit the form and verify the n8n workflow is triggered, an email notification is received, and the lead is stored in the designated backend (e.g., Google Sheets). Check that the submitted data includes the consent status.",
+        "priority": "high",
+        "dependencies": [
+          "3"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install and Set Up `react-hook-form` for Contact Form",
+            "description": "Install the `react-hook-form` library via npm and perform the initial setup within the `src/components/ContactForm.tsx` component to manage form state.",
+            "dependencies": [],
+            "details": "Execute `npm install react-hook-form`. In `ContactForm.tsx`, import `useForm` from the library and initialize it to get access to the `register`, `handleSubmit`, and `formState` objects.",
+            "status": "pending",
+            "testStrategy": "After installation and setup, run the development server. Verify that the application compiles successfully and the `ContactForm` component renders without any console errors related to `react-hook-form`.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Implement Form Fields and Client-Side Validation",
+            "description": "Create the necessary input fields (name, email, phone, company, message) in `ContactForm.tsx` and apply client-side validation rules using `react-hook-form`.",
+            "dependencies": [
+              1
+            ],
+            "details": "For each field, use the `register` function to link the HTML input to the form state. Define validation rules such as `required`, `pattern` for email, and `minLength`/`maxLength`. Display validation error messages conditionally using the `errors` object from `formState`.",
+            "status": "pending",
+            "testStrategy": "Manually test the form in the browser. Attempt to submit with empty required fields and verify that specific error messages are displayed. Enter an incorrectly formatted email and confirm the pattern validation triggers.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Add RODO Consent Checkboxes and Informational Clause",
+            "description": "Integrate two RODO/GDPR consent checkboxes and the Art. 13 informational clause into the contact form to ensure legal compliance.",
+            "dependencies": [
+              2
+            ],
+            "details": "Add two checkbox inputs. Register the 'data processing consent' checkbox with a `required: true` validation rule. The 'marketing consent' checkbox should be optional. Below the form, add a text block with the Art. 13 clause, including `<Link>` components from `react-router-dom` pointing to the privacy policy page.",
+            "status": "pending",
+            "testStrategy": "Verify that the form submission is blocked if the required consent checkbox is not checked. Submit the form successfully with and without the optional marketing checkbox. Click the links in the Art. 13 clause to ensure they navigate to the correct legal pages.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement `onSubmit` Handler to Post Data to n8n Webhook",
+            "description": "Create the form submission logic that sends the validated form data via a POST request to the n8n webhook URL specified in the environment variables.",
+            "dependencies": [
+              3
+            ],
+            "details": "Define an `onSubmit` function that takes the `data` object from `react-hook-form`. Use `fetch` or `axios` to make a POST request to the URL from `import.meta.env.VITE_N8N_WEBHOOK_URL`. The request body should be a JSON string representation of the form data, including the consent statuses.",
+            "status": "pending",
+            "testStrategy": "Use browser developer tools to monitor the network request upon form submission. Confirm that a POST request is sent to the correct webhook URL with the correct payload. Check the n8n workflow's execution history to verify that the data was received as expected.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Implement User Feedback States for Loading, Success, and Error",
+            "description": "Enhance the user experience by showing clear feedback during the submission process, including loading, success, and error states.",
+            "dependencies": [
+              4
+            ],
+            "details": "Use a state variable (e.g., `const [formStatus, setFormStatus] = useState('idle')`) to manage the UI. When submitting, set status to 'loading' and disable the submit button. On a successful API response, set it to 'success' and display a success message. On a failed API call, set it to 'error' and show an error message.",
+            "status": "pending",
+            "testStrategy": "Simulate a successful submission and verify the success message appears and the form is reset or hidden. Simulate a network error (e.g., by disabling network in dev tools) or an API error (e.g., using an invalid webhook URL) and confirm that the loading state ends and an appropriate error message is displayed to the user.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Write End-to-End Tests for Form Validation and Submission",
+            "description": "Create automated end-to-end tests using a framework like Cypress or Playwright to cover form validation, submission, and UI feedback.",
+            "dependencies": [
+              5
+            ],
+            "details": "Write test scripts that automate the following scenarios: 1) Attempt to submit an empty form and assert that validation messages appear. 2) Fill the form with invalid data (e.g., bad email) and assert errors. 3) Fill the form correctly, submit, mock the webhook API call to return a 200 status, and assert that the success UI is shown.",
+            "status": "pending",
+            "testStrategy": "Execute the E2E test suite locally and in a CI environment. All tests should pass, ensuring the form's functionality is stable and protected against future regressions.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 6,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Expand this into the following subtasks: 1. Install and set up `react-hook-form` in `ContactForm.tsx`. 2. Implement all form fields and client-side validation rules. 3. Add the two RODO consent checkboxes and the Art. 13 clause. 4. Create the `onSubmit` handler to send validated data to the n8n webhook URL from environment variables. 5. Implement user feedback states for loading, success, and error. 6. Write end-to-end tests for validation and successful submission."
+      },
+      {
+        "id": "6",
+        "title": "Optimize All Website Images",
+        "description": "Dramatically reduce page load time by converting heavy PNG images to modern, compressed formats like AVIF/WebP and implementing responsive loading.",
+        "details": "Use a tool like `@squoosh/cli` to convert the hero background PNG (1.5MB) and logo PNG (113KB) into AVIF and WebP formats. Generate multiple sizes for the hero image (e.g., 640w, 1280w, 1920w). In `Hero.tsx`, replace the `<img>` tag with a `<picture>` element containing `<source>` tags for AVIF and WebP with `srcset` attributes, and a fallback `<img>` tag. Add `width` and `height` attributes to all images to prevent CLS. Set `loading=\"eager\"` for the hero image and logo, and `loading=\"lazy\"` for all images below the fold.",
+        "testStrategy": "Use browser developer tools (Network tab) to verify that the browser is loading the smaller AVIF/WebP images instead of PNGs. Check that the total page size is under 300KB. Run a Lighthouse report and confirm the LCP is below 2.5s and the Performance score has significantly improved.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Convert and Resize Key Images to WebP/AVIF",
+            "description": "Use a command-line tool like `@squoosh/cli` to process the main hero background PNG and the site logo PNG. Convert them to both WebP and AVIF formats and create multiple responsive sizes for the hero image.",
+            "dependencies": [],
+            "details": "Process `hero-background.png` (1.5MB) and `logo.png` (113KB). For the hero image, generate sizes for 640w, 1280w, and 1920w in both AVIF and WebP formats. Place the new assets in the appropriate public directory.",
+            "status": "pending",
+            "testStrategy": "Verify the creation of new image files (e.g., `hero-background-640.webp`, `logo.avif`) and confirm their file sizes are significantly smaller than the original PNGs.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Refactor Hero.tsx to Use Responsive `<picture>` Element",
+            "description": "Update the `Hero.tsx` component to replace the static `<img>` tag for the hero background with a `<picture>` element to serve the newly created responsive and modern image formats.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement `<source>` tags for AVIF and WebP formats, using the `srcset` attribute to specify the different image sizes. Include a fallback `<img>` for the original PNG. Add `width` and `height` attributes and set `loading=\"eager\"`.",
+            "status": "pending",
+            "testStrategy": "Using browser dev tools, verify that the correct image format (AVIF/WebP) and size is loaded based on browser support and viewport width. Check that the `loading=\"eager\"` attribute is present.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Audit and Optimize Other Images for Lazy Loading and CLS",
+            "description": "Systematically review all `<img>` tags across the website (excluding the eager-loaded hero and logo). Apply performance best practices to prevent layout shifts and defer loading of offscreen images.",
+            "dependencies": [],
+            "details": "For every `<img>` tag located below the fold, add the `loading=\"lazy\"` attribute. Ensure every image tag on the site has explicit `width` and `height` attributes matching the image's dimensions to prevent Cumulative Layout Shift (CLS).",
+            "status": "pending",
+            "testStrategy": "Scroll down a page and use the Network tab in dev tools to confirm that images below the fold are loaded only as they enter the viewport. Run a Lighthouse audit to ensure there are no warnings for missing width/height attributes on images.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Perform Before-and-After Performance Analysis with Lighthouse",
+            "description": "Quantify the impact of the image optimizations by running performance audits before the changes are implemented and after they are deployed. This provides concrete data on improvements.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "First, run a Lighthouse report on the current production or main branch to establish a baseline score. After all image optimizations are complete, run a second Lighthouse report. Compare LCP, total page weight, and the overall Performance score.",
+            "status": "pending",
+            "testStrategy": "The test is the task itself. The acceptance criteria are a measurable improvement in the Lighthouse Performance score, a reduction in the LCP time to under 2.5s, and a significantly lower total page size as reported by the Network tab.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Break this optimization effort into: 1. Use `@squoosh/cli` or a similar tool to convert and resize all key images (logo, hero) into WebP/AVIF formats. 2. Refactor the `Hero.tsx` component to use the `<picture>` element with `srcset`. 3. Audit all other images on the site, apply `loading=\"lazy\"`, and add `width`/`height` attributes. 4. Perform before-and-after performance analysis using Lighthouse to validate improvements."
+      },
+      {
+        "id": "7",
+        "title": "Perform Code Cleanup and Optimization",
+        "description": "Reduce the final JavaScript bundle size by removing unused shadcn/ui components and other unnecessary dependencies.",
+        "details": "Manually audit the `src/components/ui` directory and delete the files for the 68 identified unused shadcn/ui components. In `package.json`, identify and uninstall unused dependencies such as `recharts`, `date-fns`, `lodash`, `react-day-picker`, `cmdk`, etc. using `npm uninstall`. After cleanup, run `npm run build` and use a tool like `vite-plugin-visualizer` to analyze the bundle and confirm the size reduction and proper tree-shaking.",
+        "testStrategy": "Run the build process before and after the cleanup. Compare the output bundle sizes in the `dist/assets` folder to confirm a significant reduction. Run the application and perform a full regression test to ensure that removing components and dependencies did not break any existing functionality.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Audit src/components/ui and Identify Unused Shadcn/UI Components",
+            "description": "Systematically review the project's codebase to determine which of the shadcn/ui components in `src/components/ui` are not being imported or used anywhere in the application.",
+            "dependencies": [],
+            "details": "Use a global code search (e.g., VS Code's 'Find in Files') for each component's usage. Compile a definitive list of unused component files to be deleted.",
+            "status": "pending",
+            "testStrategy": "The primary test is the creation of an accurate list of unused files. A peer review of this list can serve as a quick validation before deletion.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Audit package.json and Identify Unused NPM Dependencies",
+            "description": "Analyze the `package.json` file to identify third-party libraries that are no longer required by the project, such as `recharts`, `date-fns`, and `lodash`.",
+            "dependencies": [],
+            "details": "Run `npx depcheck` to get an initial list of potentially unused dependencies. Manually verify this list to ensure no packages are mistakenly flagged (e.g., used in build scripts).",
+            "status": "pending",
+            "testStrategy": "The output of `depcheck` will serve as the test artifact. Cross-reference this output with the known codebase functionality to confirm the packages can be safely removed.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Execute Cleanup on a Dedicated Branch",
+            "description": "Create a new git branch to perform the cleanup. Delete the unused component files and uninstall the identified npm packages.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Create a branch named `feat/code-cleanup`. Based on the audit results, delete the specified files from `src/components/ui` and run `npm uninstall ...` for the unused packages. Commit all changes to this branch.",
+            "status": "pending",
+            "testStrategy": "After removing files and packages, run `npm install` and `npm run build`. The build must complete successfully without errors. Analyze the bundle with `vite-plugin-visualizer` to confirm a size reduction.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Perform Full Regression Test and Validate Application Stability",
+            "description": "After the cleanup, conduct a thorough test of the entire application to confirm that removing components and dependencies did not introduce any bugs or break existing features.",
+            "dependencies": [
+              3
+            ],
+            "details": "Manually navigate through all pages and interactive elements of the application. Test all forms, buttons, pop-ups, and data displays. Check the browser developer console for any new runtime errors.",
+            "status": "pending",
+            "testStrategy": "Execute a full regression test plan, covering all critical user flows. The application's functionality on the cleanup branch must be identical to the main branch. The absence of new bugs confirms success.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 4,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Divide this task into logical cleanup stages: 1. Audit `src/components/ui` and identify all unused shadcn/ui components. 2. Audit `package.json` for unused dependencies (`recharts`, etc.). 3. Create a dedicated branch, uninstall all identified packages and delete unused component files. 4. Perform a full regression test of the entire application to ensure no functionality was broken."
+      },
+      {
+        "id": "8",
+        "title": "Implement Foundational SEO Meta Tags and Schema.org",
+        "description": "Improve search engine visibility by adding a complete suite of static meta tags, canonical URLs, and essential Schema.org structured data.",
+        "details": "Install `react-helmet-async`. In `App.tsx` and other page components, use the `<Helmet>` component to dynamically set page-specific titles and descriptions. In the main `index.html`, set fallback static meta tags, including `<html lang=\"pl\">`. For Schema.org, create a `<script type=\"application/ld+json\">` tag within the Helmet component. Implement `FAQPage` schema in `FAQ.tsx` for all 10 questions. Implement `Organization` schema in `App.tsx` using the completed business data. Implement `LoanOrCredit` and `FinancialService` schemas on the homepage.",
+        "testStrategy": "Use browser 'View Page Source' to confirm meta tags are present in the initial HTML. Use the 'Elements' tab in dev tools to verify that tags are updated correctly on route changes. Use Google's Rich Results Test tool to validate the `FAQPage` and `Organization` schema markup and ensure there are no errors.",
+        "priority": "high",
+        "dependencies": [
+          "1",
+          "2"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install `react-helmet-async` and Configure Provider",
+            "description": "Set up the foundational library for managing document head elements. This involves installing the package and wrapping the application with its context provider to enable dynamic head management.",
+            "dependencies": [],
+            "details": "Run `npm install react-helmet-async`. In `src/main.tsx`, import `HelmetProvider` from 'react-helmet-async' and wrap the root `<App />` component with `<HelmetProvider>...</HelmetProvider>`.",
+            "status": "pending",
+            "testStrategy": "After installation and provider setup, start the development server. Verify the application loads without any errors in the browser console related to the HelmetProvider context.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Create Reusable `Seo.tsx` Component for Meta Tags",
+            "description": "Develop a generic `Seo.tsx` component to handle dynamic page titles, meta descriptions, canonical URLs, and provide a slot for injecting JSON-LD schema scripts. This centralizes SEO logic.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create `src/components/seo/Seo.tsx`. The component will accept props like `title`, `description`, `canonicalUrl`, and `children` (for schema). It will use the `<Helmet>` component to render `<title>`, `<meta name=\"description\">`, `<link rel=\"canonical\">`, and the passed children.",
+            "status": "pending",
+            "testStrategy": "Use the `Seo.tsx` component on two different pages with unique props. Use browser dev tools to inspect the `<head>` and verify that the title, description, and canonical URL change correctly when navigating between the pages.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Implement `Organization` Schema.org Markup",
+            "description": "Integrate the `Organization` Schema.org structured data globally using the `Seo.tsx` component. This schema will use the completed business data from Task 2 to identify the company to search engines.",
+            "dependencies": [
+              2
+            ],
+            "details": "In `App.tsx`, use the `Seo.tsx` component. Pass a `<script type=\"application/ld+json\">` tag as a child containing the `Organization` schema. Populate fields like `name`, `legalName`, `address`, `telephone`, `url`, and `logo` with the business data.",
+            "status": "pending",
+            "testStrategy": "Load the homepage and view the page source to find the `application/ld+json` script. Copy the JSON-LD content and paste it into Google's Rich Results Test tool to validate it and ensure there are no errors.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement `FAQPage` Schema in FAQ.tsx",
+            "description": "Enhance the FAQ page by adding `FAQPage` structured data. This will make the questions and answers eligible for display as rich results in search engine listings, improving visibility.",
+            "dependencies": [
+              2
+            ],
+            "details": "In the `FAQ.tsx` component, utilize the `Seo.tsx` component. Pass a `<script type=\"application/ld+json\">` containing the `FAQPage` schema. Map over the 10 questions and answers to generate the `mainEntity` array required by the schema.",
+            "status": "pending",
+            "testStrategy": "Navigate to the FAQ page. Copy the `application/ld+json` script content from the browser's Elements inspector and validate it using the Rich Results Test tool. Confirm the tool successfully recognizes it as valid FAQ markup.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Implement `LoanOrCredit` and `FinancialService` Schemas on Homepage",
+            "description": "Add `LoanOrCredit` and `FinancialService` structured data to the main page to provide detailed, machine-readable information about the financial products offered, which can be used for specialized search results.",
+            "dependencies": [
+              2
+            ],
+            "details": "In the homepage component, use the `Seo.tsx` component to inject a script with `@type` set to `FinancialService`. This schema will include a `hasOfferCatalog` property that contains an array of `LoanOrCredit` offers with details like `amount` and `loanTerm`.",
+            "status": "pending",
+            "testStrategy": "On the homepage, inspect the element to find the `application/ld+json` script. Copy its content and validate it using the Rich Results Test and the schema.org validator to check for correctness and any warnings or errors.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Structure this task as follows: 1. Install `react-helmet-async` and configure its provider. 2. Create a generic `Seo.tsx` component to manage dynamic titles, descriptions, and canonical URLs. 3. Implement the `Organization` schema with data from Task 2. 4. Implement the `FAQPage` schema within `FAQ.tsx`. 5. Implement the `LoanOrCredit` and `FinancialService` schemas on the main page. 6. Validate all schemas using the Rich Results Test tool."
+      },
+      {
+        "id": "9",
+        "title": "Set Up Prerendering for SPA",
+        "description": "Ensure the site is fully crawlable by search engines by generating static HTML files for all routes from the React SPA.",
+        "details": "Install `react-snap` as a dev dependency. In `package.json`, modify the `build` script to `vite build && react-snap`. In your main application entry point (`src/main.tsx`), ensure you are using `ReactDOM.createRoot(rootElement).render(...)` and not the legacy `ReactDOM.render`. Configure `react-snap` in `package.json` if necessary to specify crawlable routes, but it should auto-discover them from links. The build output in the `dist` folder will now contain static HTML files for each route.",
+        "testStrategy": "After running the build script, inspect the `dist` directory. Verify that `index.html`, `polityka-prywatnosci/index.html`, etc., have been created. Use `curl` or 'View Page Source' on a locally served build to confirm that the HTML contains the fully rendered content, not just the JS bundle link. Test with JavaScript disabled in the browser to ensure content is still visible.",
+        "priority": "medium",
+        "dependencies": [
+          "3",
+          "8"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Research and Select Prerendering Tool for Vite/React Project",
+            "description": "Investigate whether `react-snap` is the optimal tool for this Vite-based React project or if a more modern, Vite-native alternative like `vite-plugin-prerender` offers better compatibility, performance, and ease of use.",
+            "dependencies": [],
+            "details": "Compare `react-snap` against `vite-plugin-prerender` and `vite-plugin-ssr`. Evaluation criteria should include maintenance status, Vite compatibility, documentation quality, and community support. The final decision should be documented with a clear justification.",
+            "status": "pending",
+            "testStrategy": "The deliverable is a documented decision. The 'test' is to ensure the chosen tool's documentation aligns with the project's needs (Vite, React, routing) and there are no outstanding critical issues in its repository.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Install and Configure Chosen Prerendering Tool",
+            "description": "Based on the research, install the selected prerendering tool as a development dependency and perform the initial configuration required for it to discover and process the application routes.",
+            "dependencies": [
+              1
+            ],
+            "details": "Install the chosen package via `npm install -D [package-name]`. If a Vite plugin was selected, update `vite.config.js` to include it in the plugins array. If `react-snap` was chosen, ensure `src/main.tsx` uses `ReactDOM.createRoot` and add any necessary initial configuration to `package.json`.",
+            "status": "pending",
+            "testStrategy": "After installation and configuration, run the development server (`npm run dev`) to ensure that the changes have not introduced any regressions or errors in the standard development workflow. The tool should not interfere with hot module replacement.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Integrate Prerendering into the Build Process",
+            "description": "Modify the `build` script in `package.json` to execute the prerendering step after the standard Vite build. Run a test build to ensure the process completes without errors and generates the expected output structure.",
+            "dependencies": [
+              2
+            ],
+            "details": "Update the `scripts.build` command in `package.json`. For `react-snap`, this will likely be `vite build && react-snap`. For a Vite plugin, no change might be needed beyond the vite config update. Execute `npm run build` and closely monitor the console output for any warnings or errors from the prerendering tool.",
+            "status": "pending",
+            "testStrategy": "The primary test is to successfully execute `npm run build`. The command must complete with exit code 0. A secondary check is to inspect the build output log to confirm the prerendering step was initiated and it reported discovering and processing the application's routes.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Verify Prerendered Output and Functionality",
+            "description": "Thoroughly inspect the `dist` directory to confirm static HTML files have been generated for all routes. Serve the build locally and test with JavaScript disabled to ensure full content is rendered, paying special attention to pages with third-party scripts.",
+            "dependencies": [
+              3
+            ],
+            "details": "Use a local server like `npx serve dist`. In a browser, use 'View Page Source' to confirm the HTML contains fully rendered content, not just a root div. Use browser dev tools to disable JavaScript and verify that the site is still viewable and navigable. Check that the cookie banner (from Task 4) does not break the prerendering process.",
+            "status": "pending",
+            "testStrategy": "Serve the `dist` folder. Test 1: Use `curl http://localhost:3000/polityka-prywatnosci` and verify the response body is complete HTML. Test 2: In a browser with JS disabled, navigate the site and confirm content is visible. Test 3: With JS enabled, ensure the application hydrates correctly without console errors and becomes fully interactive.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Break this task into four stages: 1. Research and confirm `react-snap` is the best tool for a Vite-based project, or if a Vite-native plugin is better. 2. Install and configure the chosen prerendering tool. 3. Modify the `build` script in `package.json` and run a test build. 4. Thoroughly inspect the `dist` folder and test the output with JavaScript disabled to ensure all pages are rendered correctly, especially pages with third-party scripts (Cookie Banner)."
+      },
+      {
+        "id": "10",
+        "title": "Create Partner Program Page",
+        "description": "Develop a new landing page for the financial broker partner program, detailing the commission structure, process, and contact information.",
+        "details": "Create a new component `src/components/ProgramPartnerski.tsx`. Add a new route for `/program-partnerski` in `App.tsx`. Populate the component with content sections for the hero, 1% commission details, target audience, and process. Add a dedicated FAQ section for partners. Include a clear call-to-action, either a `mailto:` link to `partnerzy@tsfinanse.com` or a new contact form. Add a link to this new page in the site's footer and/or main navigation.",
+        "testStrategy": "Navigate to `/program-partnerski` and verify the page renders correctly with all content sections. Check that the CTA (email link or form) is functional. Ensure the page is responsive and looks good on both mobile and desktop devices. Confirm the link to the page in the footer works.",
+        "priority": "low",
+        "dependencies": [
+          "1"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up ProgramPartnerski Component and Route",
+            "description": "Create the new component file for the partner program page and add the corresponding route to the main application router to make the page accessible.",
+            "dependencies": [],
+            "details": "Create a new file at `src/components/ProgramPartnerski.tsx`. Inside `App.tsx` (or the relevant routing file), add a new route entry that maps the path `/program-partnerski` to the newly created `ProgramPartnerski` component.",
+            "status": "pending",
+            "testStrategy": "Start the development server, navigate to `/program-partnerski` and verify that a basic placeholder from the new component renders without any routing or compilation errors.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Build Core Content Sections for the Partner Page",
+            "description": "Implement the primary content sections of the partner program page, including the hero, commission details, target audience, and the partnership process.",
+            "dependencies": [
+              1
+            ],
+            "details": "Within `ProgramPartnerski.tsx`, create the JSX structure and styling for the main content. This includes a hero section, a section detailing the '1% commission', a description of the ideal partner (target audience), and a step-by-step guide to the process.",
+            "status": "pending",
+            "testStrategy": "Review the rendered page at `/program-partnerski` to ensure all four content sections are present and correctly structured. Check that the page is responsive on both mobile and desktop viewports.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Add a Dedicated Partner FAQ Section",
+            "description": "Create and populate a Frequently Asked Questions (FAQ) section specifically for potential financial broker partners to answer common questions.",
+            "dependencies": [
+              1
+            ],
+            "details": "In `ProgramPartnerski.tsx`, add a new section for the FAQ. Implement it using an accordion component for a clean user interface. Populate with initial questions and answers related to the program.",
+            "status": "pending",
+            "testStrategy": "Verify the FAQ section is visible on the page. If using an accordion, test that clicking each question expands to show the answer and can be collapsed again.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement CTA and Add Navigation Links",
+            "description": "Add the final call-to-action (CTA) to the page and integrate the new page into the website's navigation by adding links in the footer and/or main menu.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "At the bottom of the `ProgramPartnerski.tsx` component, add a clear call-to-action section with a `mailto:` link to `partnerzy@tsfinanse.com`. Then, edit the `Footer.tsx` and/or `Header.tsx` components to include a new navigation link to `/program-partnerski`.",
+            "status": "pending",
+            "testStrategy": "Click the CTA email link and verify it opens an email client with the correct recipient. Check the site's footer and/or main navigation, find the new link, and click it to ensure it navigates correctly to the partner page.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 3,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Break down the development of this new page: 1. Create the new component file `ProgramPartnerski.tsx` and add its route `/program-partnerski` in `App.tsx`. 2. Build the content structure of the page, including the hero, commission details, and process sections. 3. Add the partner-specific FAQ section. 4. Implement the final CTA and add a link to the new page in the site's footer."
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2025-11-05T15:57:13.128Z",
+      "taskCount": 10,
+      "completedCount": 2,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}

@@ -1,0 +1,1246 @@
+# TS Finanse Landing Page - Production Readiness Implementation
+
+<context>
+# Overview
+
+This is a remediation and enhancement project for the TS Finanse landing page - a financial services website offering mortgage-backed business loans in Poland. The landing page is 75% complete with excellent technical foundation (React 18 + Vite + TypeScript + shadcn/ui) but requires critical updates before public launch.
+
+## Problem Statement
+
+The current landing page cannot be launched publicly due to:
+1. **Legal non-compliance** - Missing GDPR/RODO documentation, no cookie consent, incomplete privacy policy (Risk: up to €20M in fines)
+2. **Incomplete business data** - NIP, phone number, and address are placeholders
+3. **Performance issues** - 1.9 MB total page size (mostly unoptimized PNG images), 5-second load time
+4. **SEO deficiencies** - No SSR/prerendering, missing canonical URLs, no FAQPage schema despite 10 FAQ items
+5. **Non-functional routing** - Legal document links don't work (no React Router)
+
+## Target Outcome
+
+Transform the landing page into a production-ready, legally compliant, high-performance marketing platform that:
+- Meets all Polish and EU legal requirements (GDPR/RODO)
+- Loads in under 2 seconds with 90+ Lighthouse score
+- Ranks in top 10 for target keywords within 3 months
+- Generates 50+ qualified leads per month with 10%+ conversion rate
+- Supports 1-1.8M PLN monthly revenue from loan originations
+
+## Success Metrics
+
+- **Legal Compliance:** 100% compliant with RODO, ePrivacy Directive, Polish Electronic Services Act
+- **Performance:** Lighthouse score 90+, LCP < 2.5s, Total page size < 300 KB
+- **SEO:** 20+ keywords in top 20, 3-5 featured snippets, 500+ organic visitors/month
+- **Business:** 50+ leads/month, 10%+ conversion rate, 20%+ close rate
+- **Technical:** All routing functional, forms working, documents complete
+</context>
+
+<PRD>
+# Core Features (Remediation Tasks)
+
+## 1. Legal Compliance Suite
+
+### 1.1 Privacy Policy (RODO Compliant)
+- **What it does:** Complete, legally binding privacy policy meeting Art. 13/14 RODO requirements
+- **Why it's important:** Legal requirement; fines up to €20M for non-compliance
+- **Implementation:**
+  - Full data controller information (NIP, address, contact)
+  - Detailed data processing purposes and legal bases (Art. 6 RODO)
+  - Data retention periods
+  - User rights procedures (access, deletion, portability, objection)
+  - PUODO complaint information
+  - Prepared by specialized RODO lawyer
+
+### 1.2 Cookie Policy + Consent Banner
+- **What it does:** Compliant cookie disclosure and user consent mechanism
+- **Why it's important:** ePrivacy Directive requirement; fines up to 3% of revenue
+- **Implementation:**
+  - Detailed cookie categorization (essential, analytics, marketing)
+  - Cookie Consent Management Platform (CookieBot recommended)
+  - Consent logging system (who, when, what, IP, user-agent)
+  - Accept/Reject functionality
+  - Integration with analytics (GA4 only after consent)
+
+### 1.3 Terms of Service (Regulamin)
+- **What it does:** Legal framework for service usage
+- **Why it's important:** Required by Polish Electronic Services Act
+- **Implementation:**
+  - Service scope and conditions
+  - Loan application process description
+  - Complaint procedures
+  - Terms modification process
+  - Jurisdiction and applicable law
+  - Financial sector-specific provisions
+
+### 1.4 RODO Information Page
+- **What it does:** Dedicated page explaining data protection rights
+- **Why it's important:** Transparency requirement, user trust
+- **Implementation:**
+  - Detailed user rights explanation
+  - Request submission procedures
+  - Response timelines (1 month standard, up to 3 months max)
+  - Identity verification process
+  - Free of charge disclosure
+
+### 1.5 Contact Form RODO Integration
+- **What it does:** Legal consent mechanism for data collection
+- **Why it's important:** Cannot collect data without explicit consent
+- **Implementation:**
+  - Required checkbox: data processing consent (Art. 6.1.a RODO)
+  - Optional checkbox: marketing consent
+  - Informational clause (Art. 13 RODO) with all required fields
+  - n8n integration for form submission
+  - Consent logging to database/spreadsheet
+
+## 2. Business Data Completion
+
+### 2.1 Company Information Update
+- **What it does:** Display all legally required business identifiers
+- **Why it's important:** Legal requirement (Polish Commercial Freedom Act)
+- **Implementation:**
+  - NIP: Replace "do uzupełnienia" placeholder
+  - REGON: Add to footer
+  - KRS: Add if applicable (sp. z o.o.)
+  - Phone number: Replace "wkrótce dostępny"
+  - Full address: Add complete postal address
+  - RODO contact email: Add rodo@tsfinanse.com
+
+### 2.2 Footer Legal Section
+- **What it does:** Consolidated legal information display
+- **Why it's important:** One-stop compliance visibility
+- **Implementation:**
+  - Financial disclaimer (non-bank institution notice)
+  - RRSO disclosure placeholder
+  - All company identifiers
+  - Links to all legal documents
+
+## 3. Routing Infrastructure
+
+### 3.1 React Router Implementation
+- **What it does:** Client-side routing for multi-page SPA
+- **Why it's important:** Currently all legal document links are broken
+- **Implementation:**
+  - Install react-router-dom
+  - Configure BrowserRouter in App.tsx
+  - Create routes:
+    - `/` - Homepage
+    - `/polityka-prywatnosci` - Privacy Policy
+    - `/polityka-cookies` - Cookie Policy
+    - `/regulamin` - Terms of Service
+    - `/rodo` - RODO Information
+    - `/program-partnerski` - Partner Program (optional)
+  - Update all Footer.tsx links
+  - Add 404 page component
+
+### 3.2 Navigation Components
+- **What it does:** Proper navigation between pages
+- **Why it's important:** User experience and SEO
+- **Implementation:**
+  - Convert anchor tags to Link components
+  - Preserve scroll position on navigation
+  - Add breadcrumbs for legal pages
+  - Smooth scroll for anchor links (#about, #faq, etc.)
+
+## 4. Performance Optimization
+
+### 4.1 Image Optimization
+- **What it does:** Convert and compress images to modern formats
+- **Why it's important:** 1.5 MB hero image kills performance (current LCP: 4-5s)
+- **Implementation:**
+  - Convert hero background PNG (1,507 KB) → AVIF/WebP (~150 KB, -90%)
+  - Convert logo PNG (113 KB) → WebP/SVG (~30 KB, -73%)
+  - Generate responsive image sets (640w, 1280w, 1920w)
+  - Implement `<picture>` element with srcset
+  - Add width/height attributes (prevent CLS)
+  - Lazy loading for below-fold images
+  - Eager loading for hero and logo
+
+### 4.2 Code Optimization
+- **What it does:** Reduce JavaScript bundle size
+- **Why it's important:** 68 unused UI components bloat bundle
+- **Implementation:**
+  - Remove 68 unused shadcn/ui components
+  - Uninstall unused dependencies (recharts, date-fns, lodash, react-hook-form, etc.)
+  - Tree shaking verification
+  - Bundle size target: < 120 KB gzipped
+  - Code splitting for route-based chunks
+
+### 4.3 Font Loading Optimization
+- **What it does:** Non-blocking font loading
+- **Why it's important:** Fonts currently block First Contentful Paint
+- **Implementation:**
+  - Add `<link rel="preconnect">` for Google Fonts
+  - Add `display=swap` to font URL
+  - Optional: Self-host fonts (Inter family)
+  - Subset fonts to Latin charset only
+
+## 5. SEO Enhancement
+
+### 5.1 Meta Tags Infrastructure
+- **What it does:** Complete SEO meta tag suite
+- **Why it's important:** SPA with dynamic tags = poor indexing; need static HTML tags
+- **Implementation:**
+  - Static meta tags in index.html (title, description, keywords)
+  - `<html lang="pl">` attribute
+  - Canonical URLs for all pages
+  - Open Graph tags with 1200x630px image
+  - Twitter Card tags
+  - Geo meta tags (Poland-specific)
+  - Author, language, robots meta tags
+
+### 5.2 Schema.org Structured Data
+- **What it does:** Rich snippets for search engines and AI
+- **Why it's important:** Featured snippets, better SERP visibility, AI citations
+- **Implementation:**
+  - FAQPage schema for 10 FAQ items (highest priority!)
+  - Organization schema with full company data
+  - LoanOrCredit schema for loan product details
+  - Service schema for financial services
+  - BreadcrumbList for navigation
+  - FinancialService schema (already exists, enhance it)
+
+### 5.3 SSR/Prerendering
+- **What it does:** Generate static HTML for bots
+- **Why it's important:** SPA without SSR = invisible to search engines
+- **Implementation Options:**
+  - **Option A (Quick):** react-snap for static HTML generation
+  - **Option B (Long-term):** Migrate to Next.js with SSG
+  - Target: All pages pre-rendered as HTML
+  - Crawlable content without JavaScript execution
+
+### 5.4 llms.txt Enhancement
+- **What it does:** Optimize existing llms.txt for AI search engines
+- **Why it's important:** Already exists and is good, but can be better
+- **Implementation:**
+  - Add JSON-LD structured data in comments
+  - Enhanced "Quick Facts" section
+  - Competitive advantages list
+  - Use cases and ideal customer profile
+
+## 6. Form Integration
+
+### 6.1 Contact Form (n8n)
+- **What it does:** Working contact form with backend integration
+- **Why it's important:** Primary lead generation mechanism (currently placeholder)
+- **Implementation:**
+  - n8n webhook endpoint configuration
+  - Form fields: name, email, phone, company, message
+  - Client-side validation (React Hook Form)
+  - RODO consent checkboxes (required + optional marketing)
+  - Art. 13 informational clause display
+  - Success/error state handling
+  - Email notifications to kontakt@tsfinanse.com
+  - Lead storage (Google Sheets/Airtable/Database)
+
+### 6.2 Consent Management
+- **What it does:** Track and store user consents
+- **Why it's important:** RODO proof of consent requirement
+- **Implementation:**
+  - Consent logging: timestamp, email, IP, user-agent, consent types
+  - Storage: n8n → Google Sheets or database
+  - Retrieval mechanism for RODO requests
+  - Withdrawal procedure
+
+## 7. Content Enhancements
+
+### 7.1 Partner Program Page
+- **What it does:** Dedicated landing page for broker partnerships
+- **Why it's important:** Currently only mentioned in footer/FAQ, no detail page
+- **Implementation:**
+  - Route: `/program-partnerski`
+  - Content: 1% commission details, target audience, process, registration
+  - Contact: partnerzy@tsfinanse.com
+  - FAQ section for partners
+  - Application form (future phase)
+
+### 7.2 Financial Disclaimer
+- **What it does:** Legal disclaimer for non-bank financial institution
+- **Why it's important:** Required for financial services in Poland
+- **Implementation:**
+  - Footer disclaimer: "TS Finanse is not a banking institution..."
+  - RRSO disclosure: "Actual annual percentage rate may vary..."
+  - Individual offer notice: "All financing offers are individual..."
+
+# User Experience
+
+## User Personas
+
+### Primary: Business Owner (Przedsiębiorca)
+- **Age:** 35-55
+- **Business:** Established company (2+ years), rejected by banks or needs fast capital
+- **Goal:** Secure 1-20M PLN loan quickly (3 days vs 2-3 months bank process)
+- **Pain points:** Bank bureaucracy, strict criteria, slow decisions
+- **Tech savvy:** Medium (uses smartphone, email, basic web)
+
+### Secondary: Financial Broker (Pośrednik Kredytowy)
+- **Age:** 30-50
+- **Goal:** Find alternative financing for clients, earn 1% commission
+- **Pain points:** Limited non-bank options, client trust issues
+- **Tech savvy:** High (professional tools, CRM, multiple platforms)
+
+## Key User Flows
+
+### Flow 1: Business Owner - Loan Inquiry
+1. **Landing** → Hero section with clear USP (1-20M PLN, 3 days, 15%)
+2. **Trust Building** → Scroll through "Kim jesteśmy?", "Dlaczego TS Finanse?"
+3. **Understanding** → Review conditions (LTV 60%, senior position, etc.)
+4. **Friction Reduction** → Check FAQ for common concerns
+5. **Conversion** → Fill contact form with RODO consent
+6. **Confirmation** → Success message, next steps email
+
+### Flow 2: Financial Broker - Partnership
+1. **Landing** → Notice "Program Partnerski" in footer/nav
+2. **Exploration** → Visit `/program-partnerski` page
+3. **Evaluation** → Review 1% commission, target clients, process
+4. **Action** → Email partnerzy@tsfinanse.com or fill partner form
+
+### Flow 3: Concerned Visitor - Legal Review
+1. **Landing** → See cookie banner, click "Polityka Cookies"
+2. **Navigation** → Easily access all legal documents from footer
+3. **Review** → Read Privacy Policy, RODO rights
+4. **Trust** → See complete company data (NIP, address, contact)
+5. **Decision** → Return to homepage, feel confident to submit form
+
+## UI/UX Considerations
+
+### Current Strengths (Preserve)
+- Clean, professional design (shadcn/ui components)
+- Strong visual hierarchy
+- Mobile-first responsive design
+- Accessibility features (ARIA labels, keyboard navigation)
+- Clear CTAs (contact form, scroll prompts)
+
+### Required Improvements
+- **Cookie Banner:** Non-intrusive, bottom placement, clear accept/reject
+- **Form UX:** Multi-step form consideration (Phase 2), inline validation
+- **Legal Pages:** Readable typography, clear sections, "Back to Home" links
+- **Loading States:** Show skeleton loaders during image load
+- **Error States:** Friendly error messages with recovery steps
+
+# Technical Architecture
+
+## Current Stack (Preserve)
+- **Frontend:** React 18.3.1 with TypeScript
+- **Build Tool:** Vite 6.3.5 with SWC
+- **Styling:** Tailwind CSS
+- **UI Components:** shadcn/ui + Radix UI (48 components, will reduce to ~10)
+- **Icons:** lucide-react
+- **Deployment:** TBD (Vercel/Netlify recommended)
+
+## Required Additions
+
+### Routing
+- **react-router-dom** v6+ for client-side routing
+- BrowserRouter configuration
+- Route components for each page
+
+### Form Management
+- **n8n** - Backend workflow automation
+- Webhook endpoint for form submissions
+- Email notifications (SendGrid/Resend)
+- Data storage (Google Sheets, Airtable, or PostgreSQL)
+
+### Cookie Consent
+- **CookieBot** (99 EUR/year, recommended) OR
+- Custom implementation with localStorage
+
+### Analytics
+- **Google Analytics 4** (after cookie consent)
+- **Google Search Console** (SEO monitoring)
+- **Hotjar/Microsoft Clarity** (optional, heatmaps)
+
+### Image Processing
+- **@squoosh/cli** - Image optimization during build
+- AVIF/WebP generation
+- Responsive image sets
+
+### SEO Tools
+- **react-snap** (quick SSR solution) OR
+- **Next.js migration** (long-term, better SEO)
+
+## System Components
+
+### Frontend (React SPA)
+```
+src/
+├── components/
+│   ├── Hero.tsx
+│   ├── About.tsx
+│   ├── Conditions.tsx
+│   ├── Benefits.tsx
+│   ├── Process.tsx
+│   ├── ContactForm.tsx (UPDATE: integrate n8n)
+│   ├── FAQ.tsx
+│   ├── Navigation.tsx
+│   ├── Footer.tsx (UPDATE: add full company data)
+│   ├── PrivacyPolicy.tsx (UPDATE: complete with lawyer)
+│   ├── CookiePolicy.tsx (NEW)
+│   ├── TermsOfService.tsx (NEW)
+│   ├── RodoInfo.tsx (NEW)
+│   ├── ProgramPartnerski.tsx (NEW)
+│   ├── CookieBanner.tsx (NEW)
+│   └── ui/ (CLEANUP: remove 68 unused components)
+├── App.tsx (UPDATE: add React Router)
+├── main.tsx
+└── index.css
+```
+
+### Backend (n8n Workflow)
+```
+n8n Workflow: Contact Form Handler
+├── Webhook Trigger (POST /form/contact)
+├── Data Validation Node
+├── Spam Filter Node (optional)
+├── Email Notification Node (SendGrid/Resend)
+│   └── To: kontakt@tsfinanse.com
+├── Consent Logging Node
+│   └── Google Sheets: consents table
+└── Lead Storage Node
+    └── Google Sheets/Airtable: leads table
+```
+
+### Legal Documents (Static Content)
+- Prepared by RODO lawyer
+- Stored as React components or Markdown
+- Version controlled in Git
+- Update timestamp displayed
+
+## Data Models
+
+### Contact Form Submission
+```typescript
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  message: string;
+  consentProcessing: boolean; // Required
+  consentMarketing: boolean;  // Optional
+  timestamp: Date;
+  ipAddress: string;
+  userAgent: string;
+}
+```
+
+### Consent Record
+```typescript
+interface ConsentRecord {
+  email: string;
+  consentType: 'processing' | 'marketing' | 'cookies';
+  consentGiven: boolean;
+  timestamp: Date;
+  ipAddress: string;
+  userAgent: string;
+  withdrawalDate?: Date;
+}
+```
+
+## APIs and Integrations
+
+### n8n Webhook
+- **Endpoint:** `https://n8n.tsfinanse.com/webhook/contact-form`
+- **Method:** POST
+- **Payload:** ContactFormData JSON
+- **Response:** `{ success: boolean, message: string }`
+
+### CookieBot API (if used)
+- **Integration:** JavaScript SDK
+- **Configuration:** Consent categories, design customization
+- **Callback:** Fire GA4 only after consent
+
+### Google Analytics 4
+- **Tracking ID:** TBD (create property)
+- **Events:** page_view, form_submit, contact_click, faq_click
+- **Consent Mode:** Enabled (wait for cookie consent)
+
+## Infrastructure Requirements
+
+### Hosting
+- **Recommended:** Vercel or Netlify
+- **Requirements:**
+  - Static file serving
+  - SPA routing support (fallback to index.html)
+  - HTTPS (automatic)
+  - CDN (automatic)
+  - Build automation (Git integration)
+
+### Domain & SSL
+- **Domain:** tsfinanse.com (assumed owned)
+- **SSL:** Automatic via Let's Encrypt (Vercel/Netlify)
+- **DNS:** Configure A/CNAME records
+
+### n8n Hosting
+- **Option A:** Self-hosted (VPS, Docker)
+- **Option B:** n8n Cloud (easier, paid)
+- **Requirements:** Webhook endpoint, persistent storage
+
+### Email Service
+- **Recommended:** SendGrid or Resend
+- **Purpose:** Form notification emails
+- **Volume:** ~100-500 emails/month (free tier)
+
+### Consent Storage
+- **Option A:** Google Sheets (simple, free)
+- **Option B:** Airtable (better UX)
+- **Option C:** PostgreSQL (most robust, requires hosting)
+
+# Development Roadmap
+
+## Phase 1: Legal Compliance & Critical Fixes (PRIORITY 1)
+**Goal:** Make website legally launchable
+**Timeline:** 3-4 weeks
+**Blocker Status:** YES - Cannot launch without this
+
+### Tasks:
+1. **Data Collection** (1 day)
+   - Collect all company data (NIP, REGON, KRS, address, phone)
+   - Prepare list of all cookies used (or will use)
+   - Document data processing purposes
+
+2. **Legal Documentation** (2-3 weeks, external dependency)
+   - Engage RODO-specialized lawyer
+   - Provide lawyer with company data and data processing scope
+   - Lawyer prepares: Privacy Policy, Cookie Policy, Terms of Service
+   - Review and approve legal documents
+   - **Output:** 3 complete legal documents ready for publication
+
+3. **React Router Implementation** (1-2 days)
+   - Install react-router-dom
+   - Configure BrowserRouter in App.tsx
+   - Create route structure (/, /polityka-prywatnosci, /polityka-cookies, /regulamin, /rodo)
+   - Create legal document page components (load lawyer-provided content)
+   - Update Footer.tsx links from href="#" to proper routes
+   - Test navigation, 404 handling
+   - **Output:** Functional routing, all links work
+
+4. **Company Data Integration** (2-3 hours)
+   - Update Footer.tsx: replace NIP placeholder with actual NIP
+   - Update Footer.tsx: replace phone placeholder with actual phone
+   - Add full postal address to Footer
+   - Add REGON, KRS if applicable
+   - Update PrivacyPolicy.tsx with complete administrator data
+   - **Output:** All company identifiers displayed
+
+5. **Cookie Consent Implementation** (1-2 days)
+   - Choose solution (CookieBot recommended)
+   - If CookieBot: Configure account, domain, cookie categories
+   - If custom: Implement CookieBanner.tsx component with localStorage
+   - Add consent logging mechanism
+   - Integrate with Google Analytics (fire only after consent)
+   - Test accept/reject flows
+   - **Output:** Working cookie consent banner
+
+6. **Contact Form Integration** (2-3 days)
+   - Set up n8n instance (cloud or self-hosted)
+   - Create n8n workflow: webhook → validation → email → storage
+   - Update ContactForm.tsx: remove placeholder, add real form
+   - Add RODO consent checkboxes (required + optional marketing)
+   - Add Art. 13 RODO informational clause
+   - Implement form validation (email format, required fields)
+   - Connect to n8n webhook endpoint
+   - Test end-to-end: submission → email → storage
+   - **Output:** Functional contact form with RODO compliance
+
+7. **Financial Disclaimer** (1 hour)
+   - Add disclaimer text to Footer.tsx
+   - Style appropriately (smaller font, legal tone)
+   - **Output:** Compliant financial disclaimer
+
+## Phase 2: Performance & SEO Optimization (PRIORITY 2)
+**Goal:** Achieve 90+ Lighthouse score, improve search visibility
+**Timeline:** 1-2 weeks
+**Blocker Status:** NO - Can launch without, but impacts user experience and SEO
+
+### Tasks:
+1. **Image Optimization** (3-4 hours)
+   - Install @squoosh/cli
+   - Convert hero background PNG → AVIF + WebP (quality 75-80)
+   - Convert logo PNG → WebP + SVG (quality 90)
+   - Generate responsive image sets (640w, 1280w, 1920w) for hero
+   - Update Hero.tsx: implement `<picture>` element with srcset
+   - Add width/height attributes to all images
+   - Add loading="lazy" to below-fold images
+   - Add loading="eager" to hero and logo
+   - Test on various screen sizes
+   - **Output:** Images optimized, page size reduced from 1.9 MB to ~400 KB
+
+2. **Code Cleanup** (1-2 hours)
+   - Identify all unused shadcn/ui components (68 identified)
+   - Delete unused component files from src/components/ui/
+   - Uninstall unused dependencies: recharts, date-fns, lodash, react-hook-form, react-day-picker, cmdk, embla-carousel-react, input-otp, next-themes, sonner, vaul
+   - Run build, verify bundle size reduction
+   - **Output:** Bundle size reduced from ~70 KB to ~45 KB
+
+3. **Font Optimization** (30 minutes)
+   - Add `<link rel="preconnect" href="https://fonts.googleapis.com">` to index.html
+   - Add `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` to index.html
+   - Add `display=swap` to font URL
+   - Optional: Self-host Inter font family
+   - **Output:** FCP improved by ~200ms
+
+4. **SEO Meta Tags** (2-3 hours)
+   - Update index.html with static meta tags:
+     - `<html lang="pl">`
+     - Static title, description, keywords
+     - Canonical URL
+     - Robots meta tag
+     - Language meta tag
+     - Geo meta tags (Poland)
+   - Create Open Graph image (1200x630px in Canva/Figma)
+   - Add Open Graph meta tags (og:image, og:locale, og:site_name, etc.)
+   - Add Twitter Card meta tags
+   - Add to all route pages (use React Helmet or similar)
+   - **Output:** Complete meta tag suite, SEO score 100
+
+5. **Schema.org Enhancement** (2-3 hours)
+   - Add FAQPage schema to App.tsx (highest priority - 10 FAQ items)
+   - Add Organization schema with full company data
+   - Add LoanOrCredit schema for loan product
+   - Add Service schema for financial services
+   - Enhance existing FinancialService schema
+   - Add BreadcrumbList schema for navigation
+   - Validate with Google's Rich Results Test
+   - **Output:** Complete structured data, eligible for featured snippets
+
+6. **Prerendering Setup** (4-6 hours)
+   - **Option A (Quick):** Install react-snap
+   - Configure package.json build script to run react-snap post-build
+   - Test generated static HTML files
+   - Verify bot-crawlable content (curl test)
+   - **Option B (Long-term):** Plan Next.js migration (future phase)
+   - **Output:** Static HTML for all pages
+
+7. **llms.txt Enhancement** (1 hour)
+   - Add JSON-LD structured data in comments
+   - Add "Quick Facts" section
+   - Add "Competitive Advantages" list
+   - Add "Ideal Customer Profile"
+   - Add "Common Use Cases"
+   - **Output:** Enhanced llms.txt for better AI citations
+
+## Phase 3: Content & Advanced Features (PRIORITY 3)
+**Goal:** Add partner program page, blog foundation, advanced analytics
+**Timeline:** 2-4 weeks
+**Blocker Status:** NO - Nice to have, improves business outcomes
+
+### Tasks:
+1. **Partner Program Page** (1 day)
+   - Create ProgramPartnerski.tsx component
+   - Add route `/program-partnerski`
+   - Content sections:
+     - Hero: "Zostań Partnerem TS Finanse"
+     - Commission details: 1% of loan value
+     - Target audience: credit brokers, financial advisors, real estate agents
+     - Process: contact → onboarding → first client → payment
+     - Requirements: business registration, basic financial knowledge
+     - FAQ for partners (5-10 questions)
+   - Contact form or email CTA (partnerzy@tsfinanse.com)
+   - Update Navigation.tsx to include link
+   - **Output:** Complete partner program landing page
+
+2. **Blog Infrastructure Setup** (2-3 days)
+   - **Option A:** Simple markdown blog with Vite
+   - **Option B:** Integrate with headless CMS (Contentful, Sanity)
+   - Create /blog route and BlogPost component
+   - Design blog post template (header, body, related posts)
+   - Add blog listing page
+   - Implement basic SEO for blog posts (meta tags, schema)
+   - **Output:** Blog platform ready for content
+
+3. **Initial Blog Content** (3-5 days, content writing)
+   - Write 5-10 foundational articles:
+     1. "Pożyczka vs Kredyt dla Firm - Kluczowe Różnice 2025"
+     2. "LTV - Co to Jest i Jak Wpływa na Wysokość Pożyczki?"
+     3. "Pozycja Senioralna Hipoteki - Przewodnik dla Przedsiębiorców"
+     4. "Jak Przygotować Firmę do Uzyskania Pożyczki Hipotecznej?"
+     5. "Alternatywy dla Kredytu Bankowego w Polsce - Kompletny Przewodnik"
+   - SEO optimization for each article
+   - Add Article schema.org markup
+   - Internal linking to homepage and service pages
+   - **Output:** 5-10 SEO-optimized blog posts
+
+4. **Advanced Analytics** (1-2 days)
+   - Set up Google Analytics 4 property
+   - Implement GA4 tracking (after cookie consent)
+   - Configure custom events (form_submit, faq_click, partner_click)
+   - Set up Google Search Console
+   - Verify domain ownership
+   - Submit sitemap.xml
+   - Optional: Hotjar or Microsoft Clarity for heatmaps
+   - **Output:** Full analytics and monitoring
+
+5. **Loan Calculator** (2-3 days)
+   - Create interactive calculator component
+   - Inputs: property value, desired LTV (0-60%), loan term (12-36 months)
+   - Outputs: max loan amount, monthly payment (15% APR), total cost
+   - Add calculator schema.org markup
+   - Place on homepage and/or dedicated /kalkulator page
+   - **Output:** Interactive financial calculator
+
+6. **Case Studies Section** (ongoing)
+   - Template for case study format
+   - Placeholder or anonymized examples
+   - Schema.org for case studies
+   - **Output:** 1-3 case study examples
+
+# Logical Dependency Chain
+
+## Foundation (Must Be First)
+1. **Data Collection** - All company data (NIP, REGON, address, phone)
+   - **Blocks:** Legal documents (lawyer needs this), Footer updates
+   - **Duration:** 1 day
+   - **Can parallelize:** No dependencies
+
+2. **Legal Document Preparation** - Lawyer creates PP, Cookies, ToS
+   - **Requires:** Data collection complete
+   - **Blocks:** Legal page components, Cookie banner, Contact form RODO clauses
+   - **Duration:** 2-3 weeks (external dependency)
+   - **Can parallelize:** Partial - routing and optimization work can happen simultaneously
+
+## Core Infrastructure (Before Legal Pages)
+3. **React Router Setup** - Install and configure routing
+   - **Requires:** Nothing (can start immediately)
+   - **Blocks:** Legal document pages, Partner program page
+   - **Duration:** 1-2 days
+   - **Can parallelize:** YES with legal document preparation, optimization work
+
+4. **Company Data Integration** - Update Footer and components
+   - **Requires:** Data collection complete
+   - **Blocks:** Nothing (cosmetic improvement)
+   - **Duration:** 2-3 hours
+   - **Can parallelize:** YES
+
+## Legal Implementation (After Documents Ready)
+5. **Legal Page Components** - Create PrivacyPolicy, CookiePolicy, ToS, Rodo pages
+   - **Requires:** Legal documents from lawyer, React Router setup
+   - **Blocks:** Cookie banner (needs link to cookie policy), Form (needs links in clause)
+   - **Duration:** 1 day
+   - **Can parallelize:** NO - must wait for lawyer
+
+6. **Cookie Consent Banner** - Implement CookieBot or custom solution
+   - **Requires:** Cookie Policy page exists, legal review
+   - **Blocks:** Analytics implementation (GA4 waits for consent)
+   - **Duration:** 1-2 days
+   - **Can parallelize:** Partial - can start while legal pages are being finalized
+
+7. **Contact Form Integration** - n8n + RODO compliance
+   - **Requires:** Legal documents complete (for Art. 13 clause text), Cookie consent (optional)
+   - **Blocks:** Lead generation capability
+   - **Duration:** 2-3 days
+   - **Can parallelize:** NO - depends on legal docs
+
+## Performance (Anytime, Recommended Early)
+8. **Image Optimization** - Convert PNG to WebP/AVIF
+   - **Requires:** Nothing
+   - **Blocks:** Nothing (independent improvement)
+   - **Duration:** 3-4 hours
+   - **Can parallelize:** YES - do this ASAP while waiting for lawyer
+
+9. **Code Cleanup** - Remove unused components and dependencies
+   - **Requires:** Nothing
+   - **Blocks:** Nothing
+   - **Duration:** 1-2 hours
+   - **Can parallelize:** YES
+
+10. **Font Optimization** - Preconnect and display=swap
+    - **Requires:** Nothing
+    - **Blocks:** Nothing
+    - **Duration:** 30 minutes
+    - **Can parallelize:** YES
+
+## SEO (After Performance, Before/Alongside Legal)
+11. **SEO Meta Tags** - Static tags in index.html
+    - **Requires:** Nothing (but better to do after legal compliance confirmed)
+    - **Blocks:** Nothing (but improves discoverability)
+    - **Duration:** 2-3 hours
+    - **Can parallelize:** YES
+
+12. **Schema.org Enhancement** - FAQPage, Organization, Loan schemas
+    - **Requires:** Legal pages (for full Organization data), Company data
+    - **Blocks:** Nothing
+    - **Duration:** 2-3 hours
+    - **Can parallelize:** Partial - some schemas need legal compliance
+
+13. **Prerendering** - react-snap or Next.js
+    - **Requires:** All pages exist (legal pages, etc.)
+    - **Blocks:** Nothing (but better SEO)
+    - **Duration:** 4-6 hours
+    - **Can parallelize:** NO - should be near end of Phase 1/2
+
+## Content & Features (After Core Launch)
+14. **Partner Program Page** - Dedicated page for brokers
+    - **Requires:** React Router, basic legal compliance
+    - **Blocks:** Nothing
+    - **Duration:** 1 day
+    - **Can parallelize:** YES (Phase 3)
+
+15. **Blog Setup** - Infrastructure for content marketing
+    - **Requires:** React Router, SEO meta tag patterns
+    - **Blocks:** Nothing
+    - **Duration:** 2-3 days
+    - **Can parallelize:** YES (Phase 3)
+
+16. **Analytics** - GA4, Search Console
+    - **Requires:** Cookie consent banner
+    - **Blocks:** Nothing (but essential for measurement)
+    - **Duration:** 1-2 days
+    - **Can parallelize:** YES (can do early, just don't fire without consent)
+
+## Critical Path Summary
+```
+Data Collection (1d)
+    ↓
+[PARALLEL BLOCK START]
+├─→ Legal Docs (Lawyer, 2-3w) ────────────────────┐
+│                                                  ↓
+├─→ React Router (1-2d) ─────────────────────────→ Legal Pages (1d)
+│                                                  ↓
+├─→ Company Data Update (3h)                      Cookie Banner (1-2d)
+│                                                  ↓
+├─→ Image Optimization (3-4h)                     Contact Form (2-3d)
+│                                                  ↓
+├─→ Code Cleanup (1-2h)                          LAUNCH READY
+│
+└─→ Font Optimization (30m)
+[PARALLEL BLOCK END]
+
+Then (can be before or after launch):
+    ↓
+[PARALLEL BLOCK 2]
+├─→ SEO Meta Tags (2-3h)
+├─→ Schema.org (2-3h)
+├─→ Prerendering (4-6h)
+└─→ Analytics (1-2d, requires cookie consent)
+[END]
+
+Post-Launch (Phase 3):
+    ↓
+├─→ Partner Program Page (1d)
+├─→ Blog Setup (2-3d)
+└─→ Blog Content (ongoing)
+```
+
+## Recommended Parallelization Strategy
+**Week 1:**
+- Start legal document process (send data to lawyer)
+- Implement React Router
+- Optimize images
+- Clean up code
+- Update company data in Footer
+
+**Week 2-3:**
+- Wait for lawyer (can't proceed with legal pages without docs)
+- Meanwhile: Implement SEO meta tags, Schema.org, font optimization
+- Prepare n8n workflow (can test without RODO clauses)
+
+**Week 3-4:**
+- Receive legal documents from lawyer
+- Create legal page components (1 day)
+- Implement cookie banner (1-2 days)
+- Finalize contact form with RODO clauses (2-3 days)
+- Deploy to staging
+
+**Week 4-5:**
+- Full QA testing
+- Prerendering setup
+- Analytics configuration (ready to fire after consent)
+- Production deployment
+
+**Week 6+:**
+- Phase 3 features (partner program, blog, etc.)
+
+# Risks and Mitigations
+
+## Legal Risks
+
+### Risk 1: RODO Non-Compliance
+- **Severity:** CRITICAL (€20M fine potential)
+- **Probability:** HIGH if launched without lawyer-prepared documents
+- **Mitigation:**
+  - MANDATORY: Engage RODO-specialized lawyer before any public launch
+  - DO NOT launch website publicly until all legal documents are reviewed and approved
+  - Implement staging environment for testing
+  - Legal review checklist before production deployment
+- **Contingency:** If lawyer unavailable, postpone launch until documents ready
+
+### Risk 2: Cookie Law Violations
+- **Severity:** HIGH (3% revenue fine)
+- **Probability:** MEDIUM if cookie banner not implemented correctly
+- **Mitigation:**
+  - Use proven solution (CookieBot) rather than custom implementation
+  - Test accept/reject flows thoroughly
+  - Ensure analytics ONLY fires after explicit consent
+  - Document consent logging mechanism
+- **Contingency:** Disable all analytics/marketing cookies until banner is perfect
+
+### Risk 3: Incomplete Company Data
+- **Severity:** MEDIUM (20,000 PLN fine + reputational damage)
+- **Probability:** LOW (easy to obtain)
+- **Mitigation:**
+  - Verify all company identifiers (NIP, REGON, KRS) from official documents
+  - Double-check address, phone number accuracy
+  - Legal review of footer before launch
+- **Contingency:** Partial launch with "Dane kontaktowe wkrótce" notice (not ideal)
+
+## Technical Risks
+
+### Risk 4: SEO Invisibility (SPA without SSR)
+- **Severity:** HIGH (business impact: no organic traffic)
+- **Probability:** VERY HIGH without prerendering
+- **Mitigation:**
+  - Implement react-snap ASAP (quick win)
+  - Plan Next.js migration for long-term SEO health
+  - Test crawlability with Google Search Console "URL Inspection" tool
+  - Monitor organic traffic closely post-launch
+- **Contingency:** Paid ads (Google Ads) to drive traffic while fixing SEO
+
+### Risk 5: Performance Bottlenecks
+- **Severity:** MEDIUM (14% conversion rate loss from 3s delay)
+- **Probability:** HIGH with current 1.9 MB page size
+- **Mitigation:**
+  - Image optimization is MANDATORY before launch (highest impact)
+  - Monitor Core Web Vitals in Google Search Console
+  - Implement lazy loading
+  - CDN usage (automatic with Vercel/Netlify)
+- **Contingency:** Progressive image loading, accept temporary lower Lighthouse score
+
+### Risk 6: Form Integration Failures
+- **Severity:** CRITICAL (lead generation completely broken)
+- **Probability:** MEDIUM (n8n new dependency)
+- **Mitigation:**
+  - Thorough testing of n8n workflow in staging
+  - Email notification for form submissions (immediate feedback loop)
+  - Error logging and monitoring
+  - Backup: Simple mailto: link as fallback
+- **Contingency:** Emergency hotfix deployment process, Sentry error tracking
+
+### Risk 7: Routing Bugs in SPA
+- **Severity:** MEDIUM (broken navigation, poor UX)
+- **Probability:** LOW (React Router is mature)
+- **Mitigation:**
+  - Test all routes on staging
+  - 404 page for unmatched routes
+  - Server configuration for SPA fallback (Vercel/Netlify handles automatically)
+- **Contingency:** Quick rollback to previous version if critical bug
+
+## Resource Risks
+
+### Risk 8: Lawyer Availability/Delays
+- **Severity:** CRITICAL (blocks entire launch)
+- **Probability:** MEDIUM (external dependency, 2-3 week timeline)
+- **Mitigation:**
+  - Contact 3-5 lawyers early, get quotes and timelines
+  - Provide complete brief upfront (no back-and-forth delays)
+  - Set clear deadline expectations
+  - Parallel work on non-legal tasks (optimization, routing)
+- **Contingency:** Find alternative lawyer, accept 1-2 week delay if needed
+
+### Risk 9: Developer Bandwidth
+- **Severity:** MEDIUM (timeline slippage)
+- **Probability:** MEDIUM (40-50 hours total work)
+- **Mitigation:**
+  - Prioritize P1 tasks ruthlessly (legal, routing, form)
+  - Parallelize independent tasks where possible
+  - Use tools/libraries to reduce custom code (CookieBot, react-router)
+  - Consider outsourcing specific tasks (image optimization can be delegated)
+- **Contingency:** Phase 2 tasks can slip to post-launch without major impact
+
+### Risk 10: Budget Overruns
+- **Severity:** LOW (business can afford)
+- **Probability:** MEDIUM (lawyer fees can vary)
+- **Mitigation:**
+  - Fixed-price quote from lawyer (not hourly)
+  - Budget buffer: 15-20K PLN budgeted, actual may be 10-15K
+  - Defer Phase 3 if budget tight (blog, partner page can wait)
+- **Contingency:** Incremental deployment (launch with P1 only, add P2/P3 later)
+
+## Figuring Out MVP
+
+### MVP Definition (Minimum Viable Product)
+The absolute minimum to launch publicly and start generating leads:
+
+**MVP Includes (MUST HAVE):**
+1. All legal compliance (Privacy Policy, Cookies, ToS, RODO, consent banner)
+2. All company data (NIP, phone, address)
+3. Working contact form with RODO compliance
+4. Functional routing (legal document links work)
+5. Basic performance (images optimized, < 3s load time)
+
+**MVP Excludes (CAN WAIT):**
+- Perfect Lighthouse score (90+ is P2 goal, 75+ is acceptable for MVP)
+- Full SEO optimization (meta tags, schema.org can be added week 2)
+- Prerendering (can launch SPA, add react-snap post-launch)
+- Partner program dedicated page (footer mention is enough initially)
+- Blog (definitely Phase 3)
+- Advanced analytics (GA4 can be added after launch)
+
+**MVP Timeline:** 3-4 weeks (dominated by lawyer wait time)
+**MVP Budget:** 10-15K PLN
+
+### Build-Upon Strategy
+After MVP launch, immediately add:
+1. **Week 1 post-launch:** SEO meta tags, Schema.org (2-3 days)
+2. **Week 2 post-launch:** Prerendering with react-snap (1 day)
+3. **Week 3 post-launch:** Analytics deep dive (GA4, Search Console)
+4. **Month 2:** Partner program page, blog infrastructure
+5. **Month 3+:** Content marketing (blog posts), advanced features
+
+This allows us to:
+- Launch legally and generate leads ASAP
+- Iteratively improve SEO and performance without blocking launch
+- Build on solid legal foundation
+- Measure and optimize based on real user data
+
+# Appendix
+
+## Research Findings
+
+### Competitive Analysis
+Based on audits, competitors in Polish business loan market:
+- **mBank Kredyty dla Firm** - Strong SEO, slow process (weeks)
+- **Alior Bank Biznes** - Bank bureaucracy, strict criteria
+- **Vivus Biznes** - Fast but smaller amounts
+- **Private lenders** - Varied quality, trust issues
+
+**TS Finanse Competitive Advantages:**
+1. Speed: 3 days vs 2-3 months (banks)
+2. Independence: Own capital, not subject to bank regulations
+3. Flexibility: Accept businesses rejected by banks
+4. Clarity: Transparent 15% APR, no hidden fees
+5. Senior position: Clean collateral (no competing liens)
+
+### SEO Keyword Research (from audit)
+**Primary keywords:**
+- "pożyczka dla firm" (high volume, high competition)
+- "pożyczka hipoteczna biznes" (medium volume, medium competition)
+- "finansowanie przedsiębiorstw" (low volume, low competition)
+
+**Long-tail keywords (high intent, lower competition):**
+- "szybka pożyczka dla firmy pod hipotekę"
+- "pożyczka 5 milionów dla firmy"
+- "pożyczka bez bik dla przedsiębiorców"
+- "alternatywa dla kredytu bankowego dla firm"
+
+**Featured snippet opportunities:**
+- "Co to jest pozycja senioralna w hipotece?"
+- "Czym różni się pożyczka od kredytu dla firm?"
+- "Jak uzyskać pożyczkę bez banku?"
+
+### Performance Benchmarks
+**Current state:**
+- Page load: ~5s
+- Lighthouse Performance: 65-75
+- LCP: 4-5s
+- Total page size: 1.9 MB
+
+**Target state (post-optimization):**
+- Page load: <2s
+- Lighthouse Performance: 90+
+- LCP: <2.5s
+- Total page size: <300 KB
+
+**Expected business impact:**
+- Bounce rate: -21% (from load time improvement)
+- Conversion rate: +14% (from performance)
+- SEO rankings: +5-10 positions (from Core Web Vitals pass)
+
+### Legal Requirements Summary
+**RODO (GDPR):**
+- Art. 13: Information obligations when collecting data
+- Art. 6: Legal bases for processing (consent, contract, legitimate interest)
+- Art. 15-22: Data subject rights (access, rectification, erasure, portability, objection)
+- Fine structure: Up to €20M or 4% annual turnover
+
+**ePrivacy Directive:**
+- Cookie consent required before non-essential cookies
+- Clear information about cookie purposes
+- Easy opt-out mechanism
+- Fine: Up to 3% revenue (Polish implementation)
+
+**Polish Electronic Services Act:**
+- Required business information display (NIP, address, contact)
+- Terms of Service mandatory
+- Clear service description
+- Fine: Up to 20,000 PLN
+
+**Financial Sector Specifics:**
+- Non-bank lending disclosure
+- RRSO (APR) disclosure requirements
+- Individual offer disclaimer
+- Consumer protection (if applicable)
+
+## Technical Specifications
+
+### Image Specifications
+**Hero Background:**
+- Format: AVIF (primary), WebP (fallback), PNG (ultimate fallback)
+- Sizes: 640w, 1280w, 1920w
+- Quality: AVIF 75, WebP 80
+- Expected size: ~50 KB (640w), ~100 KB (1280w), ~150 KB (1920w)
+- Current: 1,507 KB PNG
+
+**Logo:**
+- Format: WebP or SVG (preferred)
+- Size: Single size (width ~200px)
+- Quality: WebP 90 or vector SVG
+- Expected size: ~30 KB WebP or <10 KB SVG
+- Current: 113 KB PNG
+
+**Open Graph Image:**
+- Dimensions: 1200x630px
+- Format: JPEG or PNG
+- Max size: <300 KB
+- Content: Logo + tagline "Pożyczki dla Firm 1-20 mln PLN | Decyzja w 3 dni"
+
+### Browser Support
+- Modern browsers: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+- Mobile: iOS Safari 14+, Chrome Android 90+
+- No IE11 support (usage <1% in Poland)
+- Progressive enhancement for older browsers (PNG fallback for images)
+
+### Accessibility Standards
+- WCAG 2.1 Level AA compliance
+- Keyboard navigation for all interactive elements
+- ARIA labels for icons and buttons
+- Color contrast ratios ≥4.5:1 for text
+- Form labels and error messages accessible
+- Screen reader tested
+
+### Deployment Configuration
+
+**Vercel (Recommended):**
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+**Netlify:**
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+### Environment Variables
+```bash
+# .env.example
+VITE_N8N_WEBHOOK_URL=https://n8n.tsfinanse.com/webhook/contact-form
+VITE_GA4_MEASUREMENT_ID=G-XXXXXXXXXX
+VITE_COOKIEBOT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
+### Git Workflow
+- **main** branch: production
+- **develop** branch: staging environment
+- **feature/** branches: individual features
+- Pull request required for main
+- Automated deployment on merge (Vercel/Netlify)
+
+### Monitoring & Alerting
+- **Uptime:** UptimeRobot (free tier) - ping every 5 minutes
+- **Errors:** Sentry (free tier) - frontend error tracking
+- **Performance:** Vercel Analytics or Google PageSpeed Insights API
+- **Forms:** Email notification for each submission (immediate feedback)
+
+### Backup & Recovery
+- **Code:** Git repository (GitHub/GitLab)
+- **Legal documents:** Version controlled in repo
+- **Form submissions:** Auto-backup Google Sheets (if using Sheets storage)
+- **Consent logs:** Weekly export to Google Drive
+
+## Success Criteria Checklist
+
+### Legal Compliance (100% Required)
+- [ ] Privacy Policy: Complete, lawyer-reviewed, published
+- [ ] Cookie Policy: Complete, lawyer-reviewed, published
+- [ ] Terms of Service: Complete, lawyer-reviewed, published
+- [ ] RODO Info Page: Complete, accurate, published
+- [ ] Cookie Consent Banner: Functional, logs consents, allows reject
+- [ ] Contact Form: RODO compliant checkboxes and Art. 13 clause
+- [ ] Company Data: NIP, REGON, KRS (if applicable), address, phone displayed
+- [ ] Financial Disclaimer: Published in footer
+
+### Technical Functionality (100% Required)
+- [ ] Routing: All links work, no broken navigation
+- [ ] Contact Form: Submits to n8n, sends email, stores lead, shows success/error
+- [ ] Legal Pages: All 4 pages render correctly, readable, back-to-home links
+- [ ] Cookie Banner: Shows on first visit, remembers choice, integrates with analytics
+- [ ] Mobile Responsive: All pages work on mobile, touch-friendly CTAs
+- [ ] Browser Compatibility: Works on Chrome, Firefox, Safari, Edge (latest versions)
+
+### Performance (Target: 90% Achieved)
+- [ ] Images Optimized: Hero < 200 KB, Logo < 50 KB, WebP/AVIF formats
+- [ ] Page Load Time: < 2.5s on 4G mobile
+- [ ] Lighthouse Performance: ≥ 85 (target 90+)
+- [ ] LCP: < 2.5s
+- [ ] CLS: < 0.1
+- [ ] Bundle Size: < 150 KB gzipped
+
+### SEO (Target: 80% Achieved for Launch)
+- [ ] Meta Tags: Static in index.html, unique per page
+- [ ] Canonical URLs: Set for all pages
+- [ ] Open Graph: Image created, all OG tags present
+- [ ] Schema.org: FAQPage, Organization, LoanOrCredit schemas
+- [ ] Sitemap: Updated with all routes, submitted to Search Console
+- [ ] Robots.txt: Configured, allows crawling
+- [ ] Prerendering: react-snap or Next.js (optional for MVP, required for P2)
+
+### Analytics & Monitoring (Required Post-Launch)
+- [ ] GA4: Configured, consent-gated, tracking pageviews and events
+- [ ] Search Console: Verified, sitemap submitted, monitoring enabled
+- [ ] Uptime Monitoring: UptimeRobot or similar, 5-minute intervals
+- [ ] Error Tracking: Sentry or similar, alerts configured
+- [ ] Form Monitoring: Email notifications working
+
+### Business Readiness
+- [ ] Content Review: All text reviewed, no placeholder content
+- [ ] Brand Consistency: Logo, colors, typography consistent
+- [ ] Proofread: No typos, grammatical errors
+- [ ] Test Submissions: Contact form tested end-to-end
+- [ ] Team Training: Team knows how to check form submissions, respond to leads
+- [ ] Backup Processes: Data backup verified, recovery tested
+
+### Deployment Checklist
+- [ ] Staging Deployed: Full testing on staging.tsfinanse.com
+- [ ] QA Testing: Manual testing of all flows (desktop, mobile, multiple browsers)
+- [ ] Legal Sign-Off: Lawyer confirms all documents are compliant
+- [ ] Performance Verified: Lighthouse scores acceptable
+- [ ] SEO Verified: Meta tags correct, Search Console shows pages
+- [ ] Forms Verified: Test submission received, email sent, data stored
+- [ ] DNS Configured: tsfinanse.com points to hosting (Vercel/Netlify)
+- [ ] SSL Verified: HTTPS working, no mixed content warnings
+- [ ] Monitoring Active: Uptime, errors, analytics all functioning
+- [ ] Rollback Plan: Previous version ready to redeploy if critical issue
+
+---
+
+## Estimated ROI
+
+**Investment:**
+- Phase 1 (Legal + Critical): 10-15K PLN
+- Phase 2 (Performance + SEO): 3-5K PLN
+- Phase 3 (Content + Features): 5-10K PLN
+- **Total: 18-30K PLN**
+
+**Conservative Revenue Estimate (Post-Launch):**
+- Month 1: 500 visitors → 50 leads → 10 clients → 1M PLN revenue
+- Month 3: 800 visitors (SEO boost) → 91 leads → 18 clients → 1.8M PLN revenue
+- Year 1: 12-15M PLN total revenue
+
+**ROI:**
+- First month: (1M - 15K) / 15K = 6,567%
+- First year: (12M - 30K) / 30K = 39,900%
+- Payback period: < 1 day
+
+This is a high-leverage, high-ROI project with minimal technical risk and maximum business upside. The legal compliance investment is non-negotiable but relatively small compared to revenue potential.
+
+</PRD>
