@@ -120,7 +120,7 @@
         "dependencies": [
           "1"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -183,7 +183,8 @@
         ],
         "complexity": 2,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break this task down by creating one subtask for each legal page: 1. Create and populate `PrivacyPolicy.tsx`. 2. Create and populate `CookiePolicy.tsx`. 3. Create and populate `TermsOfService.tsx`. 4. Create and populate `RodoInfo.tsx`. 5. Create a shared `LegalPageLayout.tsx` component to ensure consistent styling, headings, and a 'back to home' link."
+        "expansionPrompt": "Break this task down by creating one subtask for each legal page: 1. Create and populate `PrivacyPolicy.tsx`. 2. Create and populate `CookiePolicy.tsx`. 3. Create and populate `TermsOfService.tsx`. 4. Create and populate `RodoInfo.tsx`. 5. Create a shared `LegalPageLayout.tsx` component to ensure consistent styling, headings, and a 'back to home' link.",
+        "updatedAt": "2025-11-09T08:17:28.276Z"
       },
       {
         "id": "4",
@@ -195,7 +196,7 @@
         "dependencies": [
           "3"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -247,7 +248,8 @@
         ],
         "complexity": 5,
         "recommendedSubtasks": 4,
-        "expansionPrompt": "Break this integration into the following steps: 1. Add the CookieBot SDK script to `index.html`. 2. Create a `useCookieConsent` hook to manage the state and conditionally load other scripts. 3. Implement the logic to only inject the Google Analytics 4 script after consent is granted. 4. Verify the banner displays correctly and test the accept/reject logic using browser developer tools."
+        "expansionPrompt": "Break this integration into the following steps: 1. Add the CookieBot SDK script to `index.html`. 2. Create a `useCookieConsent` hook to manage the state and conditionally load other scripts. 3. Implement the logic to only inject the Google Analytics 4 script after consent is granted. 4. Verify the banner displays correctly and test the accept/reject logic using browser developer tools.",
+        "updatedAt": "2025-11-09T08:26:23.156Z"
       },
       {
         "id": "5",
@@ -259,7 +261,7 @@
         "dependencies": [
           "3"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -334,7 +336,8 @@
         ],
         "complexity": 6,
         "recommendedSubtasks": 6,
-        "expansionPrompt": "Expand this into the following subtasks: 1. Install and set up `react-hook-form` in `ContactForm.tsx`. 2. Implement all form fields and client-side validation rules. 3. Add the two RODO consent checkboxes and the Art. 13 clause. 4. Create the `onSubmit` handler to send validated data to the n8n webhook URL from environment variables. 5. Implement user feedback states for loading, success, and error. 6. Write end-to-end tests for validation and successful submission."
+        "expansionPrompt": "Expand this into the following subtasks: 1. Install and set up `react-hook-form` in `ContactForm.tsx`. 2. Implement all form fields and client-side validation rules. 3. Add the two RODO consent checkboxes and the Art. 13 clause. 4. Create the `onSubmit` handler to send validated data to the n8n webhook URL from environment variables. 5. Implement user feedback states for loading, success, and error. 6. Write end-to-end tests for validation and successful submission.",
+        "updatedAt": "2025-11-09T08:32:46.576Z"
       },
       {
         "id": "6",
@@ -344,7 +347,7 @@
         "testStrategy": "Use browser developer tools (Network tab) to verify that the browser is loading the smaller AVIF/WebP images instead of PNGs. Check that the total page size is under 300KB. Run a Lighthouse report and confirm the LCP is below 2.5s and the Performance score has significantly improved.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -394,7 +397,8 @@
         ],
         "complexity": 5,
         "recommendedSubtasks": 4,
-        "expansionPrompt": "Break this optimization effort into: 1. Use `@squoosh/cli` or a similar tool to convert and resize all key images (logo, hero) into WebP/AVIF formats. 2. Refactor the `Hero.tsx` component to use the `<picture>` element with `srcset`. 3. Audit all other images on the site, apply `loading=\"lazy\"`, and add `width`/`height` attributes. 4. Perform before-and-after performance analysis using Lighthouse to validate improvements."
+        "expansionPrompt": "Break this optimization effort into: 1. Use `@squoosh/cli` or a similar tool to convert and resize all key images (logo, hero) into WebP/AVIF formats. 2. Refactor the `Hero.tsx` component to use the `<picture>` element with `srcset`. 3. Audit all other images on the site, apply `loading=\"lazy\"`, and add `width`/`height` attributes. 4. Perform before-and-after performance analysis using Lighthouse to validate improvements.",
+        "updatedAt": "2025-11-07T14:49:52.150Z"
       },
       {
         "id": "7",
@@ -467,7 +471,7 @@
           "1",
           "2"
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -530,7 +534,8 @@
         ],
         "complexity": 7,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Structure this task as follows: 1. Install `react-helmet-async` and configure its provider. 2. Create a generic `Seo.tsx` component to manage dynamic titles, descriptions, and canonical URLs. 3. Implement the `Organization` schema with data from Task 2. 4. Implement the `FAQPage` schema within `FAQ.tsx`. 5. Implement the `LoanOrCredit` and `FinancialService` schemas on the main page. 6. Validate all schemas using the Rich Results Test tool."
+        "expansionPrompt": "Structure this task as follows: 1. Install `react-helmet-async` and configure its provider. 2. Create a generic `Seo.tsx` component to manage dynamic titles, descriptions, and canonical URLs. 3. Implement the `Organization` schema with data from Task 2. 4. Implement the `FAQPage` schema within `FAQ.tsx`. 5. Implement the `LoanOrCredit` and `FinancialService` schemas on the main page. 6. Validate all schemas using the Rich Results Test tool.",
+        "updatedAt": "2025-11-09T08:39:50.089Z"
       },
       {
         "id": "9",
@@ -664,9 +669,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-11-05T15:57:13.128Z",
+      "lastModified": "2025-11-09T08:39:50.090Z",
       "taskCount": 10,
-      "completedCount": 2,
+      "completedCount": 6,
       "tags": [
         "master"
       ]

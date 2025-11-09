@@ -60,11 +60,7 @@ export function Conditions() {
             {conditions.map((condition, index) => (
               <div
                 key={index}
-                className={`p-6 rounded-xl border transition-all duration-300 ${
-                  condition.highlight
-                    ? 'bg-white border-[#3D1F1F]/20 shadow-md hover:shadow-lg'
-                    : 'bg-white/50 border-[#3D1F1F]/10 hover:border-[#3D1F1F]/20'
-                }`}
+                className="p-6 rounded-xl border bg-white border-[#3D1F1F]/20 shadow-md hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
@@ -95,7 +91,7 @@ export function Conditions() {
                         </div>
                       )}
                     </div>
-                    <p className={condition.highlight ? 'text-[#3D1F1F]' : 'text-[#3D1F1F]/70'}>
+                    <p className="text-[#3D1F1F]">
                       {condition.value}
                     </p>
                   </div>

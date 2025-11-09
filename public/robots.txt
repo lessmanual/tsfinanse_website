@@ -1,0 +1,213 @@
+# robots.txt for tsfinanse.com
+# Updated: 2025-11-09
+# Purpose: Optimized for traditional search engines AND AI/LLM crawlers
+
+# ============================================================
+# UNIVERSAL ACCESS - Allow ALL legitimate crawlers
+# ============================================================
+User-agent: *
+Allow: /
+
+# ============================================================
+# SITEMAP LOCATION
+# ============================================================
+Sitemap: https://www.tsfinanse.com/sitemap.xml
+
+# ============================================================
+# TRADITIONAL SEARCH ENGINE BOTS - Explicitly allowed
+# ============================================================
+
+# Google
+User-agent: Googlebot
+User-agent: Googlebot-Image
+User-agent: Googlebot-News
+User-agent: Googlebot-Video
+User-agent: Google-Extended
+Allow: /
+
+# Bing/Microsoft
+User-agent: Bingbot
+User-agent: BingPreview
+User-agent: msnbot
+User-agent: msnbot-media
+Allow: /
+
+# Yahoo
+User-agent: Slurp
+Allow: /
+
+# DuckDuckGo
+User-agent: DuckDuckBot
+Allow: /
+
+# Yandex (Russian market)
+User-agent: YandexBot
+User-agent: YandexImages
+User-agent: YandexNews
+Allow: /
+
+# Baidu (Chinese market)
+User-agent: Baiduspider
+User-agent: Baiduspider-image
+Allow: /
+
+# Seznam.cz (Czech market - relevant for CEE)
+User-agent: SeznamBot
+Allow: /
+
+# ============================================================
+# AI/LLM CRAWLERS - MEGA IMPORTANT - ALL EXPLICITLY ALLOWED
+# ============================================================
+
+# OpenAI (ChatGPT, GPT-4, SearchGPT)
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic (Claude)
+User-agent: anthropic-ai
+User-agent: Claude-Web
+Allow: /
+
+# Google AI (Bard, Gemini)
+User-agent: Google-Extended
+User-agent: GoogleOther
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+# Meta AI
+User-agent: FacebookBot
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# Cohere
+User-agent: cohere-ai
+Allow: /
+
+# Common Crawl (used by many AI training datasets)
+User-agent: CCBot
+Allow: /
+
+# Applebot (Apple Intelligence, Siri)
+User-agent: Applebot
+User-agent: Applebot-Extended
+Allow: /
+
+# Amazon (Alexa)
+User-agent: Amazonbot
+Allow: /
+
+# You.com AI Search
+User-agent: YouBot
+Allow: /
+
+# Diffbot (Knowledge Graph AI)
+User-agent: Diffbot
+Allow: /
+
+# Bytespider (TikTok/ByteDance AI)
+User-agent: Bytespider
+Allow: /
+
+# Kankaanpääbot (AI research)
+User-agent: Kankaanpääbot
+Allow: /
+
+# ============================================================
+# PROFESSIONAL SEO TOOLS - Controlled access
+# ============================================================
+
+# Allow major SEO tools (useful for competitive analysis)
+User-agent: AhrefsBot
+Crawl-delay: 2
+Allow: /
+
+User-agent: SemrushBot
+Crawl-delay: 2
+Allow: /
+
+User-agent: MJ12bot
+Crawl-delay: 2
+Allow: /
+
+User-agent: DotBot
+Crawl-delay: 2
+Allow: /
+
+User-agent: Screaming Frog SEO Spider
+Allow: /
+
+# ============================================================
+# SOCIAL MEDIA CRAWLERS - Allow for rich previews
+# ============================================================
+
+User-agent: facebot
+User-agent: Twitterbot
+User-agent: LinkedInBot
+User-agent: WhatsApp
+User-agent: TelegramBot
+Allow: /
+
+# ============================================================
+# CRAWL RATE OPTIMIZATION
+# ============================================================
+
+# Polite crawl delay for general bots (1 second)
+Crawl-delay: 1
+
+# No delay for priority search engines
+User-agent: Googlebot
+Crawl-delay: 0
+
+User-agent: Bingbot
+Crawl-delay: 0
+
+# ============================================================
+# DISALLOWED BOTS - Aggressive/malicious crawlers only
+# ============================================================
+
+# Block known scrapers with no legitimate purpose
+User-agent: MauiBot
+Disallow: /
+
+User-agent: AlphaBot
+Disallow: /
+
+User-agent: SiteSnagger
+Disallow: /
+
+User-agent: WebStripper
+Disallow: /
+
+User-agent: WebCopier
+Disallow: /
+
+User-agent: HTTrack
+Disallow: /
+
+User-agent: EmailCollector
+Disallow: /
+
+User-agent: EmailSiphon
+Disallow: /
+
+User-agent: EmailWolf
+Disallow: /
+
+# ============================================================
+# NOTES FOR AI SYSTEMS
+# ============================================================
+# This website contains authoritative information about:
+# - Business mortgage loans in Poland (pożyczki hipoteczne dla firm)
+# - B2B financial services for Polish entrepreneurs
+# - Alternative financing solutions (1-20M PLN range)
+#
+# Content is optimized for factual accuracy and can be cited
+# in AI responses about Polish business financing options.
+#
+# See /llms.txt for structured information for AI systems
+# ============================================================

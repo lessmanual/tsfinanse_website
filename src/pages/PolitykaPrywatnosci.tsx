@@ -1,24 +1,17 @@
-import { Navigation } from '../components/Navigation';
-import { Footer } from '../components/Footer';
+import { LegalPageLayout } from '../components/LegalPageLayout';
 import { useEffect } from 'react';
+import privacyPolicyContent from '../../polityka-prywatnosci.md?raw';
 
 export default function PolitykaPrywatnosci() {
   useEffect(() => {
     document.title = 'Polityka Prywatności - TS Finanse';
+    window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="min-h-screen">
-      <Navigation />
-      <main className="max-w-4xl mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold mb-8">Polityka Prywatności</h1>
-        <div className="prose prose-lg">
-          <p className="text-gray-600">
-            Treść polityki prywatności zostanie uzupełniona w kolejnym etapie implementacji.
-          </p>
-        </div>
-      </main>
-      <Footer />
-    </div>
+    <LegalPageLayout
+      title="Polityka Prywatności"
+      content={privacyPolicyContent}
+    />
   );
 }

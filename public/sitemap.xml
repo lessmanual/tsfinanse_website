@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Homepage - Highest priority, frequently updated for conversions -->
+  <url>
+    <loc>https://www.tsfinanse.com/</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Program Partnerski - High priority business page -->
+  <url>
+    <loc>https://www.tsfinanse.com/programpartnerski</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Polityka Prywatności - Legal page, medium-low priority -->
+  <url>
+    <loc>https://www.tsfinanse.com/polityka-prywatnosci</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>quarterly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Polityka Cookies - Legal page, medium-low priority -->
+  <url>
+    <loc>https://www.tsfinanse.com/polityka-cookies</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>quarterly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Regulamin - Legal page, medium-low priority -->
+  <url>
+    <loc>https://www.tsfinanse.com/regulamin</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>quarterly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- RODO - Legal page, medium-low priority -->
+  <url>
+    <loc>https://www.tsfinanse.com/rodo</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>quarterly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>

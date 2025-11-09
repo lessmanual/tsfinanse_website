@@ -1,6 +1,8 @@
 import { Mail, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoImage from 'figma:asset/e7cb9f83cdfc3c2f2787ef5563fe0bb4d2e9b9bf.png';
+import logoAvif from '../assets/logo.avif';
+import logoWebp from '../assets/logo.webp';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -12,11 +14,18 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="mb-4 inline-block bg-white rounded-lg px-3 py-2">
-              <img
-                src={logoImage}
-                alt="TS Finanse Logo"
-                className="h-16 w-auto"
-              />
+              <picture>
+                <source type="image/avif" srcSet={logoAvif} />
+                <source type="image/webp" srcSet={logoWebp} />
+                <img
+                  src={logoImage}
+                  alt="TS Finanse Logo"
+                  className="h-16 w-auto"
+                  width="1000"
+                  height="1000"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <p className="text-white/70 text-sm leading-relaxed">
               Profesjonalne finansowanie dla przedsiębiorców pod zabezpieczenie hipoteczne.
@@ -62,13 +71,13 @@ export function Footer() {
                 <span className="text-white/50">NIP:</span> 5882454029
               </p>
               <p className="text-white/70">
-                <span className="text-white/50">REGON:</span> 123456789
+                <span className="text-white/50">REGON:</span> 38480001300000
               </p>
               <p className="text-white/70">
-                ul. Przykładowa 123
+                ul. Gdańska 60
               </p>
               <p className="text-white/70">
-                00-001 Warszawa
+                84-240 Reda
               </p>
               <div className="pt-2 space-y-2">
                 <Link

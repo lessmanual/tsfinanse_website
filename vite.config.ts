@@ -4,6 +4,7 @@
   import path from 'path';
 
   export default defineConfig({
+    base: '/tsfinanse_website/',
     plugins: [react()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
@@ -54,6 +55,24 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // React core
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            // Radix UI components
+            'radix-vendor': [
+              '@radix-ui/react-accordion',
+              '@radix-ui/react-dialog',
+              '@radix-ui/react-slot',
+            ],
+            // Form and validation
+            'form-vendor': ['react-hook-form'],
+            // Markdown and helmet
+            'content-vendor': ['react-markdown', 'remark-gfm', 'react-helmet-async'],
+          },
+        },
+      },
     },
     server: {
       port: 3000,
