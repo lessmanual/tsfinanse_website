@@ -19,11 +19,11 @@ export default function ProgramPartnerski() {
       />
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-36">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-[#3D1F1F] mb-6">
-            🤝 Współpraca z TS Finanse
+            Współpraca z TS Finanse
           </h1>
           <p className="text-xl text-[#3D1F1F]/80 max-w-3xl mx-auto mb-4">
             Pożyczki dla biznesu pod zabezpieczenie hipoteczne
@@ -37,7 +37,7 @@ export default function ProgramPartnerski() {
         {/* Benefits Section */}
         <section className="mb-16">
           <h2 className="text-4xl font-bold text-[#3D1F1F] mb-8 text-center">
-            💼 Co oferujemy partnerom
+            Co oferujemy partnerom
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-white border border-[#3D1F1F]/10 rounded-xl p-6 hover:border-[#D4AF7A]/40 transition-colors">
@@ -105,7 +105,7 @@ export default function ProgramPartnerski() {
         {/* Loan Parameters Table */}
         <section className="mb-16">
           <h2 className="text-4xl font-bold text-[#3D1F1F] mb-8 text-center">
-            📊 Parametry pożyczki
+            Parametry pożyczki
           </h2>
           <div className="bg-white border border-[#3D1F1F]/10 rounded-xl overflow-hidden">
             <table className="w-full">
@@ -144,7 +144,7 @@ export default function ProgramPartnerski() {
         {/* How It Works */}
         <section className="mb-16">
           <h2 className="text-4xl font-bold text-[#3D1F1F] mb-8 text-center">
-            🧾 Jak to działa
+            Jak to działa
           </h2>
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="flex gap-4">
@@ -208,7 +208,7 @@ export default function ProgramPartnerski() {
         {/* Target Audience */}
         <section className="mb-16">
           <h2 className="text-4xl font-bold text-[#3D1F1F] mb-8 text-center">
-            📍 Dla kogo
+            Dla kogo
           </h2>
           <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
             <div className="flex items-center gap-3 bg-white border border-[#3D1F1F]/10 rounded-lg p-4">
@@ -233,7 +233,7 @@ export default function ProgramPartnerski() {
         {/* CTA Section */}
         <section className="bg-gradient-to-br from-[#3D1F1F] to-[#2A1414] rounded-xl p-8 md:p-12 text-center text-white">
           <h2 className="text-4xl font-bold mb-8 text-center">
-            💬 Dołącz do grona partnerów TS Finanse
+            Dołącz do grona partnerów TS Finanse
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             Współpracując z nami, zyskujesz <strong>stałe źródło przychodu</strong> i pewnego partnera w finansowaniu biznesu.
@@ -244,23 +244,23 @@ export default function ProgramPartnerski() {
               href="mailto:kontakt@tsfinanse.com"
               className="inline-flex items-center gap-2 px-8 py-4 bg-[#D4AF7A] text-[#3D1F1F] rounded-lg hover:bg-[#E8D4B8] transition-all duration-300 shadow-lg hover:shadow-xl font-medium"
             >
-              📧 kontakt@tsfinanse.com
+              kontakt@tsfinanse.com
             </a>
             <a
               href="tel:+48506711242"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 text-white border-2 border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300 font-medium"
             >
-              📞 +48 506 711 242
+              +48 506 711 242
             </a>
           </div>
 
           <p className="text-white/80">
-            🏢 <strong>ul. Gdańska 60, 84-240 Reda</strong>
+            <strong>ul. Gdańska 60, 84-240 Reda</strong>
           </p>
 
           <div className="mt-8 pt-8 border-t border-white/20">
             <p className="text-lg font-medium">
-              💼 TS Finanse – Bezpieczne finansowanie dla przedsiębiorców
+              TS Finanse – Bezpieczne finansowanie dla przedsiębiorców
             </p>
           </div>
         </section>
