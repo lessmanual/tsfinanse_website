@@ -19,7 +19,7 @@ export default function ProgramPartnerski() {
       />
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-72">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-[#3D1F1F] mb-6">

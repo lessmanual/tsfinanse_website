@@ -43,7 +43,7 @@ export function Navigation() {
                   <img
                     src={logoImage}
                     alt="TS Finanse Logo"
-                    className="h-20 w-auto"
+                    className="h-16 w-auto"
                     width="1000"
                     height="1000"
                     loading="eager"
@@ -61,7 +61,7 @@ export function Navigation() {
                   <img
                     src={logoImage}
                     alt="TS Finanse Logo"
-                    className="h-20 w-auto"
+                    className="h-16 w-auto"
                     width="1000"
                     height="1000"
                     loading="eager"
