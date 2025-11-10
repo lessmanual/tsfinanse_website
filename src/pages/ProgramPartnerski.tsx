@@ -19,10 +19,10 @@ export default function ProgramPartnerski() {
       />
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-40">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#3D1F1F] mb-6">
+        <div className="text-center mb-20">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#3D1F1F] mb-8">
             Współpraca z TS Finanse
           </h1>
           <p className="text-xl text-[#3D1F1F]/80 max-w-3xl mx-auto mb-4">
@@ -35,8 +35,8 @@ export default function ProgramPartnerski() {
         </div>
 
         {/* Benefits Section */}
-        <section className="mb-16">
-          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-8 text-center">
+        <section className="mb-20">
+          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-12 text-center">
             Co oferujemy partnerom
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -103,8 +103,8 @@ export default function ProgramPartnerski() {
         </section>
 
         {/* Loan Parameters Table */}
-        <section className="mb-16">
-          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-8 text-center">
+        <section className="mb-20">
+          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-12 text-center">
             Parametry pożyczki
           </h2>
           <div className="bg-white border border-[#3D1F1F]/10 rounded-xl overflow-hidden">
@@ -142,11 +142,11 @@ export default function ProgramPartnerski() {
         </section>
 
         {/* How It Works */}
-        <section className="mb-16">
-          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-8 text-center">
+        <section className="mb-20">
+          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-12 text-center">
             Jak to działa
           </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             <div className="flex gap-4">
               <div className="flex-shrink-0">
                 <div className="w-12 h-12 rounded-full bg-[#D4AF7A] text-white flex items-center justify-center font-bold text-lg">
@@ -206,8 +206,8 @@ export default function ProgramPartnerski() {
         </section>
 
         {/* Target Audience */}
-        <section className="mb-16">
-          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-8 text-center">
+        <section className="mb-20">
+          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-12 text-center">
             Dla kogo
           </h2>
           <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
@@ -232,7 +232,7 @@ export default function ProgramPartnerski() {
 
         {/* CTA Section */}
         <section className="bg-gradient-to-br from-[#3D1F1F] to-[#2A1414] rounded-xl p-8 md:p-12 text-center text-white">
-          <h2 className="text-4xl font-bold mb-8 text-center">
+          <h2 className="text-4xl font-bold mb-12 text-center">
             Dołącz do grona partnerów TS Finanse
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">

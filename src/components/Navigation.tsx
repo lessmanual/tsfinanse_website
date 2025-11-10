@@ -1,6 +1,6 @@
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logoImage from "figma:asset/e7cb9f83cdfc3c2f2787ef5563fe0bb4d2e9b9bf.png";
 import logoAvif from "../assets/logo.avif";
 import logoWebp from "../assets/logo.webp";
@@ -9,11 +9,29 @@ import { useScrollThreshold } from "../hooks/useScrollThreshold";
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
   // Show logo in navigation after scrolling past hero section (approx 400px)
   const isScrolled = useScrollThreshold(400);
 
   const scrollToSection = (id: string) => {
+    if (!isHomePage) {
+      // If not on home page, navigate to home page first
+      navigate('/', { replace: false });
+      // Then scroll after navigation
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      }, 100);
+      setIsMenuOpen(false);
+      return;
+    }
+
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({
