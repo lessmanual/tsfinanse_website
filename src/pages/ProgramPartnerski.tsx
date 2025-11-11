@@ -19,7 +19,7 @@ export default function ProgramPartnerski() {
       />
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-40">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-48">
         {/* Hero Section */}
         <div className="text-center mb-20">
           <h1 className="text-4xl md:text-5xl font-bold text-[#3D1F1F] mb-8">
@@ -36,7 +36,7 @@ export default function ProgramPartnerski() {
 
         {/* Benefits Section */}
         <section className="mb-20">
-          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-12 text-center">
+          <h2 className="text-4xl font-bold text-[#3D1F1F] mt-12 mb-12 text-center">
             Co oferujemy partnerom
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -104,7 +104,7 @@ export default function ProgramPartnerski() {
 
         {/* Loan Parameters Table */}
         <section className="mb-20">
-          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-12 text-center">
+          <h2 className="text-4xl font-bold text-[#3D1F1F] mt-12 mb-12 text-center">
             Parametry pożyczki
           </h2>
           <div className="bg-white border border-[#3D1F1F]/10 rounded-xl overflow-hidden">
@@ -143,7 +143,7 @@ export default function ProgramPartnerski() {
 
         {/* How It Works */}
         <section className="mb-20">
-          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-12 text-center">
+          <h2 className="text-4xl font-bold text-[#3D1F1F] mt-12 mb-12 text-center">
             Jak to działa
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -207,7 +207,7 @@ export default function ProgramPartnerski() {
 
         {/* Target Audience */}
         <section className="mb-20">
-          <h2 className="text-4xl font-bold text-[#3D1F1F] mb-12 text-center">
+          <h2 className="text-4xl font-bold text-[#3D1F1F] mt-12 mb-12 text-center">
             Dla kogo
           </h2>
           <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
@@ -231,7 +231,7 @@ export default function ProgramPartnerski() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-gradient-to-br from-[#3D1F1F] to-[#2A1414] rounded-xl p-8 md:p-12 text-center text-white">
+        <section className="bg-gradient-to-br from-[#3D1F1F] to-[#2A1414] rounded-xl p-8 md:p-12 text-center text-white mt-12">
           <h2 className="text-4xl font-bold mb-12 text-center">
             Dołącz do grona partnerów TS Finanse
           </h2>
