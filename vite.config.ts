@@ -4,7 +4,7 @@
   import path from 'path';
 
   export default defineConfig({
-    base: '/tsfinanse_website/',
+    base: '/',
     plugins: [react()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
@@ -54,7 +54,7 @@
     },
     build: {
       target: 'esnext',
-      outDir: 'build',
+      outDir: 'dist',
       rollupOptions: {
         output: {
           manualChunks: {
