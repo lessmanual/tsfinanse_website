@@ -12,7 +12,7 @@
 
 Na potrzeby niniejszej Polityki Prywatności stosuje się następujące definicje:
 
-1. **Administrator** – TS Finanse, NIP: 5882454029, REGON: 38480001300000, z siedzibą przy ul. Gdańska 60, 84-240 Reda.
+1. **Administrator** – "TRANSBUD" NOWAK SPÓŁKA JAWNA, NIP: 9581565078, REGON: 22046034600000, KRS: 0000285609, z siedzibą przy ul. Gdańska 60, 84-240 Reda, działająca jako TS Finanse.
 2. **RODO** – Rozporządzenie Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. w sprawie ochrony osób fizycznych w związku z przetwarzaniem danych osobowych i w sprawie swobodnego przepływu takich danych (Dz. Urz. UE L 119 z 04.05.2016).
 3. **Dane osobowe** – wszelkie informacje o zidentyfikowanej lub możliwej do zidentyfikowania osobie fizycznej.
 4. **Przetwarzanie** – operacja lub zestaw operacji wykonywanych na danych osobowych lub zestawach danych osobowych w sposób zautomatyzowany lub niezautomatyzowany.
@@ -26,15 +26,16 @@ Na potrzeby niniejszej Polityki Prywatności stosuje się następujące definicj
 
 ### 3. Informacje o Administratorze
 
-**Nazwa:** TS Finanse
+**Nazwa:** "TRANSBUD" NOWAK SPÓŁKA JAWNA (działająca jako TS Finanse)
 **Adres:** ul. Gdańska 60, 84-240 Reda
-**NIP:** 5882454029
-**REGON:** 38480001300000
+**NIP:** 9581565078
+**REGON:** 22046034600000
+**KRS:** 0000285609
 **Telefon:** +48 506 711 242
 **E-mail ogólny:** kontakt@tsfinanse.com
-**E-mail w sprawach ochrony danych osobowych:** rodo@tsfinanse.com
+**E-mail w sprawach ochrony danych osobowych:** kontakt@tsfinanse.com
 
-Administrator nie jest zobowiązany do powołania Inspektora Ochrony Danych zgodnie z art. 37 RODO, niemniej zapewnia dedykowany kanał komunikacji w sprawach ochrony danych osobowych pod adresem: **rodo@tsfinanse.com**.
+Administrator nie jest zobowiązany do powołania Inspektora Ochrony Danych zgodnie z art. 37 RODO, niemniej zapewnia dedykowany kanał komunikacji w sprawach ochrony danych osobowych pod adresem: **kontakt@tsfinanse.com**.
 
 ---
 
@@ -167,7 +168,7 @@ W przypadku korzystania z usług dostawców amerykańskich (np. Google LLC w zak
 - **standardowe klauzule umowne zatwierdzone przez Komisję Europejską** (Standard Contractual Clauses – SCC),
 - **dodatkowe środki zabezpieczające** zgodnie z wytycznymi Europejskiej Rady Ochrony Danych (EDPB).
 
-Usługobiorca ma prawo uzyskać kopię zastosowanych zabezpieczeń, kontaktując się z Administratorem pod adresem **rodo@tsfinanse.com**.
+Usługobiorca ma prawo uzyskać kopię zastosowanych zabezpieczeń, kontaktując się z Administratorem pod adresem **kontakt@tsfinanse.com**.
 
 ---
 
@@ -227,7 +228,7 @@ Po otrzymaniu sprzeciwu Administrator **zaprzestanie przetwarzania danych**, chy
 Usługobiorca ma **bezwarunkowe prawo do sprzeciwu** wobec przetwarzania danych osobowych na potrzeby marketingu bezpośredniego (w tym profilowania). Po wniesieniu sprzeciwu Administrator **niezwłocznie zaprzestanie** przetwarzania danych w tym celu.
 
 **Sposób wniesienia sprzeciwu:**
-- e-mail: **rodo@tsfinanse.com** lub **kontakt@tsfinanse.com**
+- e-mail: **kontakt@tsfinanse.com** lub **kontakt@tsfinanse.com**
 - pisemnie na adres: ul. Gdańska 60, 84-240 Reda
 - w każdej wiadomości e-mail marketingowej (link „Zrezygnuj z subskrypcji")
 
@@ -250,7 +251,7 @@ Strona: [www.uodo.gov.pl](https://www.uodo.gov.pl)
 ### 2. Sposób i termin realizacji praw
 
 Aby skorzystać z powyższych praw, Usługobiorca powinien skontaktować się z Administratorem:
-- **e-mail:** rodo@tsfinanse.com
+- **e-mail:** kontakt@tsfinanse.com
 - **pisemnie:** ul. Gdańska 60, 84-240 Reda
 
 Administrator **udzieli odpowiedzi bez zbędnej zwłoki, nie później niż w ciągu miesiąca** od otrzymania żądania. W razie potrzeby termin ten może zostać przedłużony o kolejne 2 miesiące z uwagi na skomplikowany charakter żądania – Usługobiorca zostanie o tym poinformowany.
@@ -327,7 +328,7 @@ Zgodnie z art. 22 RODO, Usługobiorca ma prawo do tego, by **nie podlegać decyz
 - Usługobiorca ma prawo żądać **wyjaśnienia logiki** stosowanej w procesie podejmowania decyzji.
 
 **Sposób kontaktu w sprawie profilowania:**
-E-mail: **rodo@tsfinanse.com**
+E-mail: **kontakt@tsfinanse.com**
 
 ---
 
@@ -428,7 +429,7 @@ Zmiany wchodzą w życie z chwilą opublikowania zaktualizowanej Polityki Prywat
 
 Wszelkie pytania, wątpliwości lub żądania dotyczące przetwarzania danych osobowych oraz realizacji praw określonych w RODO prosimy kierować na:
 
-**E-mail:** rodo@tsfinanse.com
+**E-mail:** kontakt@tsfinanse.com
 **Adres korespondencyjny:** TS Finanse, ul. Gdańska 60, 84-240 Reda
 **Telefon:** +48 506 711 242 (w sprawie ogólnej obsługi klienta)
 
@@ -450,7 +451,7 @@ Administrator dołoży wszelkich starań, aby odpowiedzieć na zapytania w termi
 
 ---
 
-**TS Finanse**
+**"TRANSBUD" NOWAK SPÓŁKA JAWNA** (działająca jako TS Finanse)
 ul. Gdańska 60, 84-240 Reda
-NIP: 5882454029 | REGON: 38480001300000
+NIP: 9581565078 | REGON: 22046034600000 | KRS: 0000285609
 kontakt@tsfinanse.com | +48 506 711 242

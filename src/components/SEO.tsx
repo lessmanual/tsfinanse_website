@@ -77,8 +77,8 @@ export function SEO({
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'FinancialService',
-  name: 'TS Finanse',
-  alternateName: 'TS Finanse Sp. z o.o.',
+  name: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
+  alternateName: 'TS Finanse',
   url: 'https://www.tsfinanse.com',
   logo: 'https://www.tsfinanse.com/logo.png',
   description:
@@ -120,9 +120,9 @@ export const organizationSchema = {
       closes: '17:00',
     },
   ],
-  taxID: '5882454029',
-  vatID: 'PL5882454029',
-  legalName: 'TS Finanse Sp. z o.o.',
+  taxID: '9581565078',
+  vatID: 'PL9581565078',
+  legalName: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
 };
 
 export const loanProductSchema = {

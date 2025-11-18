@@ -7,7 +7,7 @@
 
 ## WERSJA PODSTAWOWA (do umieszczenia bezpośrednio przy formularzu)
 
-Administratorem Twoich danych osobowych jest **TS Finanse**, ul. Gdańska 60, 84-240 Reda, NIP: 5882454029.
+Administratorem Twoich danych osobowych jest **"TRANSBUD" NOWAK SPÓŁKA JAWNA** (działająca jako TS Finanse), ul. Gdańska 60, 84-240 Reda, NIP: 9581565078, REGON: 22046034600000, KRS: 0000285609.
 
 Twoje dane przetwarzamy w celu:
 - udzielenia odpowiedzi na zapytanie lub rozpatrzenia wniosku o pożyczkę **(art. 6 ust. 1 lit. b i f RODO)**,
@@ -19,7 +19,7 @@ Dane przechowujemy przez okres niezbędny do udzielenia odpowiedzi (do 3 lat) lu
 
 **Przysługują Ci prawa:** dostępu do danych, sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia danych, wniesienia sprzeciwu oraz skargi do Prezesa Urzędu Ochrony Danych Osobowych (PUODO).
 
-**Więcej informacji:** [Polityka Prywatności](/polityka-prywatnosci) | **Kontakt w sprawach RODO:** rodo@tsfinanse.com
+**Więcej informacji:** [Polityka Prywatności](/polityka-prywatnosci) | **Kontakt w sprawach RODO:** kontakt@tsfinanse.com
 
 ---
 
@@ -28,12 +28,13 @@ Dane przechowujemy przez okres niezbędny do udzielenia odpowiedzi (do 3 lat) lu
 ### 1. Administrator danych osobowych
 
 Administratorem Twoich danych osobowych jest:
-**TS Finanse**
+**"TRANSBUD" NOWAK SPÓŁKA JAWNA** (działająca jako TS Finanse)
 ul. Gdańska 60, 84-240 Reda
-NIP: 5882454029
-REGON: 38480001300000
+NIP: 9581565078
+REGON: 22046034600000
+KRS: 0000285609
 E-mail: kontakt@tsfinanse.com
-**E-mail w sprawach ochrony danych:** rodo@tsfinanse.com
+**E-mail w sprawach ochrony danych:** kontakt@tsfinanse.com
 Telefon: +48 506 711 242
 
 ### 2. Cele i podstawy prawne przetwarzania danych
@@ -129,7 +130,7 @@ W przypadku oceny ryzyka kredytowego możemy pozyskać dane z:
 
 Jeśli masz pytania dotyczące przetwarzania danych osobowych lub chcesz skorzystać z przysługujących Ci praw, skontaktuj się z nami:
 
-**E-mail:** rodo@tsfinanse.com
+**E-mail:** kontakt@tsfinanse.com
 **Adres:** TS Finanse, ul. Gdańska 60, 84-240 Reda
 **Telefon:** +48 506 711 242
 
@@ -179,7 +180,7 @@ Szczegółowe informacje o przetwarzaniu danych osobowych znajdują się w **Pol
 
 ---
 
-**TS Finanse**
+**"TRANSBUD" NOWAK SPÓŁKA JAWNA** (działająca jako TS Finanse)
 ul. Gdańska 60, 84-240 Reda
-NIP: 5882454029 | REGON: 38480001300000
-kontakt@tsfinanse.com | rodo@tsfinanse.com | +48 506 711 242
+NIP: 9581565078 | REGON: 22046034600000 | KRS: 0000285609
+kontakt@tsfinanse.com | kontakt@tsfinanse.com | +48 506 711 242

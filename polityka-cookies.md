@@ -18,12 +18,13 @@ Korzystając z naszej Strony, wyrażasz zgodę na stosowanie plików cookies zgo
 
 **Administratorem Strony internetowej i plików cookies jest:**
 
-**TS Finanse**
+**"TRANSBUD" NOWAK SPÓŁKA JAWNA** (działająca jako TS Finanse)
 ul. Gdańska 60, 84-240 Reda
-NIP: 5882454029
-REGON: 38480001300000
+NIP: 9581565078
+REGON: 22046034600000
+KRS: 0000285609
 E-mail: kontakt@tsfinanse.com
-E-mail w sprawach RODO: rodo@tsfinanse.com
+E-mail w sprawach RODO: kontakt@tsfinanse.com
 Telefon: +48 506 711 242
 
 ### 3. Podstawa prawna stosowania cookies
@@ -263,7 +264,7 @@ Użytkownik ma prawo do:
 **Szczegółowe informacje o prawach znajdują się w [Polityce Prywatności](/polityka-prywatnosci).**
 
 **Kontakt w sprawach cookies i danych osobowych:**
-E-mail: **rodo@tsfinanse.com**
+E-mail: **kontakt@tsfinanse.com**
 
 ---
 
@@ -352,7 +353,7 @@ Jeżeli masz jakiekolwiek pytania dotyczące niniejszej Polityki Cookies lub spo
 
 **TS Finanse**
 ul. Gdańska 60, 84-240 Reda
-E-mail: **rodo@tsfinanse.com** lub **kontakt@tsfinanse.com**
+E-mail: **kontakt@tsfinanse.com** lub **kontakt@tsfinanse.com**
 Telefon: +48 506 711 242
 
 ---
@@ -382,7 +383,7 @@ Telefon: +48 506 711 242
 
 ---
 
-**TS Finanse**
+**"TRANSBUD" NOWAK SPÓŁKA JAWNA** (działająca jako TS Finanse)
 ul. Gdańska 60, 84-240 Reda
-NIP: 5882454029 | REGON: 38480001300000
+NIP: 9581565078 | REGON: 22046034600000 | KRS: 0000285609
 kontakt@tsfinanse.com | +48 506 711 242

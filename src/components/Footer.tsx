@@ -45,13 +45,6 @@ export function Footer() {
                 <Mail size={16} />
                 kontakt@tsfinanse.com
               </a>
-              <a
-                href="mailto:rodo@tsfinanse.com"
-                className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-              >
-                <Mail size={16} />
-                rodo@tsfinanse.com
-              </a>
               <p className="text-white/70">
                 Tel: +48 506 711 242
               </p>
@@ -67,12 +60,29 @@ export function Footer() {
               Dane Firmowe
             </h3>
             <div className="space-y-3 text-sm">
-              <p className="text-white/70">
-                <span className="text-white/50">NIP:</span> 5882454029
+              <p className="text-white font-medium">
+                "TRANSBUD" NOWAK SPÓŁKA JAWNA
               </p>
               <p className="text-white/70">
-                <span className="text-white/50">REGON:</span> 38480001300000
+                <span className="text-white/50">NIP:</span> 9581565078
               </p>
+              <p className="text-white/70">
+                <span className="text-white/50">REGON:</span> 22046034600000
+              </p>
+              <p className="text-white/70">
+                <span className="text-white/50">KRS:</span> 0000285609
+              </p>
+              <div className="pt-2 pb-2 border-t border-white/10">
+                <p className="text-white/60 text-xs">
+                  TS Finanse
+                </p>
+                <p className="text-white/70">
+                  <span className="text-white/50">NIP:</span> 5882454029
+                </p>
+                <p className="text-white/70">
+                  <span className="text-white/50">REGON:</span> 38480001300000
+                </p>
+              </div>
               <p className="text-white/70">
                 ul. Gdańska 60
               </p>
@@ -106,10 +116,10 @@ export function Footer() {
                 Program partnerski dla pośredników kredytowych
               </p>
               <a
-                href="mailto:partnerzy@tsfinanse.com"
+                href="mailto:kontakt@tsfinanse.com"
                 className="inline-flex items-center gap-2 text-[#D4AF7A] hover:text-[#E8D4B8] transition-colors"
               >
-                partnerzy@tsfinanse.com
+                kontakt@tsfinanse.com
                 <ExternalLink size={14} />
               </a>
             </div>

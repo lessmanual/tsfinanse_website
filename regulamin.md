@@ -18,7 +18,7 @@
 
 Na potrzeby niniejszego Regulaminu stosuje się następujące definicje:
 
-1. **Administrator / Pożyczkodawca / TS Finanse** – TS Finanse, NIP: 5882454029, REGON: 38480001300000, z siedzibą przy ul. Gdańska 60, 84-240 Reda, adres e-mail: kontakt@tsfinanse.com, telefon: +48 506 711 242.
+1. **Administrator / Pożyczkodawca / TS Finanse** – "TRANSBUD" NOWAK SPÓŁKA JAWNA (działająca jako TS Finanse), NIP: 9581565078, REGON: 22046034600000, KRS: 0000285609, z siedzibą przy ul. Gdańska 60, 84-240 Reda, adres e-mail: kontakt@tsfinanse.com, telefon: +48 506 711 242.
 2. **Strona internetowa / Strona / Serwis** – serwis internetowy prowadzony przez TS Finanse, dostępny pod adresem www.tsfinanse.com (lub www.tsfinanse.pl), za pośrednictwem którego TS Finanse świadczy usługi drogą elektroniczną.
 3. **Użytkownik** – każda osoba fizyczna, osoba prawna lub jednostka organizacyjna nieposiadająca osobowości prawnej, która korzysta ze Strony internetowej.
 4. **Usługobiorca / Klient / Pożyczkobiorca** – przedsiębiorca w rozumieniu art. 431 Kodeksu cywilnego, który zawarł lub zamierza zawrzeć umowę pożyczki hipotecznej z TS Finanse lub korzysta z usług elektronicznych świadczonych przez TS Finanse.
@@ -322,7 +322,7 @@ TS Finanse jest uprawniony do:
    - prawo do wniesienia skargi do PUODO,
 znajdują się w **Polityce Prywatności** dostępnej na Stronie internetowej: [/polityka-prywatnosci](/polityka-prywatnosci).
 3. Korzystanie ze Strony internetowej oraz składanie wniosków o pożyczkę wymaga zapoznania się z Polityką Prywatności i akceptacji zasad przetwarzania danych osobowych.
-4. Kontakt w sprawach ochrony danych osobowych: **rodo@tsfinanse.com**.
+4. Kontakt w sprawach ochrony danych osobowych: **kontakt@tsfinanse.com**.
 
 ### § 20. Pliki cookies
 
@@ -471,13 +471,14 @@ są **chronione prawem autorskim** (ustawa z dnia 4 lutego 1994 r. o prawie auto
 
 ### § 30. Kontakt z Administratorem
 
-**TS Finanse**
+**"TRANSBUD" NOWAK SPÓŁKA JAWNA** (działająca jako TS Finanse)
 ul. Gdańska 60, 84-240 Reda
-NIP: 5882454029
-REGON: 38480001300000
+NIP: 9581565078
+REGON: 22046034600000
+KRS: 0000285609
 E-mail (ogólny): kontakt@tsfinanse.com
-E-mail (RODO): rodo@tsfinanse.com
-E-mail (partnerzy): partnerzy@tsfinanse.com
+E-mail (RODO): kontakt@tsfinanse.com
+E-mail (partnerzy): kontakt@tsfinanse.com
 Telefon: +48 506 711 242
 
 **Godziny obsługi klienta:**
@@ -505,7 +506,7 @@ Poniedziałek – Piątek: 9:00 – 17:00
 
 ---
 
-**TS Finanse**
+**"TRANSBUD" NOWAK SPÓŁKA JAWNA** (działająca jako TS Finanse)
 ul. Gdańska 60, 84-240 Reda
-NIP: 5882454029 | REGON: 38480001300000
+NIP: 9581565078 | REGON: 22046034600000 | KRS: 0000285609
 kontakt@tsfinanse.com | +48 506 711 242
