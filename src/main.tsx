@@ -6,7 +6,7 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
-    <BrowserRouter basename="/tsfinanse_website">
+    <BrowserRouter>
       <App />
     </BrowserRouter>
   </HelmetProvider>
