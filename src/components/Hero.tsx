@@ -136,7 +136,7 @@ export function Hero() {
             <p className="text-lg sm:text-xl md:text-2xl text-[#FEFEFE]/95">
               Od 1 do 20 milionów złotych
             </p>
-            <p className="text-xs sm:text-sm text-[#FEFEFE]/70 italic">
+            <p className="text-xs sm:text-sm text-white italic">
               *Pozostałe rozpatrywane indywidualnie
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-8 text-sm sm:text-base">
