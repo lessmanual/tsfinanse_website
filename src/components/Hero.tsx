@@ -108,7 +108,7 @@ export function Hero() {
               <img
                 src={logoImage}
                 alt="TS Finanse Logo"
-                className="h-32 sm:h-40 md:h-48 lg:h-56 w-auto object-contain relative z-10"
+                className="h-32 sm:h-40 md:h-48 lg:h-44 w-auto object-contain relative z-10"
                 width="1000"
                 height="1000"
                 loading="eager"
