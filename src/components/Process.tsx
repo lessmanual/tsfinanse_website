@@ -122,14 +122,6 @@ export function Process() {
               );
             })}
           </div>
-
-          {/* Timeline Summary */}
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-[#3D1F1F] text-white rounded-full shadow-lg">
-              <span>Średni czas od zapytania do wypłaty:</span>
-              <strong className="text-[#D4AF7A] text-lg">7-14 dni</strong>
-            </div>
-          </div>
         </div>
       </div>
     </section>

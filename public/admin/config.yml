@@ -1,0 +1,54 @@
+# Netlify CMS Configuration for TS Finanse Blog
+backend:
+  name: git-gateway
+  branch: main # Change to your default branch name
+
+# When running locally, use test-repo backend
+local_backend: true
+
+# Media files will be stored in the repo under public/uploads
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+# Polish locale
+locale: "pl"
+
+# Collections define the structure for different content types
+collections:
+  - name: "blog" # Used in routes, e.g., /admin/collections/blog
+    label: "Blog" # Used in the UI
+    folder: "content/blog" # The path to the folder where the documents are stored
+    create: true # Allow users to create new documents in this collection
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}" # Filename template, e.g., 2025-11-24-my-post.md
+    fields: # The fields for each document, usually in front matter
+      - { label: "Tytuł", name: "title", widget: "string", required: true }
+      - { label: "Data publikacji", name: "date", widget: "datetime", required: true }
+      - { label: "Autor", name: "author", widget: "string", default: "TS Finanse", required: true }
+      - { label: "Opis (SEO)", name: "description", widget: "text", required: true, hint: "Krótki opis wpisu dla wyszukiwarek (150-160 znaków)" }
+      - { label: "Obraz wyróżniający", name: "featuredImage", widget: "image", required: false, hint: "Obraz główny wpisu (1200x630px)" }
+      - { label: "Alt obrazu", name: "featuredImageAlt", widget: "string", required: false, hint: "Opis obrazu dla SEO" }
+      - { label: "Kategoria", name: "category", widget: "select", options: ["Finansowanie", "Prawo", "Nieruchomości", "Przedsiębiorczość", "Aktualności"], default: "Aktualności", required: true }
+      - { label: "Tagi", name: "tags", widget: "list", required: false, hint: "Słowa kluczowe związane z wpisem" }
+      - { label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Zaznacz jeśli wpis jest jeszcze w przygotowaniu" }
+      - { label: "Treść", name: "body", widget: "markdown", required: true }
+      - { label: "Meta keywords", name: "keywords", widget: "string", required: false, hint: "Słowa kluczowe oddzielone przecinkami" }
+      - { label: "Canonical URL", name: "canonical", widget: "string", required: false, hint: "Opcjonalnie: URL kanoniczny jeśli treść została opublikowana gdzie indziej" }
+
+  - name: "pages" # Static pages collection
+    label: "Strony"
+    folder: "content/pages"
+    create: false # Don't allow creating new pages
+    slug: "{{slug}}"
+    fields:
+      - { label: "Tytuł", name: "title", widget: "string", required: true }
+      - { label: "Treść", name: "body", widget: "markdown", required: true }
+      - { label: "Opis (SEO)", name: "description", widget: "text", required: false }
+
+# Editorial Workflow - Review changes before publishing
+publish_mode: editorial_workflow
+
+# Media library configuration
+media_library:
+  name: uploadcare
+  config:
+    publicKey: "demopublickey" # Replace with your Uploadcare public key

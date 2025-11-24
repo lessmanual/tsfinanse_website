@@ -16,7 +16,7 @@ export function Conditions() {
     },
     {
       label: 'Oprocentowanie',
-      value: '15% rocznie'
+      value: 'oprocentowanie pożyczki ustalamy indywidualnie w zależności od płynności zabezpieczenia'
     },
     {
       label: 'LTV (Loan-to-Value)',

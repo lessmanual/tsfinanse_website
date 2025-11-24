@@ -13,7 +13,7 @@ const defaultTitle = 'TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców | 
 const defaultDescription =
   'Profesjonalne pożyczki hipoteczne dla firm. Finansowanie projektów deweloperskich i inwestycyjnych od 1 do 20 mln PLN. Szybka decyzja, elastyczne warunki, obsługa w całej Polsce.';
 const siteUrl = 'https://www.tsfinanse.com';
-const defaultOgImage = `${siteUrl}/og-image.jpg`;
+const defaultOgImage = `${siteUrl}/og-image.webp`;
 
 export function SEO({
   title,
@@ -116,8 +116,8 @@ export const organizationSchema = {
     {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-      opens: '09:00',
-      closes: '17:00',
+      opens: '08:00',
+      closes: '16:00',
     },
   ],
   taxID: '9581565078',

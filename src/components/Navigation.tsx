@@ -116,6 +116,12 @@ export function Navigation() {
               FAQ
             </button>
             <Link
+              to="/blog"
+              className="text-[#3D1F1F]/70 hover:text-[#3D1F1F] transition-colors"
+            >
+              Blog
+            </Link>
+            <Link
               to="/programpartnerski"
               className="text-[#3D1F1F]/70 hover:text-[#3D1F1F] transition-colors"
             >
@@ -167,6 +173,13 @@ export function Navigation() {
             >
               FAQ
             </button>
+            <Link
+              to="/blog"
+              onClick={() => setIsMenuOpen(false)}
+              className="block w-full text-left px-4 py-2 text-[#3D1F1F]/70 hover:text-[#3D1F1F] hover:bg-[#D4AF7A]/10 rounded-lg transition-colors"
+            >
+              Blog
+            </Link>
             <Link
               to="/programpartnerski"
               onClick={() => setIsMenuOpen(false)}

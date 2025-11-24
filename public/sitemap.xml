@@ -8,9 +8,17 @@
   <!-- Homepage - Highest priority, frequently updated for conversions -->
   <url>
     <loc>https://www.tsfinanse.com/</loc>
-    <lastmod>2025-11-09</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+
+  <!-- Blog - High priority content page -->
+  <url>
+    <loc>https://www.tsfinanse.com/blog</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
 
   <!-- Program Partnerski - High priority business page -->

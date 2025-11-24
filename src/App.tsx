@@ -7,6 +7,7 @@ import { ScrollToTopButton } from './components/ScrollToTopButton';
 
 // Lazy load routes for code splitting
 const HomePage = lazy(() => import('./pages/HomePage'));
+const Blog = lazy(() => import('./pages/Blog'));
 const PolitykaPrywatnosci = lazy(() => import('./pages/PolitykaPrywatnosci'));
 const PolitykaCookies = lazy(() => import('./pages/PolitykaCookies'));
 const Regulamin = lazy(() => import('./pages/Regulamin'));
@@ -30,6 +31,7 @@ export default function App() {
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/blog" element={<Blog />} />
           <Route path="/polityka-prywatnosci" element={<PolitykaPrywatnosci />} />
           <Route path="/polityka-cookies" element={<PolitykaCookies />} />
           <Route path="/regulamin" element={<Regulamin />} />

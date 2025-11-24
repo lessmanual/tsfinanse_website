@@ -42,11 +42,11 @@ export function FAQ() {
     },
     {
       question: 'Jakie są koszty pożyczki?',
-      answer: 'Podstawowe oprocentowanie to 15% rocznie. Wszystkie dodatkowe koszty (wycena nieruchomości, opłaty notarialne) są transparentnie przedstawione w ofercie indywidualnej przed podpisaniem umowy.'
+      answer: 'Oprocentowanie pożyczki ustalamy indywidualnie w zależności od płynności zabezpieczenia. Wszystkie dodatkowe koszty (wycena nieruchomości, opłaty notarialne) są transparentnie przedstawione w ofercie indywidualnej przed podpisaniem umowy. Pozostałe warunki rozpatrywane indywidualnie.'
     },
     {
       question: 'Czy współpracujecie z pośrednikami?',
-      answer: 'Tak, oferujemy program partnerski dla pośredników kredytowych z prowizją 1% od wartości udzielonej pożyczki. Kontakt dla partnerów: kontakt@tsfinanse.com'
+      answer: 'Tak, oferujemy program partnerski dla pośredników kredytowych. Współpraca odbywa się bez prowizji procentowej od wartości udzielonej pożyczki. Kontakt dla partnerów: kontakt@tsfinanse.com'
     }
   ];
 

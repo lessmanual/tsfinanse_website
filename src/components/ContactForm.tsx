@@ -152,7 +152,7 @@ export function ContactForm() {
               <div className="space-y-2 text-sm text-[#3D1F1F]/70">
                 <div className="flex justify-between">
                   <span>Poniedziałek - Piątek</span>
-                  <span className="font-medium">9:00 - 17:00</span>
+                  <span className="font-medium">8:00 - 16:00</span>
                 </div>
                 <div className="flex justify-between text-[#3D1F1F]/50">
                   <span>Sobota - Niedziela</span>
@@ -324,7 +324,6 @@ export function ContactForm() {
                   <option value="10:00 - 12:00">10:00 - 12:00</option>
                   <option value="12:00 - 14:00">12:00 - 14:00</option>
                   <option value="14:00 - 16:00">14:00 - 16:00</option>
-                  <option value="16:00 - 18:00">16:00 - 18:00</option>
                 </select>
                 {errors.preferredContactTime && (
                   <p className="mt-1 text-sm text-red-500">{errors.preferredContactTime.message}</p>

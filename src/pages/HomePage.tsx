@@ -13,7 +13,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <SEO
-        description="Pożyczki dla przedsiębiorców pod zabezpieczenie hipoteczne. 1-20 mln PLN, 15% rocznie, decyzja w 3 dni. Własny kapitał, bez zależności od banków."
+        description="Pożyczki dla przedsiębiorców pod zabezpieczenie hipoteczne. 1-20 mln PLN, oprocentowanie ustalane indywidualnie, decyzja w 3 dni. Własny kapitał, bez zależności od banków."
         canonicalUrl="/"
         schema={[organizationSchema, loanProductSchema]}
       />
