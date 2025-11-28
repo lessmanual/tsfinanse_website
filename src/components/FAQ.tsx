@@ -46,7 +46,7 @@ export function FAQ() {
     },
     {
       question: 'Czy współpracujecie z pośrednikami?',
-      answer: 'Tak, oferujemy program partnerski dla pośredników kredytowych. Współpraca odbywa się bez prowizji procentowej od wartości udzielonej pożyczki. Kontakt dla partnerów: kontakt@tsfinanse.com'
+      answer: 'Tak, oferujemy program partnerski dla pośredników kredytowych. Kontakt: kontakt@tsfinanse.com'
     }
   ];
 
