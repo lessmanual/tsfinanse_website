@@ -8,6 +8,7 @@ import { ScrollToTopButton } from './components/ScrollToTopButton';
 // Lazy load routes for code splitting
 const HomePage = lazy(() => import('./pages/HomePage'));
 const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
 const PolitykaPrywatnosci = lazy(() => import('./pages/PolitykaPrywatnosci'));
 const PolitykaCookies = lazy(() => import('./pages/PolitykaCookies'));
 const Regulamin = lazy(() => import('./pages/Regulamin'));
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/kontakt" element={<HomePage />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/polityka-prywatnosci" element={<PolitykaPrywatnosci />} />
           <Route path="/polityka-cookies" element={<PolitykaCookies />} />
           <Route path="/regulamin" element={<Regulamin />} />
