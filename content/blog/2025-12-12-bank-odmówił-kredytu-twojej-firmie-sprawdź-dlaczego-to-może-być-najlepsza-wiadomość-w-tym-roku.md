@@ -6,6 +6,7 @@ author: TS Finanse
 description: Bank odmówił kredytu? To nie koniec. Poznaj bezpieczne pożyczki pod
   zastaw nieruchomości dla firm od 1 do 20 mln PLN. Decyzja w 48h bez
   weryfikacji BIK.
+featuredImage: https://ucarecdn.com/60bf36e2-62d8-4606-9d8f-a772ca45dfe7/
 category: Aktualności
 draft: false
 keywords: kredyt dla firm, pożyczka pod zastaw nieruchomości, finansowanie
