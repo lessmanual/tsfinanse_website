@@ -70,7 +70,7 @@ export default function BlogPost() {
 
       <Navigation />
 
-      <main className="min-h-screen bg-white pt-32 pb-24">
+      <main className="min-h-screen bg-white pt-40 pb-24">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back link */}
           <Link 
@@ -121,7 +121,15 @@ export default function BlogPost() {
           )}
 
           {/* Content */}
-          <div className="prose prose-lg max-w-none prose-headings:text-[#3D1F1F] prose-a:text-[#C5A572] prose-strong:text-[#3D1F1F]">
+          <div className="prose prose-lg max-w-none 
+            prose-headings:text-[#3D1F1F] prose-headings:font-bold 
+            prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 
+            prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
+            prose-p:text-gray-700 prose-p:leading-relaxed
+            prose-a:text-[#C5A572] prose-a:no-underline hover:prose-a:text-[#3D1F1F]
+            prose-strong:text-[#3D1F1F] prose-strong:font-bold
+            prose-ul:list-disc prose-ul:pl-6
+            prose-li:text-gray-700 prose-li:my-2">
             <Markdown remarkPlugins={[remarkGfm]}>
               {post.content}
             </Markdown>
