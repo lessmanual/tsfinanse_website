@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { Hero } from '../components/Hero';
 import { About } from '../components/About';
@@ -10,6 +12,19 @@ import { Footer } from '../components/Footer';
 import { SEO, organizationSchema, loanProductSchema } from '../components/SEO';
 
 export default function HomePage() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === '/kontakt') {
+      const element = document.getElementById('contact');
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [location]);
+
   return (
     <div className="min-h-screen">
       <SEO

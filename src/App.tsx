@@ -31,6 +31,7 @@ export default function App() {
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/kontakt" element={<HomePage />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/polityka-prywatnosci" element={<PolitykaPrywatnosci />} />
           <Route path="/polityka-cookies" element={<PolitykaCookies />} />
