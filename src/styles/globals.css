@@ -203,6 +203,7 @@
 
 html {
   font-size: var(--font-size);
+  scroll-padding-top: 100px;
 }
 
 /* Custom radial gradient utility */

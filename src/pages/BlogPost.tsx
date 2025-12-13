@@ -71,7 +71,7 @@ export default function BlogPost() {
       <Navigation />
 
       <main className="min-h-screen bg-white">
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-44 pb-24">
+        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24" style={{ paddingTop: '140px' }}>
           {/* Back link */}
           <Link 
             to="/blog" 
