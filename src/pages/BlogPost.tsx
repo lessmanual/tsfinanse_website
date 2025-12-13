@@ -70,8 +70,8 @@ export default function BlogPost() {
 
       <Navigation />
 
-      <main className="min-h-screen bg-white pt-40 pb-24">
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-white">
+        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-44 pb-24">
           {/* Back link */}
           <Link 
             to="/blog" 
@@ -121,9 +121,6 @@ export default function BlogPost() {
           )}
 
           {/* Content */}
-          {/* Physical spacer to ensure content is below header */}
-          <div className="h-4"></div>
-          
           <div className="max-w-none">
             <Markdown 
               remarkPlugins={[remarkGfm]}
