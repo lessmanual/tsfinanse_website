@@ -32,7 +32,7 @@ export default function Blog() {
 
       <Navigation />
 
-      <main className="min-h-screen bg-gradient-to-br from-white via-[#D4AF7A]/5 to-white pt-32 pb-24">
+      <main className="min-h-screen bg-gradient-to-br from-white via-[#D4AF7A]/5 to-white pb-24" style={{ paddingTop: '140px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-16">
