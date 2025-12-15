@@ -89,7 +89,7 @@ export default function BlogPost() {
               </span>
             )}
             
-            <h1 className="text-3xl md:text-5xl font-bold text-[#3D1F1F] mb-6 leading-tight">
+            <h1 className="font-bold text-[#3D1F1F] mb-6 leading-tight" style={{ fontSize: 'clamp(1.875rem, 5vw, 3rem)' }}>
               {post.title}
             </h1>
 
