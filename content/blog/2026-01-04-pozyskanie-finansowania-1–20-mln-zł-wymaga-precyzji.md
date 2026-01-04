@@ -22,6 +22,9 @@ keywords: pożyczka dla firmy 1-20 mln zł, finansowanie firm, kredyt
   finansowanie, EBITDA kredyt, private debt Polska, finansowanie dla
   przedsiębiorców
 ---
+
+
+```
 <h1>Kto otrzyma pożyczkę dla firmy w kwocie 1–20 mln zł? Zasady finansowania 2026</h1>
 
 <p><strong>Pożyczkę dla firmy w kwocie od 1 do 20 mln zł mogą uzyskać przedsiębiorstwa działające minimum 12 miesięcy, które posiadają twarde zabezpieczenie na nieruchomości (LTV zazwyczaj do 50–60%) oraz jasno określony cel inwestycyjny. W 2026 roku kluczowym kryterium decyzyjnym jest wykazanie, że prognozowana EBITDA z inwestycji bezpiecznie pokrywa koszt obsługi długu.</strong></p>
@@ -156,3 +159,4 @@ Tak. W większości umów możliwa jest wcześniejsza spłata — często bez do
     ✉️ kontakt@tsfinanse.com
   </a>
 </p>
+```
