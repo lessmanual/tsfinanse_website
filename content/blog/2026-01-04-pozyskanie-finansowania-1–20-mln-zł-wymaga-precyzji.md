@@ -4,6 +4,7 @@ date: 2026-01-04T22:55:11.965Z
 author: TS Finanse
 description: Kto otrzyma pożyczkę dla firmy 1–20 mln zł? Sprawdź warunki,
   zabezpieczenia, LTV, EBITDA i kiedy finansowanie ma sens.
+featuredImage: null
 category: Aktualności
 tags:
   - finansowanie dla firm
