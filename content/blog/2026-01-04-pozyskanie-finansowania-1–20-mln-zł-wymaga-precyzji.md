@@ -1,5 +1,5 @@
 ---
-title: Pozyskanie finansowania 1–20 mln zł wymaga precyzji
+title: Pozyskanie finansowania 1–20 mln zł wymaga precyzji. Zasady finansowania 2026
 date: 2026-01-05T14:33:05.233Z
 author: TS Finanse
 description: Kto otrzyma pożyczkę dla firmy 1–20 mln zł? Sprawdź warunki,
