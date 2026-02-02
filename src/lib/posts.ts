@@ -13,6 +13,11 @@ export interface Post {
 }
 
 export async function getAllPosts(): Promise<Post[]> {
+  if (!supabase) {
+    console.error('Supabase not configured');
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('ts_finanse_posts')
     .select('*')
@@ -42,6 +47,11 @@ export async function getAllPosts(): Promise<Post[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
+  if (!supabase) {
+    console.error('Supabase not configured');
+    return undefined;
+  }
+
   const { data, error } = await supabase
     .from('ts_finanse_posts')
     .select('*')
