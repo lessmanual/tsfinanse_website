@@ -3,7 +3,7 @@ import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, TrendingUp, Zap, FileText, Shield, Handshake } from 'lucide-react';
-import { SEO } from '../components/SEO';
+import { SEO, breadcrumbSchema } from '../components/SEO';
 
 export default function ProgramPartnerski() {
   useEffect(() => {
@@ -16,6 +16,10 @@ export default function ProgramPartnerski() {
         title="Program Partnerski dla Pośredników"
         description="Dołącz do programu partnerskiego TS Finanse. 1% prowizji od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości."
         canonicalUrl="/programpartnerski"
+        schema={breadcrumbSchema([
+          { name: 'Strona główna', url: '/' },
+          { name: 'Program Partnerski', url: '/programpartnerski' },
+        ])}
       />
       <Navigation />
 

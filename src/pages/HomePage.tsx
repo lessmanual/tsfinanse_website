@@ -9,7 +9,7 @@ import { Process } from '../components/Process';
 import { ContactForm } from '../components/ContactForm';
 import { FAQ } from '../components/FAQ';
 import { Footer } from '../components/Footer';
-import { SEO, organizationSchema, loanProductSchema } from '../components/SEO';
+import { SEO, organizationSchema, loanProductSchema, breadcrumbSchema, serviceSchema } from '../components/SEO';
 
 export default function HomePage() {
   const location = useLocation();
@@ -30,7 +30,7 @@ export default function HomePage() {
       <SEO
         description="Pożyczki dla przedsiębiorców pod zabezpieczenie hipoteczne. 1-20 mln PLN, oprocentowanie ustalane indywidualnie, decyzja w 3 dni. Własny kapitał, bez zależności od banków."
         canonicalUrl="/"
-        schema={[organizationSchema, loanProductSchema]}
+        schema={[organizationSchema, loanProductSchema, serviceSchema, breadcrumbSchema([{ name: 'Strona główna', url: '/' }])]}
       />
       <Navigation />
       <main>

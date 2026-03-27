@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
+import { SEO, blogPostingSchema, breadcrumbSchema } from '../components/SEO';
 import { getPostBySlug, Post } from '../lib/posts';
 import { ArrowLeft, Calendar, User, Tag, Clock } from 'lucide-react';
 
@@ -58,15 +58,28 @@ export default function BlogPost() {
 
   return (
     <>
-      <Helmet>
-        <title>{`${post.title} - TS Finanse Blog`}</title>
-        <meta name="description" content={post.description} />
-        {post.tags && <meta name="keywords" content={post.tags.join(', ')} />}
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.description} />
-        <meta property="og:type" content="article" />
-        {post.featuredImage && <meta property="og:image" content={post.featuredImage} />}
-      </Helmet>
+      <SEO
+        title={post.title}
+        description={post.description}
+        canonicalUrl={`/blog/${post.slug}`}
+        ogType="article"
+        ogImage={post.featuredImage || undefined}
+        schema={[
+          blogPostingSchema({
+            title: post.title,
+            description: post.description,
+            date: post.date,
+            author: post.author,
+            image: post.featuredImage,
+            slug: post.slug,
+          }),
+          breadcrumbSchema([
+            { name: 'Strona główna', url: '/' },
+            { name: 'Blog', url: '/blog' },
+            { name: post.title, url: `/blog/${post.slug}` },
+          ]),
+        ]}
+      />
 
       <Navigation />
 
@@ -116,6 +129,7 @@ export default function BlogPost() {
                 src={post.featuredImage} 
                 alt={post.title} 
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
           )}
