@@ -125,10 +125,12 @@ export default function BlogPost() {
           {/* Featured Image */}
           {post.featuredImage && (
             <div className="mb-12 rounded-2xl overflow-hidden shadow-lg border border-[#3D1F1F]/10 aspect-video">
-              <img 
-                src={post.featuredImage} 
-                alt={post.title} 
+              <img
+                src={post.featuredImage}
+                alt={post.title}
                 className="w-full h-full object-cover"
+                width="800"
+                height="450"
                 loading="lazy"
               />
             </div>

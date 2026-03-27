@@ -24,7 +24,7 @@ export function SEO({
   schema,
 }: SEOProps) {
   const fullTitle = title ? `${title} | TS Finanse` : defaultTitle;
-  const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
+  const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : `${siteUrl}/`;
 
   return (
     <Helmet>

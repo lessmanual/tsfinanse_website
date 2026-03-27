@@ -103,6 +103,8 @@ export default function Blog() {
                                 src={post.featuredImage}
                                 alt={post.title}
                                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                width="800"
+                                height="450"
                                 loading="lazy"
                               />
                             </div>

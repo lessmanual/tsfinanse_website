@@ -60,7 +60,7 @@ export function Navigation() {
                   <source type="image/webp" srcSet={logoWebp} />
                   <img
                     src={logoImage}
-                    alt="TS Finanse Logo"
+                    alt="Logo TS Finanse - pożyczki hipoteczne dla przedsiębiorców"
                     className="h-16 w-auto"
                     width="1000"
                     height="1000"
@@ -78,7 +78,7 @@ export function Navigation() {
                   <source type="image/webp" srcSet={logoWebp} />
                   <img
                     src={logoImage}
-                    alt="TS Finanse Logo"
+                    alt="Logo TS Finanse - pożyczki hipoteczne dla przedsiębiorców"
                     className="h-16 w-auto"
                     width="1000"
                     height="1000"

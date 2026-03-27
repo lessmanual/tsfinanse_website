@@ -18,6 +18,42 @@ const DIST_DIR = resolve(process.cwd(), 'dist');
 const SITE_URL = 'https://www.tsfinanse.com';
 
 // ---------------------------------------------------------------------------
+// FAQ + HowTo schemas (must be defined before STATIC_ROUTES)
+// ---------------------------------------------------------------------------
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    { '@type': 'Question', name: 'Co to jest pozycja senioralna w hipotece?', acceptedAnswer: { '@type': 'Answer', text: 'Pozycja senioralna oznacza, że TS Finanse jest jedynym podmiotem wpisanym w hipotece i ma pierwszeństwo w zaspokojeniu swoich roszczeń.' } },
+    { '@type': 'Question', name: 'Jak szybko mogę otrzymać decyzję?', acceptedAnswer: { '@type': 'Answer', text: 'Analizę wstępną przeprowadzamy w ciągu 24 godzin. Pełna decyzja kredytowa może zapaść w 3 dni robocze od otrzymania kompletu dokumentów.' } },
+    { '@type': 'Question', name: 'Jakie dokumenty są wymagane?', acceptedAnswer: { '@type': 'Answer', text: 'Podstawowe dokumenty to: odpis KRS/CEIDG, ostatnie sprawozdanie finansowe, dokumentacja nieruchomości, wycena nieruchomości.' } },
+    { '@type': 'Question', name: 'Co to jest LTV i dlaczego max 60%?', acceptedAnswer: { '@type': 'Answer', text: 'LTV to stosunek wartości pożyczki do wartości nieruchomości. Przy LTV 60% dla nieruchomości wartej 10 mln PLN można otrzymać maksymalnie 6 mln PLN.' } },
+    { '@type': 'Question', name: 'Czy mogę spłacić pożyczkę wcześniej?', acceptedAnswer: { '@type': 'Answer', text: 'Tak, oferujemy możliwość wcześniejszej spłaty. Szczegóły dotyczące ewentualnych prowizji są zawarte w indywidualnej umowie.' } },
+    { '@type': 'Question', name: 'Jakie nieruchomości są akceptowane?', acceptedAnswer: { '@type': 'Answer', text: 'Mieszkania, domy, lokale komercyjne, działki inwestycyjne i nieruchomości komercyjne z całej Polski.' } },
+    { '@type': 'Question', name: 'Czym różnicie się od banku?', acceptedAnswer: { '@type': 'Answer', text: 'Mamy własny kapitał, więc nie jesteśmy ograniczeni regulacjami bankowymi. Szybsze decyzje, elastyczność i możliwość finansowania projektów odrzucanych przez banki.' } },
+    { '@type': 'Question', name: 'Jakie są koszty pożyczki?', acceptedAnswer: { '@type': 'Answer', text: 'Oprocentowanie ustalamy indywidualnie w zależności od płynności zabezpieczenia. Wszystkie koszty są transparentnie przedstawione w ofercie.' } },
+    { '@type': 'Question', name: 'Czy współpracujecie z pośrednikami?', acceptedAnswer: { '@type': 'Answer', text: 'Tak, oferujemy program partnerski dla pośredników kredytowych. Kontakt: kontakt@tsfinanse.com' } },
+    { '@type': 'Question', name: 'Czy finansujecie startupy?', acceptedAnswer: { '@type': 'Answer', text: 'Nie. Pożyczki udzielamy wyłącznie firmom prowadzącym działalność gospodarczą, które posiadają nieruchomość do zabezpieczenia.' } },
+  ],
+};
+
+const howToSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: 'Jak uzyskać pożyczkę hipoteczną dla firmy w TS Finanse',
+  description: 'Prosty 5-krokowy proces uzyskania pożyczki hipotecznej dla przedsiębiorców.',
+  totalTime: 'P14D',
+  step: [
+    { '@type': 'HowToStep', position: 1, name: 'Kontakt', text: 'Wyślij zapytanie przez formularz lub email.' },
+    { '@type': 'HowToStep', position: 2, name: 'Analiza', text: 'Nasz zespół analizuje wniosek w ciągu 24 godzin.' },
+    { '@type': 'HowToStep', position: 3, name: 'Oferta', text: 'Przygotowujemy indywidualną ofertę finansowania.' },
+    { '@type': 'HowToStep', position: 4, name: 'Finalizacja', text: 'Podpisanie umowy i obsługa notarialna.' },
+    { '@type': 'HowToStep', position: 5, name: 'Wypłata', text: 'Uruchomienie środków na Twoje konto.' },
+  ],
+};
+
+// ---------------------------------------------------------------------------
 // Route → SEO metadata definitions
 // ---------------------------------------------------------------------------
 
@@ -26,7 +62,7 @@ const STATIC_ROUTES = [
     path: '/',
     title: 'TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców | Finansowanie B2B',
     description: 'Pożyczki dla przedsiębiorców pod zabezpieczenie hipoteczne. 1-20 mln PLN, oprocentowanie ustalane indywidualnie, decyzja w 3 dni. Własny kapitał, bez zależności od banków.',
-    schemas: ['organization', 'loanProduct', 'service', 'breadcrumbHome'],
+    schemas: ['organization', 'loanProduct', 'service', 'breadcrumbHome', faqSchema, howToSchema],
   },
   {
     path: '/blog',
@@ -222,6 +258,75 @@ function esc(str) {
   return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// ---------------------------------------------------------------------------
+// Noscript fallback content per route (for non-JS crawlers)
+// ---------------------------------------------------------------------------
+
+const NOSCRIPT_STYLE = 'style="max-width:800px;margin:0 auto;padding:40px 20px;font-family:system-ui,sans-serif"';
+
+function buildNoscript(route, post) {
+  const path = route.path;
+
+  if (path === '/') {
+    return `<noscript><div ${NOSCRIPT_STYLE}>
+<h1>TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców</h1>
+<p>Profesjonalne pożyczki dla firm pod zabezpieczenie hipoteczne od 1 do 20 mln PLN. Decyzja w 3 dni robocze, własny kapitał, obsługa w całej Polsce.</p>
+<h2>Nasze usługi</h2>
+<ul><li>Pożyczki hipoteczne od 1 000 000 do 20 000 000 PLN</li><li>Okres: 12-36 miesięcy</li><li>LTV do 60% wartości nieruchomości</li><li>Decyzja w 3 dni robocze</li><li>Własny kapitał - niezależność od banków</li></ul>
+<h2>Jak to działa?</h2>
+<ol><li>Kontakt - wyślij zapytanie przez formularz lub email</li><li>Analiza - analizujemy wniosek w ciągu 24h</li><li>Oferta - przygotowujemy indywidualną ofertę</li><li>Finalizacja - podpisanie umowy i obsługa notarialna</li><li>Wypłata - uruchomienie środków na Twoje konto</li></ol>
+<h2>Kontakt</h2>
+<p>Email: <a href="mailto:kontakt@tsfinanse.com">kontakt@tsfinanse.com</a> | Tel: +48 506 711 242</p>
+<p><a href="/blog">Blog</a> | <a href="/programpartnerski">Program Partnerski</a></p>
+</div></noscript>`;
+  }
+
+  if (path === '/blog') {
+    return `<noscript><div ${NOSCRIPT_STYLE}>
+<h1>Blog TS Finanse - Porady Finansowe dla Przedsiębiorców</h1>
+<p>Aktualności ze świata finansów, porady dotyczące pożyczek hipotecznych i finansowania biznesu.</p>
+<p><a href="/">Strona główna TS Finanse</a> | <a href="/programpartnerski">Program Partnerski</a></p>
+</div></noscript>`;
+  }
+
+  if (path === '/programpartnerski') {
+    return `<noscript><div ${NOSCRIPT_STYLE}>
+<h1>Program Partnerski TS Finanse</h1>
+<p>Dołącz do programu partnerskiego. 1% prowizji od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności.</p>
+<h2>Dla kogo?</h2>
+<ul><li>Pośrednicy kredytowi</li><li>Doradcy finansowi</li><li>Agenci nieruchomości</li><li>Kancelarie prawne</li></ul>
+<p>Kontakt: <a href="mailto:kontakt@tsfinanse.com">kontakt@tsfinanse.com</a> | +48 506 711 242</p>
+</div></noscript>`;
+  }
+
+  // Blog post routes (dynamic)
+  if (path.startsWith('/blog/') && post) {
+    return `<noscript><div ${NOSCRIPT_STYLE}>
+<h1>${esc(post.title)}</h1>
+<p>${esc(post.description)}</p>
+<p><a href="/blog">Wszystkie wpisy na blogu TS Finanse</a> | <a href="/">Strona główna</a></p>
+</div></noscript>`;
+  }
+
+  // Legal pages fallback
+  const legalTitles = {
+    '/polityka-prywatnosci': 'Polityka Prywatności',
+    '/polityka-cookies': 'Polityka Cookies',
+    '/regulamin': 'Regulamin',
+    '/rodo': 'Klauzula Informacyjna RODO',
+  };
+
+  if (legalTitles[path]) {
+    return `<noscript><div ${NOSCRIPT_STYLE}>
+<h1>${legalTitles[path]}</h1>
+<p>Aby wyświetlić pełną treść, włącz JavaScript w przeglądarce.</p>
+<p><a href="/">Powrót na stronę główną TS Finanse</a></p>
+</div></noscript>`;
+  }
+
+  return '';
+}
+
 function injectIntoHtml(baseHtml, metaTags) {
   // Inject right after <!-- SEO meta tags managed by React Helmet per page -->
   // or before </head> as fallback
@@ -232,9 +337,15 @@ function injectIntoHtml(baseHtml, metaTags) {
   return baseHtml.replace('</head>', metaTags + '  </head>');
 }
 
-function writeRoute(baseHtml, route) {
+function writeRoute(baseHtml, route, post) {
   const metaTags = buildMetaTags(route);
-  const html = injectIntoHtml(baseHtml, metaTags);
+  let html = injectIntoHtml(baseHtml, metaTags);
+
+  // Inject noscript fallback content after <div id="root"></div>
+  const noscript = buildNoscript(route, post);
+  if (noscript) {
+    html = html.replace('<div id="root"></div>', `<div id="root"></div>\n${noscript}`);
+  }
 
   let outputPath;
   if (route.path === '/') {
@@ -285,7 +396,7 @@ async function main() {
         },
       ],
     };
-    writeRoute(baseHtml, route);
+    writeRoute(baseHtml, route, post);
     console.log(`  ✓ /blog/${post.slug}`);
   }
 

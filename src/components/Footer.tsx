@@ -19,7 +19,7 @@ export function Footer() {
                 <source type="image/webp" srcSet={logoWebp} />
                 <img
                   src={logoImage}
-                  alt="TS Finanse Logo"
+                  alt="Logo TS Finanse - pożyczki hipoteczne dla przedsiębiorców"
                   className="h-16 w-auto"
                   width="1000"
                   height="1000"
@@ -90,6 +90,18 @@ export function Footer() {
                 84-240 Reda
               </p>
               <div className="pt-2 space-y-2">
+                <Link
+                  to="/blog"
+                  className="block text-white/70 hover:text-white transition-colors"
+                >
+                  Blog
+                </Link>
+                <Link
+                  to="/programpartnerski"
+                  className="block text-white/70 hover:text-white transition-colors"
+                >
+                  Program Partnerski
+                </Link>
                 <Link
                   to="/polityka-prywatnosci"
                   className="block text-white/70 hover:text-white transition-colors"
