@@ -9,37 +9,14 @@
     <link rel="dns-prefetch" href="https://unpkg.com" />
     <link rel="preconnect" href="https://unpkg.com" crossorigin />
 
-    <!-- Start Single Page Apps for GitHub Pages -->
-    <script type="text/javascript">
-      // Single Page Apps for GitHub Pages
-      // MIT License
-      // https://github.com/rafgraph/spa-github-pages
-      // This script checks to see if a redirect is present in the query string,
-      // converts it back into the correct url and adds it to the
-      // browser's history using window.history.replaceState(...),
-      // which won't cause the browser to attempt to load the new url.
-      // When the single page app is loaded further down in this file,
-      // the correct url will be waiting in the browser's history for
-      // the single page app to route accordingly.
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) {
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
-        }
-      }(window.location))
-    </script>
-    <!-- End Single Page Apps for GitHub Pages -->
-
     <!-- Primary Meta Tags -->
     <title>TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców | Finansowanie B2B</title>
     <meta name="title" content="TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców | Finansowanie B2B" />
     <meta name="description" content="Profesjonalne pożyczki hipoteczne dla firm. Finansowanie projektów deweloperskich i inwestycyjnych od 1 do 20 mln PLN. Szybka decyzja, elastyczne warunki, obsługa w całej Polsce." />
     <meta name="keywords" content="pożyczki hipoteczne, finansowanie B2B, pożyczki dla firm, kredyt hipoteczny przedsiębiorcy, finansowanie projektów deweloperskich" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
+    <!-- Bing Webmaster Tools verification (replace PLACEHOLDER after registration) -->
+    <meta name="msvalidate.01" content="PLACEHOLDER" />
     <meta name="language" content="Polish" />
     <meta name="author" content="TS Finanse" />
 
@@ -66,8 +43,28 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="TS Finanse Blog" href="https://www.tsfinanse.com/rss.xml" />
     <meta name="theme-color" content="#D4AF7A" />
     <link rel="canonical" href="https://www.tsfinanse.com/" />
+
+    <!-- WebSite Schema for Google Sitelinks Search -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "TS Finanse",
+      "url": "https://www.tsfinanse.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.tsfinanse.com/blog?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
   </head>
 
   <body>

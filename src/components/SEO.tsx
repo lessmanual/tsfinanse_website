@@ -80,7 +80,7 @@ export const organizationSchema = {
   name: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
   alternateName: 'TS Finanse',
   url: 'https://www.tsfinanse.com',
-  logo: 'https://www.tsfinanse.com/logo.png',
+  logo: 'https://www.tsfinanse.com/logo.webp',
   description:
     'Profesjonalne pożyczki hipoteczne dla przedsiębiorców. Finansowanie projektów deweloperskich i inwestycyjnych w całej Polsce.',
   email: 'kontakt@tsfinanse.com',
@@ -171,3 +171,113 @@ export const breadcrumbSchema = (items: { name: string; url: string }[]) => ({
     item: `https://www.tsfinanse.com${item.url}`,
   })),
 });
+
+export const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'TS Finanse',
+  url: 'https://www.tsfinanse.com',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: 'https://www.tsfinanse.com/blog?q={search_term_string}',
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+export const serviceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType: 'Pożyczki hipoteczne dla przedsiębiorców',
+  provider: {
+    '@type': 'FinancialService',
+    name: 'TS Finanse',
+    url: 'https://www.tsfinanse.com',
+  },
+  areaServed: {
+    '@type': 'Country',
+    name: 'Polska',
+  },
+  description: 'Pożyczki dla firm pod zabezpieczenie hipoteczne od 1 do 20 mln PLN. Decyzja w 3 dni robocze, własny kapitał, obsługa w całej Polsce.',
+  offers: {
+    '@type': 'Offer',
+    priceCurrency: 'PLN',
+    availability: 'https://schema.org/InStock',
+  },
+};
+
+export const blogPostingSchema = (post: {
+  title: string;
+  description: string;
+  date: string;
+  author?: string;
+  image?: string;
+  slug: string;
+}) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.title,
+  description: post.description,
+  datePublished: post.date,
+  dateModified: post.date,
+  author: {
+    '@type': 'Organization',
+    name: post.author || 'TS Finanse',
+    url: 'https://www.tsfinanse.com',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'TS Finanse',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://www.tsfinanse.com/logo.png',
+    },
+  },
+  image: post.image || 'https://www.tsfinanse.com/og-image.webp',
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `https://www.tsfinanse.com/blog/${post.slug}`,
+  },
+});
+
+export const howToSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: 'Jak uzyskać pożyczkę hipoteczną dla firmy w TS Finanse',
+  description: 'Prosty 5-krokowy proces uzyskania pożyczki hipotecznej dla przedsiębiorców.',
+  totalTime: 'P14D',
+  step: [
+    {
+      '@type': 'HowToStep',
+      position: 1,
+      name: 'Kontakt',
+      text: 'Wyślij zapytanie przez formularz na stronie lub email na kontakt@tsfinanse.com.',
+    },
+    {
+      '@type': 'HowToStep',
+      position: 2,
+      name: 'Analiza',
+      text: 'Nasz zespół analizuje wniosek i kontaktuje się w ciągu 24 godzin.',
+    },
+    {
+      '@type': 'HowToStep',
+      position: 3,
+      name: 'Oferta',
+      text: 'Przygotowujemy indywidualną ofertę finansowania dopasowaną do Twoich potrzeb.',
+    },
+    {
+      '@type': 'HowToStep',
+      position: 4,
+      name: 'Finalizacja',
+      text: 'Podpisanie umowy pożyczki i obsługa notarialna ustanowienia hipoteki.',
+    },
+    {
+      '@type': 'HowToStep',
+      position: 5,
+      name: 'Wypłata',
+      text: 'Uruchomienie środków na Twoje konto - możesz rozwijać firmę.',
+    },
+  ],
+};

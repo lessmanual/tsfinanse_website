@@ -1,4 +1,6 @@
 import { Send, Search, FileCheck, FileSignature, TrendingUp } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+import { howToSchema } from './SEO';
 
 export function Process() {
   const steps = [
@@ -35,6 +37,10 @@ export function Process() {
   ];
 
   return (
+    <>
+    <Helmet>
+      <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
+    </Helmet>
     <section id="process" className="py-24 bg-gradient-to-br from-[#3D1F1F]/5 via-white to-[#D4AF7A]/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
@@ -125,5 +131,6 @@ export function Process() {
         </div>
       </div>
     </section>
+    </>
   );
 }
