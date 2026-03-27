@@ -1,7 +1,5 @@
-# Redirect non-www to www (canonical domain)
-https://tsfinanse.com/* https://www.tsfinanse.com/:splat 301!
-
+# www redirect handled by Netlify domain settings (not here — causes loop)
 # Netlify serves static files first (prerendered HTML),
 # then falls back to SPA index.html for client-side routing.
-# This 200 rewrite only fires when no matching static file exists.
 /*  /index.html  200
+
