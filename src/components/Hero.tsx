@@ -79,11 +79,12 @@ export function Hero() {
           {/* Fallback PNG */}
           <img
             src={heroBackground}
-            alt="Modern business architecture"
+            alt="Nowoczesna architektura biznesowa - tło strony TS Finanse"
             className="w-full h-full object-cover hero-bg-image"
             width="1408"
             height="768"
             loading="eager"
+            fetchPriority="high"
           />
         </picture>
         <div className="absolute inset-0 bg-gradient-to-br from-[#3D1F1F]/85 via-[#3D1F1F]/75 to-[#2A1414]/80" />

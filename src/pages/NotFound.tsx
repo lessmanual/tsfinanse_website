@@ -1,15 +1,15 @@
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 
 export default function NotFound() {
-  useEffect(() => {
-    document.title = '404 - Strona nie znaleziona - TS Finanse';
-  }, []);
-
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>404 - Strona nie znaleziona | TS Finanse</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <Navigation />
       <main className="max-w-4xl mx-auto px-4 py-16 text-center">
         <h1 className="text-6xl font-bold mb-4">404</h1>
