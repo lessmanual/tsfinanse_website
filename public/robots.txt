@@ -13,6 +13,8 @@ Allow: /
 # ============================================================
 Sitemap: https://www.tsfinanse.com/sitemap.xml
 
+# LLM-optimized content: https://www.tsfinanse.com/llms.txt
+
 # ============================================================
 # TRADITIONAL SEARCH ENGINE BOTS - Explicitly allowed
 # ============================================================
