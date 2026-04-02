@@ -6,6 +6,7 @@
 # UNIVERSAL ACCESS - Allow ALL legitimate crawlers
 # ============================================================
 User-agent: *
+Disallow: /admin/
 Allow: /
 
 # ============================================================

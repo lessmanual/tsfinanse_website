@@ -159,6 +159,7 @@ export default function BlogPost() {
                   a: ({...props}) => <a className="text-[#C5A572] font-medium hover:text-[#3D1F1F] hover:underline transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
                   blockquote: ({...props}) => <blockquote className="border-l-4 border-[#C5A572] pl-4 italic text-gray-600 my-6 bg-gray-50 py-4 pr-4 rounded-r-lg" {...props} />,
                   strong: ({...props}) => <strong className="font-bold text-[#3D1F1F]" {...props} />,
+                  img: ({src, alt, ...props}) => <img src={src} alt={alt} loading="lazy" className="rounded-lg my-6 w-full" {...props} />,
                 }}
               >
                 {post.content}

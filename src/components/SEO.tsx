@@ -232,7 +232,7 @@ export const blogPostingSchema = (post: {
     name: 'TS Finanse',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://www.tsfinanse.com/logo.png',
+      url: 'https://www.tsfinanse.com/logo.webp',
     },
   },
   image: post.image || 'https://www.tsfinanse.com/og-image.webp',
