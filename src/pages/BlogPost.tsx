@@ -151,7 +151,7 @@ export default function BlogPost() {
                 components={{
                   h1: ({...props}) => <h1 className="text-3xl md:text-4xl font-bold text-[#3D1F1F] mt-12 mb-6" {...props} />,
                   h2: ({...props}) => <h2 className="text-2xl md:text-3xl font-bold text-[#3D1F1F] mt-12 mb-6 border-l-4 border-[#C5A572] pl-4" {...props} />,
-                  h3: ({...props}) => <h3 className="text-xl md:text-2xl font-bold text-[#3D1F1F] mt-8 mb-4" {...props} />,
+                  h3: ({...props}) => <h3 className="text-xl md:text-2xl font-extrabold text-[#3D1F1F] mt-10 mb-4" {...props} />,
                   p: ({...props}) => <p className="text-lg text-gray-700 leading-relaxed mb-6" {...props} />,
                   ul: ({...props}) => <ul className="list-disc pl-6 mb-6 space-y-2 text-lg text-gray-700" {...props} />,
                   ol: ({...props}) => <ol className="list-decimal pl-6 mb-6 space-y-2 text-lg text-gray-700" {...props} />,
@@ -159,6 +159,16 @@ export default function BlogPost() {
                   a: ({...props}) => <a className="text-[#C5A572] font-medium hover:text-[#3D1F1F] hover:underline transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
                   blockquote: ({...props}) => <blockquote className="border-l-4 border-[#C5A572] pl-4 italic text-gray-600 my-6 bg-gray-50 py-4 pr-4 rounded-r-lg" {...props} />,
                   strong: ({...props}) => <strong className="font-bold text-[#3D1F1F]" {...props} />,
+                  img: ({src, alt, ...props}) => <img src={src} alt={alt} loading="lazy" className="rounded-lg my-6 w-full" {...props} />,
+                  table: ({...props}) => (
+                    <div className="overflow-x-auto my-8">
+                      <table className="w-full border-collapse text-base" {...props} />
+                    </div>
+                  ),
+                  thead: ({...props}) => <thead className="bg-[#3D1F1F] text-white" {...props} />,
+                  th: ({...props}) => <th className="px-4 py-3 text-left font-semibold text-sm" {...props} />,
+                  td: ({...props}) => <td className="px-4 py-3 border-b border-gray-200 text-gray-700" {...props} />,
+                  tr: ({...props}) => <tr className="even:bg-gray-50" {...props} />,
                 }}
               >
                 {post.content}
