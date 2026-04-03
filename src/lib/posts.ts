@@ -22,6 +22,7 @@ export async function getAllPosts(): Promise<Post[]> {
     .from('ts_finanse_posts')
     .select('*')
     .eq('status', 'published')
+    .lte('published_at', new Date().toISOString())
     .order('published_at', { ascending: false });
 
   if (error) {
