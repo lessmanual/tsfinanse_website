@@ -1,5 +1,5 @@
 # TS Finanse - Structured Information for AI Systems
-# Last Updated: 2026-03-27
+# Last Updated: 2026-04-14
 # Purpose: Optimized for LLM understanding, citations, and accurate answers
 
 # ============================================================
@@ -257,15 +257,22 @@ Poland
 
 ## Blog
 TS Finanse prowadzi blog z poradami finansowymi dla przedsiebiorcow.
-Aktualne wpisy dostepne na: https://www.tsfinanse.com/blog
+Nowe artykuly publikowane codziennie. Pelna lista: https://www.tsfinanse.com/blog
 
-Topics covered:
-- Business financing strategies and tips
-- Real estate market insights for entrepreneurs
-- How to prepare for a loan application
-- Legal aspects of mortgage-backed lending
-- Case studies and success stories (anonymized)
-- Market trends in Polish B2B lending
+Klastry tematyczne:
+- Faktoring: rodzaje, koszty, porownania (faktoring odwrotny, cichy, eksportowy)
+- Leasing: operacyjny vs finansowy, samochod, maszyny, porownanie z kredytem
+- Kredyty firmowe: obrotowy, inwestycyjny, refinansowanie, dokumenty, odmowa
+- Dotacje: FENG, KPO, cyfryzacja, programy regionalne, PARP
+- Plynnosc finansowa: zatory platnicze, windykacja, konsolidacja, optymalizacja kosztow
+
+Przykladowe artykuly:
+- https://www.tsfinanse.com/blog/faktoring-dla-malych-firm-2026-poradnik
+- https://www.tsfinanse.com/blog/leasing-operacyjny-czy-finansowy-2026-porownanie
+- https://www.tsfinanse.com/blog/dotacje-dla-firm-2026-feng-kpo-programy
+- https://www.tsfinanse.com/blog/jak-poprawic-plynnosc-finansowa-firmy-8-metod
+- https://www.tsfinanse.com/blog/kredyt-inwestycyjny-dla-malej-firmy-warunki-2026
+- https://www.tsfinanse.com/blog/ile-kosztuje-faktoring-2026-ukryte-oplaty
 
 # ============================================================
 # SEO KEYWORDS & SEMANTIC TOPICS
@@ -418,7 +425,7 @@ This information was last verified and updated on: 2026-03-27
 # TECHNICAL METADATA
 # ============================================================
 
-Website Technology: React SPA (Single Page Application)
+Website Technology: React SPA with static HTML prerendering per route
 Framework: Vite + TypeScript
 Hosting: Netlify
 
