@@ -149,14 +149,17 @@ export default function BlogPost() {
               <Markdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  h1: ({...props}) => <h1 className="text-3xl md:text-4xl font-bold text-[#3D1F1F] mt-12 mb-6" {...props} />,
+                  h1: ({...props}) => <h2 className="text-3xl md:text-4xl font-bold text-[#3D1F1F] mt-12 mb-6" {...props} />,
                   h2: ({...props}) => <h2 className="text-2xl md:text-3xl font-bold text-[#3D1F1F] mt-12 mb-6 border-l-4 border-[#C5A572] pl-4" {...props} />,
                   h3: ({...props}) => <h3 className="text-xl md:text-2xl font-extrabold text-[#3D1F1F] mt-10 mb-4" {...props} />,
                   p: ({...props}) => <p className="text-lg text-gray-700 leading-relaxed mb-6" {...props} />,
                   ul: ({...props}) => <ul className="list-disc pl-6 mb-6 space-y-2 text-lg text-gray-700" {...props} />,
                   ol: ({...props}) => <ol className="list-decimal pl-6 mb-6 space-y-2 text-lg text-gray-700" {...props} />,
                   li: ({...props}) => <li className="pl-2" {...props} />,
-                  a: ({...props}) => <a className="text-[#C5A572] font-medium hover:text-[#3D1F1F] hover:underline transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                  a: ({href, ...props}) => {
+                    const isInternal = href?.startsWith('/') || href?.startsWith('https://www.tsfinanse.com');
+                    return <a href={href} className="text-[#C5A572] font-medium hover:text-[#3D1F1F] hover:underline transition-colors" {...(!isInternal && { target: "_blank", rel: "noopener noreferrer" })} {...props} />;
+                  },
                   blockquote: ({...props}) => <blockquote className="border-l-4 border-[#C5A572] pl-4 italic text-gray-600 my-6 bg-gray-50 py-4 pr-4 rounded-r-lg" {...props} />,
                   strong: ({...props}) => <strong className="font-bold text-[#3D1F1F]" {...props} />,
                   img: ({src, alt, ...props}) => <img src={src} alt={alt} loading="lazy" className="rounded-lg my-6 w-full" {...props} />,

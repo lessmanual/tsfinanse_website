@@ -121,11 +121,17 @@ export default function Blog() {
                               </div>
                             </div>
 
-                            <h2 className="font-bold text-[#3D1F1F] mb-6 group-hover:text-[#C5A572] transition-colors line-clamp-3 flex-grow" style={{ fontSize: '1.375rem' }}>
+                            <h2 className="font-bold text-[#3D1F1F] mb-3 group-hover:text-[#C5A572] transition-colors line-clamp-3" style={{ fontSize: '1.375rem' }}>
                               <Link to={`/blog/${post.slug}`}>
                                 {post.title}
                               </Link>
                             </h2>
+
+                            {post.description && (
+                              <p className="text-sm text-[#3D1F1F]/60 mb-6 line-clamp-2 flex-grow">
+                                {post.description}
+                              </p>
+                            )}
 
                             <div className="flex items-center justify-between pt-6 border-t border-gray-100 mt-auto">
                               <div className="flex items-center text-[#3D1F1F]/50 text-sm">
