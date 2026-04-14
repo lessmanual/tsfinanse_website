@@ -4,7 +4,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from './ui/accordion';
-import { Helmet } from 'react-helmet-async';
 
 export function FAQ() {
   const faqs = [
@@ -50,25 +49,7 @@ export function FAQ() {
     }
   ];
 
-  // FAQPage Schema.org
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
-  };
-
   return (
-    <>
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
       <section id="faq" className="py-24 bg-gradient-to-br from-white via-[#D4AF7A]/5 to-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
@@ -112,6 +93,5 @@ export function FAQ() {
         </div>
         </div>
       </section>
-    </>
   );
 }
