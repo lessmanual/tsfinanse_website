@@ -19,7 +19,8 @@ async function getBlogUrls() {
   const { data } = await supabase
     .from('ts_finanse_posts')
     .select('slug')
-    .eq('status', 'published');
+    .not('published_at', 'is', null)
+    .lte('published_at', new Date().toISOString());
 
   return (data || []).map(p => `/blog/${p.slug}`);
 }

@@ -193,7 +193,8 @@ async function getBlogPosts() {
     const { data, error } = await supabase
       .from('ts_finanse_posts')
       .select('slug, title, description, published_at, featured_image')
-      .eq('status', 'published');
+      .not('published_at', 'is', null)
+      .lte('published_at', new Date().toISOString());
 
     if (error) {
       console.error('  Supabase error:', error.message);

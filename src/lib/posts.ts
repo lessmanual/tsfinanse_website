@@ -21,7 +21,7 @@ export async function getAllPosts(): Promise<Post[]> {
   const { data, error } = await supabase
     .from('ts_finanse_posts')
     .select('*')
-    .eq('status', 'published')
+    .not('published_at', 'is', null)
     .lte('published_at', new Date().toISOString())
     .order('published_at', { ascending: false });
 
@@ -57,7 +57,8 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
     .from('ts_finanse_posts')
     .select('*')
     .eq('slug', slug)
-    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .lte('published_at', new Date().toISOString())
     .single();
 
   if (error || !data) {
