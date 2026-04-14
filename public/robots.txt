@@ -71,10 +71,10 @@ Allow: /
 # Anthropic (Claude)
 User-agent: anthropic-ai
 User-agent: Claude-Web
+User-agent: ClaudeBot
 Allow: /
 
-# Google AI (Bard, Gemini)
-User-agent: Google-Extended
+# Google AI (Gemini)
 User-agent: GoogleOther
 Allow: /
 

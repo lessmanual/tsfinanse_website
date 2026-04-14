@@ -6,13 +6,13 @@ const SITE_URL = 'https://www.tsfinanse.com';
 
 // Static routes with priorities
 const staticRoutes = [
-  { path: '/', priority: '1.0', changefreq: 'weekly' },
-  { path: '/blog', priority: '0.8', changefreq: 'daily' },
-  { path: '/programpartnerski', priority: '0.7', changefreq: 'monthly' },
-  { path: '/polityka-prywatnosci', priority: '0.3', changefreq: 'yearly' },
-  { path: '/polityka-cookies', priority: '0.3', changefreq: 'yearly' },
-  { path: '/regulamin', priority: '0.3', changefreq: 'yearly' },
-  { path: '/rodo', priority: '0.3', changefreq: 'yearly' },
+  { path: '/', priority: '1.0', changefreq: 'weekly', lastmod: null },
+  { path: '/blog', priority: '0.8', changefreq: 'daily', lastmod: null },
+  { path: '/programpartnerski', priority: '0.7', changefreq: 'monthly', lastmod: '2025-12-01' },
+  { path: '/polityka-prywatnosci', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
+  { path: '/polityka-cookies', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
+  { path: '/regulamin', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
+  { path: '/rodo', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
 ];
 
 async function getBlogPosts() {
@@ -47,9 +47,10 @@ function generateSitemap(posts) {
   xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
   for (const route of staticRoutes) {
+    const mod = route.lastmod || today;
     xml += `  <url>\n`;
     xml += `    <loc>${SITE_URL}${route.path}</loc>\n`;
-    xml += `    <lastmod>${today}</lastmod>\n`;
+    xml += `    <lastmod>${mod}</lastmod>\n`;
     xml += `    <changefreq>${route.changefreq}</changefreq>\n`;
     xml += `    <priority>${route.priority}</priority>\n`;
     xml += `  </url>\n`;
