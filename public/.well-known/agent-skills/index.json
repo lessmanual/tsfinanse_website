@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agentskills.io/schemas/index/v0.2.0/index.json",
+  "skills": [
+    {
+      "name": "pre-qualification-checklist",
+      "type": "markdown",
+      "description": "Checklist czy firma kwalifikuje sie do pozyczki hipotecznej TS Finanse (1-20 mln PLN, LTV 60%, I hipoteka, 12-36 mies)",
+      "url": "https://tsfinanse.com/.well-known/agent-skills/pre-qualification-checklist/SKILL.md",
+      "sha256": "37d14a87a850274532abd9b45d66076a4f0b31f09527e4ba273bdffe1302ad64"
+    },
+    {
+      "name": "loan-amount-estimator",
+      "type": "markdown",
+      "description": "Oszacowanie max kwoty pozyczki hipotecznej TS Finanse na podstawie wartosci nieruchomosci i pozycji hipoteki (LTV 60% senior position)",
+      "url": "https://tsfinanse.com/.well-known/agent-skills/loan-amount-estimator/SKILL.md",
+      "sha256": "a4c597588fb8746420a63bbff1f310fbf2f48cb39774a2f55bc9eff244b5c949"
+    }
+  ]
+}
