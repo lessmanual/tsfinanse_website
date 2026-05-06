@@ -17,6 +17,12 @@ Sitemap: https://www.tsfinanse.com/sitemap.xml
 # LLM-optimized content: https://www.tsfinanse.com/llms.txt
 
 # ============================================================
+# CONTENT SIGNALS (draft-romm-aipref-contentsignals)
+# Polityka tresci wobec AI: wyszukiwanie tak, trening modeli nie, AI input (cytowanie w czasie rzeczywistym) tak
+# ============================================================
+Content-Signal: search=yes, ai-train=no, ai-input=yes
+
+# ============================================================
 # TRADITIONAL SEARCH ENGINE BOTS - Explicitly allowed
 # ============================================================
 

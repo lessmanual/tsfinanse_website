@@ -1,5 +1,10 @@
-# www redirect handled by Netlify domain settings (not here — causes loop)
+# www redirect handled by Netlify domain settings (not here - causes loop)
 # Netlify serves static files first (prerendered HTML),
 # then falls back to SPA index.html for client-side routing.
-/*  /index.html  200
 
+# Force static .well-known files (Netlify reads from public/.well-known/)
+# MCP Server Card intentionally omitted: TS Finanse does not expose a public API. Default 404 is correct.
+/.well-known/api-catalog            /.well-known/api-catalog            200
+/.well-known/agent-skills/index.json /.well-known/agent-skills/index.json 200
+
+/*  /index.html  200

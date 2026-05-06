@@ -1,0 +1,28 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://tsfinanse.com/",
+      "service-doc": [
+        {
+          "href": "https://tsfinanse.com/llms.txt",
+          "title": "LLM-optimized business information",
+          "type": "text/plain"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://tsfinanse.com/.well-known/agent-skills/index.json",
+          "title": "Agent Skills Index",
+          "type": "application/json"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://tsfinanse.com/",
+          "title": "Status (homepage)",
+          "type": "text/html"
+        }
+      ]
+    }
+  ]
+}
