@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { CookieBanner } from './components/CookieBanner';
 import { GoogleAnalytics } from './components/GoogleAnalytics';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
@@ -32,7 +32,7 @@ export default function App() {
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/kontakt" element={<HomePage />} />
+          <Route path="/kontakt" element={<Navigate to="/" replace />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/polityka-prywatnosci" element={<PolitykaPrywatnosci />} />

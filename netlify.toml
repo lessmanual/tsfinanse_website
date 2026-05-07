@@ -14,20 +14,3 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-
-# Static .well-known/* files MUST be served before SPA fallback wildcard.
-# Netlify processes netlify.toml redirects BEFORE the _redirects file,
-# so the /* wildcard below would otherwise swallow .well-known/* requests
-# and return SPA index.html instead of the JSON / linkset+json files.
-# force = false means static files in publish dir take priority.
-[[redirects]]
-  from = "/.well-known/*"
-  to = "/.well-known/:splat"
-  status = 200
-  force = false
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
