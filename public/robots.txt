@@ -12,9 +12,9 @@ Allow: /
 # ============================================================
 # SITEMAP LOCATION
 # ============================================================
-Sitemap: https://www.tsfinanse.com/sitemap.xml
+Sitemap: https://tsfinanse.com/sitemap.xml
 
-# LLM-optimized content: https://www.tsfinanse.com/llms.txt
+# LLM-optimized content: https://tsfinanse.com/llms.txt
 
 # ============================================================
 # CONTENT SIGNALS (draft-romm-aipref-contentsignals)

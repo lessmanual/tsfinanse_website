@@ -12,7 +12,7 @@ interface SEOProps {
 const defaultTitle = 'TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców | Finansowanie B2B';
 const defaultDescription =
   'Profesjonalne pożyczki hipoteczne dla firm. Finansowanie projektów deweloperskich i inwestycyjnych od 1 do 20 mln PLN. Szybka decyzja, elastyczne warunki, obsługa w całej Polsce.';
-const siteUrl = 'https://www.tsfinanse.com';
+const siteUrl = 'https://tsfinanse.com';
 const defaultOgImage = `${siteUrl}/og-image.webp`;
 
 export function SEO({
@@ -79,8 +79,8 @@ export const organizationSchema = {
   '@type': 'FinancialService',
   name: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
   alternateName: 'TS Finanse',
-  url: 'https://www.tsfinanse.com',
-  logo: 'https://www.tsfinanse.com/logo.webp',
+  url: 'https://tsfinanse.com',
+  logo: 'https://tsfinanse.com/logo.webp',
   description:
     'Profesjonalne pożyczki hipoteczne dla przedsiębiorców. Finansowanie projektów deweloperskich i inwestycyjnych w całej Polsce.',
   email: 'kontakt@tsfinanse.com',
@@ -146,7 +146,7 @@ export const loanProductSchema = {
   },
   offers: {
     '@type': 'Offer',
-    url: 'https://www.tsfinanse.com',
+    url: 'https://tsfinanse.com',
     priceCurrency: 'PLN',
     availability: 'https://schema.org/InStock',
     areaServed: {
@@ -157,7 +157,7 @@ export const loanProductSchema = {
   broker: {
     '@type': 'FinancialService',
     name: 'TS Finanse',
-    url: 'https://www.tsfinanse.com',
+    url: 'https://tsfinanse.com',
   },
 };
 
@@ -168,7 +168,7 @@ export const breadcrumbSchema = (items: { name: string; url: string }[]) => ({
     '@type': 'ListItem',
     position: index + 1,
     name: item.name,
-    item: `https://www.tsfinanse.com${item.url}`,
+    item: `https://tsfinanse.com${item.url}`,
   })),
 });
 
@@ -176,12 +176,12 @@ export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'TS Finanse',
-  url: 'https://www.tsfinanse.com',
+  url: 'https://tsfinanse.com',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://www.tsfinanse.com/blog?q={search_term_string}',
+      urlTemplate: 'https://tsfinanse.com/blog?q={search_term_string}',
     },
     'query-input': 'required name=search_term_string',
   },
@@ -194,7 +194,7 @@ export const serviceSchema = {
   provider: {
     '@type': 'FinancialService',
     name: 'TS Finanse',
-    url: 'https://www.tsfinanse.com',
+    url: 'https://tsfinanse.com',
   },
   areaServed: {
     '@type': 'Country',
@@ -225,20 +225,20 @@ export const blogPostingSchema = (post: {
   author: {
     '@type': 'Organization',
     name: post.author || 'TS Finanse',
-    url: 'https://www.tsfinanse.com',
+    url: 'https://tsfinanse.com',
   },
   publisher: {
     '@type': 'Organization',
     name: 'TS Finanse',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://www.tsfinanse.com/logo.webp',
+      url: 'https://tsfinanse.com/logo.webp',
     },
   },
-  image: post.image || 'https://www.tsfinanse.com/og-image.webp',
+  image: post.image || 'https://tsfinanse.com/og-image.webp',
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': `https://www.tsfinanse.com/blog/${post.slug}`,
+    '@id': `https://tsfinanse.com/blog/${post.slug}`,
   },
 });
 

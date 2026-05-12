@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { writeFileSync } from 'fs';
 import { resolve } from 'path';
 
-const SITE_URL = 'https://www.tsfinanse.com';
+const SITE_URL = 'https://tsfinanse.com';
 
 // Static routes with priorities
 const staticRoutes = [

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SITE_URL = 'https://www.tsfinanse.com';
+const SITE_URL = 'https://tsfinanse.com';
 const INDEXNOW_KEY = 'BF7B57E849D44AF48F0B5D95B0D5B154';
 
 const staticUrls = [
@@ -35,7 +35,7 @@ async function main() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      host: 'www.tsfinanse.com',
+      host: 'tsfinanse.com',
       key: INDEXNOW_KEY,
       keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`,
       urlList: allUrls,
