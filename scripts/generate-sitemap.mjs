@@ -1,6 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+
+// Load .env manually since this script runs outside Vite
+if (existsSync('.env')) {
+  const envContent = readFileSync('.env', 'utf8');
+  envContent.split('\n').forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) return;
+    const eq = trimmed.indexOf('=');
+    if (eq === -1) return;
+    const key = trimmed.slice(0, eq).trim();
+    const value = trimmed.slice(eq + 1).trim();
+    if (key && value) process.env[key] = value;
+  });
+}
 
 const SITE_URL = 'https://tsfinanse.com';
 
