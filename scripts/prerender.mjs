@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, join } from 'path';
 
 const DIST_DIR = resolve(process.cwd(), 'dist');
-const SITE_URL = 'https://www.tsfinanse.com';
+const SITE_URL = 'https://tsfinanse.com';
 
 // ---------------------------------------------------------------------------
 // FAQ + HowTo schemas (must be defined before STATIC_ROUTES)
@@ -108,8 +108,8 @@ const SCHEMAS = {
     '@type': 'FinancialService',
     name: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
     alternateName: 'TS Finanse',
-    url: 'https://www.tsfinanse.com',
-    logo: 'https://www.tsfinanse.com/logo.webp',
+    url: 'https://tsfinanse.com',
+    logo: 'https://tsfinanse.com/logo.webp',
     description: 'Profesjonalne pożyczki hipoteczne dla przedsiębiorców. Finansowanie projektów deweloperskich i inwestycyjnych w całej Polsce.',
     email: 'kontakt@tsfinanse.com',
     telephone: '+48506711242',
@@ -132,29 +132,29 @@ const SCHEMAS = {
     '@context': 'https://schema.org',
     '@type': 'Service',
     serviceType: 'Pożyczki hipoteczne dla przedsiębiorców',
-    provider: { '@type': 'FinancialService', name: 'TS Finanse', url: 'https://www.tsfinanse.com' },
+    provider: { '@type': 'FinancialService', name: 'TS Finanse', url: 'https://tsfinanse.com' },
     areaServed: { '@type': 'Country', name: 'Polska' },
     description: 'Pożyczki dla firm pod zabezpieczenie hipoteczne od 1 do 20 mln PLN. Decyzja w 3 dni robocze, własny kapitał, obsługa w całej Polsce.',
   },
   breadcrumbHome: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://www.tsfinanse.com/' }],
+    itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' }],
   },
   breadcrumbBlog: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://www.tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://www.tsfinanse.com/blog' },
+      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://tsfinanse.com/blog' },
     ],
   },
   breadcrumbPartner: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://www.tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Program Partnerski', item: 'https://www.tsfinanse.com/programpartnerski' },
+      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Program Partnerski', item: 'https://tsfinanse.com/programpartnerski' },
     ],
   },
 };
@@ -167,9 +167,9 @@ function blogPostingSchema(post) {
     description: post.description,
     datePublished: post.date,
     dateModified: post.date,
-    author: { '@type': 'Organization', name: 'TS Finanse', url: 'https://www.tsfinanse.com' },
-    publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://www.tsfinanse.com/logo.webp' } },
-    image: post.image || 'https://www.tsfinanse.com/og-image.webp',
+    author: { '@type': 'Organization', name: 'TS Finanse', url: 'https://tsfinanse.com' },
+    publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' } },
+    image: post.image || 'https://tsfinanse.com/og-image.webp',
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
   };
 }

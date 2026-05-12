@@ -157,7 +157,7 @@ export default function BlogPost() {
                   ol: ({...props}) => <ol className="list-decimal pl-6 mb-6 space-y-2 text-lg text-gray-700" {...props} />,
                   li: ({...props}) => <li className="pl-2" {...props} />,
                   a: ({href, ...props}) => {
-                    const isInternal = href?.startsWith('/') || href?.startsWith('https://www.tsfinanse.com');
+                    const isInternal = href?.startsWith('/') || href?.startsWith('https://tsfinanse.com');
                     return <a href={href} className="text-[#C5A572] font-medium hover:text-[#3D1F1F] hover:underline transition-colors" {...(!isInternal && { target: "_blank", rel: "noopener noreferrer" })} {...props} />;
                   },
                   blockquote: ({...props}) => <blockquote className="border-l-4 border-[#C5A572] pl-4 italic text-gray-600 my-6 bg-gray-50 py-4 pr-4 rounded-r-lg" {...props} />,
