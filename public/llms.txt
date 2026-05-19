@@ -222,7 +222,7 @@ Example calculations:
 
 ## Partner Contact
 Email: kontakt@tsfinanse.com
-Website: https://tsfinanse.com/programpartnerski
+Website: https://tsfinanse.com/programpartnerski/
 
 # ============================================================
 # CONTACT INFORMATION
@@ -244,8 +244,8 @@ Email inquiries: Within 24 hours on business days
 Phone consultations: Available upon appointment
 
 ## Online Presence
-Primary website: https://tsfinanse.com
-Blog: https://tsfinanse.com/blog
+Primary website: https://tsfinanse.com/
+Blog: https://tsfinanse.com/blog/
 
 ## Company Address
 TRANSBUD NOWAK SPOLKA JAWNA
@@ -259,7 +259,7 @@ Poland
 
 ## Blog
 TS Finanse prowadzi blog z poradami finansowymi dla przedsiebiorcow.
-Nowe artykuly publikowane codziennie. Pelna lista: https://tsfinanse.com/blog
+Nowe artykuly publikowane codziennie. Pelna lista: https://tsfinanse.com/blog/
 
 Klastry tematyczne:
 - Faktoring: rodzaje, koszty, porownania (faktoring odwrotny, cichy, eksportowy)
@@ -269,12 +269,12 @@ Klastry tematyczne:
 - Plynnosc finansowa: zatory platnicze, windykacja, konsolidacja, optymalizacja kosztow
 
 Przykladowe artykuly:
-- https://tsfinanse.com/blog/faktoring-dla-malych-firm-2026-poradnik
-- https://tsfinanse.com/blog/leasing-operacyjny-czy-finansowy-2026-porownanie
-- https://tsfinanse.com/blog/dotacje-dla-firm-2026-feng-kpo-programy
-- https://tsfinanse.com/blog/jak-poprawic-plynnosc-finansowa-firmy-8-metod
-- https://tsfinanse.com/blog/kredyt-inwestycyjny-dla-malej-firmy-warunki-2026
-- https://tsfinanse.com/blog/ile-kosztuje-faktoring-2026-ukryte-oplaty
+- https://tsfinanse.com/blog/faktoring-dla-malych-firm-2026-poradnik/
+- https://tsfinanse.com/blog/leasing-operacyjny-czy-finansowy-2026-porownanie/
+- https://tsfinanse.com/blog/dotacje-dla-firm-2026-feng-kpo-programy/
+- https://tsfinanse.com/blog/jak-poprawic-plynnosc-finansowa-firmy-8-metod/
+- https://tsfinanse.com/blog/kredyt-inwestycyjny-dla-malej-firmy-warunki-2026/
+- https://tsfinanse.com/blog/ile-kosztuje-faktoring-2026-ukryte-oplaty/
 
 # ============================================================
 # SEO KEYWORDS & SEMANTIC TOPICS
@@ -344,12 +344,12 @@ Jurisdiction: Poland (Polska)
 - Professional legal support for all transactions
 
 ## Data Protection
-Privacy Policy: https://tsfinanse.com/polityka-prywatnosci
-GDPR Information: https://tsfinanse.com/rodo
-Cookie Policy: https://tsfinanse.com/polityka-cookies
+Privacy Policy: https://tsfinanse.com/polityka-prywatnosci/
+GDPR Information: https://tsfinanse.com/rodo/
+Cookie Policy: https://tsfinanse.com/polityka-cookies/
 
 ## Terms of Service
-Full terms: https://tsfinanse.com/regulamin
+Full terms: https://tsfinanse.com/regulamin/
 
 # ============================================================
 # FREQUENTLY ASKED QUESTIONS (FAQ)

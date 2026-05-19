@@ -26,10 +26,10 @@ export default function Blog() {
       <SEO
         title="Blog - Aktualności i Porady Finansowe"
         description="Blog TS Finanse - aktualności ze świata finansów dla przedsiębiorców, porady dotyczące pożyczek hipotecznych i finansowania biznesu."
-        canonicalUrl="/blog"
+        canonicalUrl="/blog/"
         schema={breadcrumbSchema([
           { name: 'Strona główna', url: '/' },
-          { name: 'Blog', url: '/blog' },
+          { name: 'Blog', url: '/blog/' },
         ])}
       />
 
@@ -122,7 +122,7 @@ export default function Blog() {
                             </div>
 
                             <h2 className="font-bold text-[#3D1F1F] mb-3 group-hover:text-[#C5A572] transition-colors line-clamp-3" style={{ fontSize: '1.375rem' }}>
-                              <Link to={`/blog/${post.slug}`}>
+                              <Link to={`/blog/${post.slug}/`}>
                                 {post.title}
                               </Link>
                             </h2>
@@ -142,7 +142,7 @@ export default function Blog() {
                               </div>
 
                               <Link
-                                to={`/blog/${post.slug}`}
+                                to={`/blog/${post.slug}/`}
                                 className="flex items-center font-medium text-[#C5A572] hover:text-[#3D1F1F] transition-colors"
                               >
                                 Czytaj dalej

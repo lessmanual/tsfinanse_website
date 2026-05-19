@@ -7,11 +7,11 @@ export default function Regulamin() {
     <>
       <SEO
         title="Regulamin"
-        canonicalUrl="/regulamin"
+        canonicalUrl="/regulamin/"
         description="Regulamin świadczenia usług TS Finanse - warunki korzystania z serwisu, zasady udzielania pożyczek hipotecznych dla przedsiębiorców."
         schema={breadcrumbSchema([
           { name: 'Strona główna', url: '/' },
-          { name: 'Regulamin', url: '/regulamin' },
+          { name: 'Regulamin', url: '/regulamin/' },
         ])}
       />
       <LegalPageLayout

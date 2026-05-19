@@ -359,7 +359,7 @@ export function ContactForm() {
                   <label htmlFor="dataProcessingConsent" className="text-sm text-gray-700 cursor-pointer">
                     Wyrażam zgodę na przetwarzanie moich danych osobowych przez TS Finanse w celu realizacji
                     zapytania ofertowego zgodnie z{' '}
-                    <Link to="/polityka-prywatnosci" className="text-[#C5A572] hover:underline">
+                    <Link to="/polityka-prywatnosci/" className="text-[#C5A572] hover:underline">
                       Polityką Prywatności
                     </Link>
                     . <span className="text-red-500">*</span>
@@ -381,7 +381,7 @@ export function ContactForm() {
                   />
                   <label htmlFor="rodoConsent" className="text-sm text-gray-700 cursor-pointer">
                     Oświadczam, że zapoznałem/am się z{' '}
-                    <Link to="/rodo" className="text-[#C5A572] hover:underline">
+                    <Link to="/rodo/" className="text-[#C5A572] hover:underline">
                       klauzulą informacyjną RODO
                     </Link>{' '}
                     i rozumiem swoje prawa dotyczące przetwarzania danych osobowych. <span className="text-red-500">*</span>
@@ -411,11 +411,11 @@ export function ContactForm() {
                   Administratorem Twoich danych osobowych jest TS Finanse. Twoje dane będą przetwarzane w celu
                   obsługi zapytania ofertowego. Masz prawo do dostępu, sprostowania, usunięcia i ograniczenia
                   przetwarzania danych. Więcej informacji znajdziesz w{' '}
-                  <Link to="/polityka-prywatnosci" className="text-[#C5A572] hover:underline font-medium">
+                  <Link to="/polityka-prywatnosci/" className="text-[#C5A572] hover:underline font-medium">
                     Polityce Prywatności
                   </Link>{' '}
                   oraz{' '}
-                  <Link to="/rodo" className="text-[#C5A572] hover:underline font-medium">
+                  <Link to="/rodo/" className="text-[#C5A572] hover:underline font-medium">
                     Klauzuli RODO
                   </Link>
                   .

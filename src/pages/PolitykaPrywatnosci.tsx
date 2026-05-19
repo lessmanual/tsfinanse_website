@@ -7,11 +7,11 @@ export default function PolitykaPrywatnosci() {
     <>
       <SEO
         title="Polityka Prywatności"
-        canonicalUrl="/polityka-prywatnosci"
+        canonicalUrl="/polityka-prywatnosci/"
         description="Polityka prywatności TS Finanse - informacje o przetwarzaniu danych osobowych, prawach użytkowników i zasadach ochrony prywatności."
         schema={breadcrumbSchema([
           { name: 'Strona główna', url: '/' },
-          { name: 'Polityka Prywatności', url: '/polityka-prywatnosci' },
+          { name: 'Polityka Prywatności', url: '/polityka-prywatnosci/' },
         ])}
       />
       <LegalPageLayout

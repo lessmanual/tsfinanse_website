@@ -91,25 +91,25 @@ export function Footer() {
               </p>
               <div className="pt-2 space-y-2">
                 <Link
-                  to="/blog"
+                  to="/blog/"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
                   Blog
                 </Link>
                 <Link
-                  to="/programpartnerski"
+                  to="/programpartnerski/"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
                   Program Partnerski
                 </Link>
                 <Link
-                  to="/polityka-prywatnosci"
+                  to="/polityka-prywatnosci/"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
                   Polityka Prywatności
                 </Link>
                 <Link
-                  to="/rodo"
+                  to="/rodo/"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
                   RODO

@@ -115,7 +115,7 @@ export function CookieBanner() {
 
             <div className="text-sm text-gray-600">
               Więcej informacji o plikach cookies znajdziesz w naszej{' '}
-              <Link to="/polityka-cookies" className="text-[#C5A572] hover:underline font-medium">
+              <Link to="/polityka-cookies/" className="text-[#C5A572] hover:underline font-medium">
                 Polityce Cookies
               </Link>
               .
@@ -156,7 +156,7 @@ export function CookieBanner() {
               <p className="text-sm text-gray-600">
                 Używamy plików cookies, aby zapewnić najlepszą jakość korzystania z naszej strony.
                 Możesz zaakceptować wszystkie cookies, odrzucić opcjonalne lub dostosować swoje preferencje.{' '}
-                <Link to="/polityka-cookies" className="text-[#C5A572] hover:underline font-medium">
+                <Link to="/polityka-cookies/" className="text-[#C5A572] hover:underline font-medium">
                   Dowiedz się więcej
                 </Link>
               </p>

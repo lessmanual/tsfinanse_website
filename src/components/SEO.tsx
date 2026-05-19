@@ -15,6 +15,18 @@ const defaultDescription =
 const siteUrl = 'https://tsfinanse.com';
 const defaultOgImage = `${siteUrl}/og-image.webp`;
 
+function normalizeCanonicalPath(path: string) {
+  const pathWithoutFragment = path.split('#')[0] || '/';
+  const [pathname, search] = pathWithoutFragment.split('?');
+
+  if (pathname === '/') {
+    return search ? `/?${search}` : '/';
+  }
+
+  const normalizedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  return search ? `${normalizedPath}?${search}` : normalizedPath;
+}
+
 export function SEO({
   title,
   description = defaultDescription,
@@ -24,7 +36,7 @@ export function SEO({
   schema,
 }: SEOProps) {
   const fullTitle = title ? `${title} | TS Finanse` : defaultTitle;
-  const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : `${siteUrl}/`;
+  const canonical = canonicalUrl ? `${siteUrl}${normalizeCanonicalPath(canonicalUrl)}` : `${siteUrl}/`;
 
   return (
     <Helmet>
@@ -168,7 +180,7 @@ export const breadcrumbSchema = (items: { name: string; url: string }[]) => ({
     '@type': 'ListItem',
     position: index + 1,
     name: item.name,
-    item: `https://tsfinanse.com${item.url}`,
+    item: `${siteUrl}${normalizeCanonicalPath(item.url)}`,
   })),
 });
 
@@ -181,7 +193,7 @@ export const websiteSchema = {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://tsfinanse.com/blog?q={search_term_string}',
+      urlTemplate: 'https://tsfinanse.com/blog/?q={search_term_string}',
     },
     'query-input': 'required name=search_term_string',
   },
@@ -238,7 +250,7 @@ export const blogPostingSchema = (post: {
   image: post.image || 'https://tsfinanse.com/og-image.webp',
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': `https://tsfinanse.com/blog/${post.slug}`,
+    '@id': `https://tsfinanse.com/blog/${post.slug}/`,
   },
 });
 

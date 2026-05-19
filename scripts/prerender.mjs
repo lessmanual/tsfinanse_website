@@ -31,6 +31,11 @@ if (existsSync('.env')) {
 const DIST_DIR = resolve(process.cwd(), 'dist');
 const SITE_URL = 'https://tsfinanse.com';
 
+function canonicalPath(path) {
+  if (path === '/') return '/';
+  return path.endsWith('/') ? path : `${path}/`;
+}
+
 // ---------------------------------------------------------------------------
 // FAQ + HowTo schemas (must be defined before STATIC_ROUTES)
 // ---------------------------------------------------------------------------
@@ -79,34 +84,34 @@ const STATIC_ROUTES = [
     schemas: ['organization', 'loanProduct', 'service', 'breadcrumbHome', faqSchema, howToSchema],
   },
   {
-    path: '/blog',
+    path: '/blog/',
     title: 'Blog - Aktualności i Porady Finansowe | TS Finanse',
     description: 'Blog TS Finanse - aktualności ze świata finansów dla przedsiębiorców, porady dotyczące pożyczek hipotecznych i finansowania biznesu.',
     schemas: ['breadcrumbBlog'],
   },
   {
-    path: '/programpartnerski',
+    path: '/programpartnerski/',
     title: 'Program Partnerski dla Pośredników | TS Finanse',
     description: 'Dołącz do programu partnerskiego TS Finanse. 1% prowizji od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości.',
     schemas: ['breadcrumbPartner'],
   },
   {
-    path: '/polityka-prywatnosci',
+    path: '/polityka-prywatnosci/',
     title: 'Polityka Prywatności | TS Finanse',
     description: 'Polityka prywatności TS Finanse. Informacje o przetwarzaniu danych osobowych, prawach użytkowników i zasadach ochrony prywatności.',
   },
   {
-    path: '/polityka-cookies',
+    path: '/polityka-cookies/',
     title: 'Polityka Cookies | TS Finanse',
     description: 'Polityka cookies TS Finanse. Informacje o wykorzystywaniu plików cookie na stronie tsfinanse.com.',
   },
   {
-    path: '/regulamin',
+    path: '/regulamin/',
     title: 'Regulamin | TS Finanse',
     description: 'Regulamin świadczenia usług TS Finanse. Warunki korzystania z serwisu i usług finansowych.',
   },
   {
-    path: '/rodo',
+    path: '/rodo/',
     title: 'Klauzula Informacyjna RODO | TS Finanse',
     description: 'Klauzula informacyjna RODO TS Finanse. Informacje o administratorze danych, celach przetwarzania i prawach osób.',
   },
@@ -160,7 +165,7 @@ const SCHEMAS = {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://tsfinanse.com/blog' },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://tsfinanse.com/blog/' },
     ],
   },
   breadcrumbPartner: {
@@ -168,7 +173,7 @@ const SCHEMAS = {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Program Partnerski', item: 'https://tsfinanse.com/programpartnerski' },
+      { '@type': 'ListItem', position: 2, name: 'Program Partnerski', item: 'https://tsfinanse.com/programpartnerski/' },
     ],
   },
 };
@@ -184,7 +189,7 @@ function blogPostingSchema(post) {
     author: { '@type': 'Organization', name: 'TS Finanse', url: 'https://tsfinanse.com' },
     publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' } },
     image: post.image || 'https://tsfinanse.com/og-image.webp',
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
   };
 }
 
@@ -233,7 +238,7 @@ async function getBlogPosts() {
 // ---------------------------------------------------------------------------
 
 function buildMetaTags(route) {
-  const canonical = `${SITE_URL}${route.path}`;
+  const canonical = `${SITE_URL}${canonicalPath(route.path)}`;
   const ogType = route.ogType || 'website';
   const ogImage = route.ogImage || `${SITE_URL}/og-image.webp`;
 
@@ -292,19 +297,19 @@ function buildNoscript(route, post) {
 <ol><li>Kontakt - wyślij zapytanie przez formularz lub email</li><li>Analiza - analizujemy wniosek w ciągu 24h</li><li>Oferta - przygotowujemy indywidualną ofertę</li><li>Finalizacja - podpisanie umowy i obsługa notarialna</li><li>Wypłata - uruchomienie środków na Twoje konto</li></ol>
 <h2>Kontakt</h2>
 <p>Email: <a href="mailto:kontakt@tsfinanse.com">kontakt@tsfinanse.com</a> | Tel: +48 506 711 242</p>
-<p><a href="/blog">Blog</a> | <a href="/programpartnerski">Program Partnerski</a></p>
+<p><a href="/blog/">Blog</a> | <a href="/programpartnerski/">Program Partnerski</a></p>
 </div></noscript>`;
   }
 
-  if (path === '/blog') {
+  if (path === '/blog/') {
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>Blog TS Finanse - Porady Finansowe dla Przedsiębiorców</h1>
 <p>Aktualności ze świata finansów, porady dotyczące pożyczek hipotecznych i finansowania biznesu.</p>
-<p><a href="/">Strona główna TS Finanse</a> | <a href="/programpartnerski">Program Partnerski</a></p>
+<p><a href="/">Strona główna TS Finanse</a> | <a href="/programpartnerski/">Program Partnerski</a></p>
 </div></noscript>`;
   }
 
-  if (path === '/programpartnerski') {
+  if (path === '/programpartnerski/') {
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>Program Partnerski TS Finanse</h1>
 <p>Dołącz do programu partnerskiego. 1% prowizji od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności.</p>
@@ -319,16 +324,16 @@ function buildNoscript(route, post) {
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>${esc(post.title)}</h1>
 <p>${esc(post.description)}</p>
-<p><a href="/blog">Wszystkie wpisy na blogu TS Finanse</a> | <a href="/">Strona główna</a></p>
+<p><a href="/blog/">Wszystkie wpisy na blogu TS Finanse</a> | <a href="/">Strona główna</a></p>
 </div></noscript>`;
   }
 
   // Legal pages fallback
   const legalTitles = {
-    '/polityka-prywatnosci': 'Polityka Prywatności',
-    '/polityka-cookies': 'Polityka Cookies',
-    '/regulamin': 'Regulamin',
-    '/rodo': 'Klauzula Informacyjna RODO',
+    '/polityka-prywatnosci/': 'Polityka Prywatności',
+    '/polityka-cookies/': 'Polityka Cookies',
+    '/regulamin/': 'Regulamin',
+    '/rodo/': 'Klauzula Informacyjna RODO',
   };
 
   if (legalTitles[path]) {
@@ -393,7 +398,7 @@ async function main() {
   const posts = await getBlogPosts();
   for (const post of posts) {
     const route = {
-      path: `/blog/${post.slug}`,
+      path: canonicalPath(`/blog/${post.slug}`),
       title: `${post.title} | TS Finanse Blog`,
       description: post.description,
       ogType: 'article',
@@ -405,14 +410,14 @@ async function main() {
           '@type': 'BreadcrumbList',
           itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'Strona główna', item: `${SITE_URL}/` },
-            { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog` },
-            { '@type': 'ListItem', position: 3, name: post.title, item: `${SITE_URL}/blog/${post.slug}` },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog/` },
+            { '@type': 'ListItem', position: 3, name: post.title, item: `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
           ],
         },
       ],
     };
     writeRoute(baseHtml, route, post);
-    console.log(`  ✓ /blog/${post.slug}`);
+    console.log(`  ✓ ${canonicalPath(`/blog/${post.slug}`)}`);
   }
 
   console.log(`\nPrerendering complete: ${STATIC_ROUTES.length + posts.length} pages`);

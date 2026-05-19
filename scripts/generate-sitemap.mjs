@@ -18,15 +18,20 @@ if (existsSync('.env')) {
 
 const SITE_URL = 'https://tsfinanse.com';
 
+function canonicalPath(path) {
+  if (path === '/') return '/';
+  return path.endsWith('/') ? path : `${path}/`;
+}
+
 // Static routes with priorities
 const staticRoutes = [
   { path: '/', priority: '1.0', changefreq: 'weekly', lastmod: null },
-  { path: '/blog', priority: '0.8', changefreq: 'daily', lastmod: null },
-  { path: '/programpartnerski', priority: '0.7', changefreq: 'monthly', lastmod: '2025-12-01' },
-  { path: '/polityka-prywatnosci', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
-  { path: '/polityka-cookies', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
-  { path: '/regulamin', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
-  { path: '/rodo', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
+  { path: '/blog/', priority: '0.8', changefreq: 'daily', lastmod: null },
+  { path: '/programpartnerski/', priority: '0.7', changefreq: 'monthly', lastmod: '2025-12-01' },
+  { path: '/polityka-prywatnosci/', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
+  { path: '/polityka-cookies/', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
+  { path: '/regulamin/', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
+  { path: '/rodo/', priority: '0.3', changefreq: 'yearly', lastmod: '2025-11-24' },
 ];
 
 async function getBlogPosts() {
@@ -63,7 +68,7 @@ function generateSitemap(posts) {
   for (const route of staticRoutes) {
     const mod = route.lastmod || today;
     xml += `  <url>\n`;
-    xml += `    <loc>${SITE_URL}${route.path}</loc>\n`;
+    xml += `    <loc>${SITE_URL}${canonicalPath(route.path)}</loc>\n`;
     xml += `    <lastmod>${mod}</lastmod>\n`;
     xml += `    <changefreq>${route.changefreq}</changefreq>\n`;
     xml += `    <priority>${route.priority}</priority>\n`;
@@ -72,8 +77,9 @@ function generateSitemap(posts) {
 
   for (const post of posts) {
     const lastmod = (post.updated_at || post.published_at || today).split('T')[0];
+    const postPath = canonicalPath(`/blog/${post.slug}`);
     xml += `  <url>\n`;
-    xml += `    <loc>${SITE_URL}/blog/${post.slug}</loc>\n`;
+    xml += `    <loc>${SITE_URL}${postPath}</loc>\n`;
     xml += `    <lastmod>${lastmod}</lastmod>\n`;
     xml += `    <changefreq>monthly</changefreq>\n`;
     xml += `    <priority>0.6</priority>\n`;
@@ -91,7 +97,7 @@ function generateRSS(posts) {
   rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n';
   rss += '  <channel>\n';
   rss += '    <title>TS Finanse Blog</title>\n';
-  rss += `    <link>${SITE_URL}/blog</link>\n`;
+  rss += `    <link>${SITE_URL}/blog/</link>\n`;
   rss += '    <description>Aktualności i porady finansowe dla przedsiębiorców - pożyczki hipoteczne, finansowanie biznesu, rozwój firm.</description>\n';
   rss += '    <language>pl</language>\n';
   rss += `    <lastBuildDate>${now}</lastBuildDate>\n`;
@@ -99,10 +105,11 @@ function generateRSS(posts) {
 
   for (const post of posts) {
     const pubDate = new Date(post.published_at).toUTCString();
+    const postUrl = `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`;
     rss += '    <item>\n';
     rss += `      <title>${escapeXml(post.title || post.slug)}</title>\n`;
-    rss += `      <link>${SITE_URL}/blog/${post.slug}</link>\n`;
-    rss += `      <guid isPermaLink="true">${SITE_URL}/blog/${post.slug}</guid>\n`;
+    rss += `      <link>${postUrl}</link>\n`;
+    rss += `      <guid isPermaLink="true">${postUrl}</guid>\n`;
     rss += `      <pubDate>${pubDate}</pubDate>\n`;
     if (post.description) {
       rss += `      <description>${escapeXml(post.description)}</description>\n`;

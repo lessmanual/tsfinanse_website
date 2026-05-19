@@ -36,8 +36,8 @@ export default function BlogPost() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
         <h1 className="text-3xl font-bold text-[#3D1F1F] mb-4">Nie znaleziono wpisu</h1>
         <p className="text-gray-600 mb-8">Artykuł, którego szukasz, nie istnieje lub został przeniesiony.</p>
-        <Link 
-          to="/blog" 
+        <Link
+          to="/blog/"
           className="px-6 py-3 bg-[#3D1F1F] text-white rounded-lg hover:bg-[#2A1414] transition-colors"
         >
           Wróć do bloga
@@ -61,7 +61,7 @@ export default function BlogPost() {
       <SEO
         title={post.title}
         description={post.description}
-        canonicalUrl={`/blog/${post.slug}`}
+        canonicalUrl={`/blog/${post.slug}/`}
         ogType="article"
         ogImage={post.featuredImage || undefined}
         schema={[
@@ -75,8 +75,8 @@ export default function BlogPost() {
           }),
           breadcrumbSchema([
             { name: 'Strona główna', url: '/' },
-            { name: 'Blog', url: '/blog' },
-            { name: post.title, url: `/blog/${post.slug}` },
+            { name: 'Blog', url: '/blog/' },
+            { name: post.title, url: `/blog/${post.slug}/` },
           ]),
         ]}
       />
@@ -86,8 +86,8 @@ export default function BlogPost() {
       <main className="min-h-screen bg-white">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24" style={{ paddingTop: '140px' }}>
           {/* Back link */}
-          <Link 
-            to="/blog" 
+          <Link
+            to="/blog/"
             className="inline-flex items-center text-[#3D1F1F]/60 hover:text-[#C5A572] transition-colors mb-8"
           >
             <ArrowLeft size={20} className="mr-2" />

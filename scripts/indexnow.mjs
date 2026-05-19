@@ -5,8 +5,8 @@ const INDEXNOW_KEY = 'BF7B57E849D44AF48F0B5D95B0D5B154';
 
 const staticUrls = [
   '/',
-  '/blog',
-  '/programpartnerski',
+  '/blog/',
+  '/programpartnerski/',
 ];
 
 async function getBlogUrls() {
@@ -22,7 +22,7 @@ async function getBlogUrls() {
     .not('published_at', 'is', null)
     .lte('published_at', new Date().toISOString());
 
-  return (data || []).map(p => `/blog/${p.slug}`);
+  return (data || []).map(p => `/blog/${p.slug}/`);
 }
 
 async function main() {

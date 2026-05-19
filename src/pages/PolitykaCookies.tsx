@@ -7,11 +7,11 @@ export default function PolitykaCookies() {
     <>
       <SEO
         title="Polityka Cookies"
-        canonicalUrl="/polityka-cookies"
+        canonicalUrl="/polityka-cookies/"
         description="Polityka cookies TS Finanse - informacje o plikach cookies, ich rodzajach oraz sposobach zarządzania ustawieniami cookies."
         schema={breadcrumbSchema([
           { name: 'Strona główna', url: '/' },
-          { name: 'Polityka Cookies', url: '/polityka-cookies' },
+          { name: 'Polityka Cookies', url: '/polityka-cookies/' },
         ])}
       />
       <LegalPageLayout

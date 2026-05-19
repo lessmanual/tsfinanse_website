@@ -15,10 +15,10 @@ export default function ProgramPartnerski() {
       <SEO
         title="Program Partnerski dla Pośredników"
         description="Dołącz do programu partnerskiego TS Finanse. 1% prowizji od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości."
-        canonicalUrl="/programpartnerski"
+        canonicalUrl="/programpartnerski/"
         schema={breadcrumbSchema([
           { name: 'Strona główna', url: '/' },
-          { name: 'Program Partnerski', url: '/programpartnerski' },
+          { name: 'Program Partnerski', url: '/programpartnerski/' },
         ])}
       />
       <Navigation />
