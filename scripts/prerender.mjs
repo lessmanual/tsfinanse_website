@@ -190,6 +190,7 @@ function blogPostingSchema(post) {
     publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' } },
     image: post.image || 'https://tsfinanse.com/og-image.webp',
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
+    ...(post.content ? { articleBody: stripHtml(post.content).slice(0, 5000) } : {}),
   };
 }
 
@@ -211,9 +212,10 @@ async function getBlogPosts() {
     const supabase = createClient(url, key);
     const { data, error } = await supabase
       .from('ts_finanse_posts')
-      .select('slug, title, description, published_at, featured_image')
+      .select('slug, title, description, content, tags, category, author, published_at, updated_at, featured_image')
       .not('published_at', 'is', null)
-      .lte('published_at', new Date().toISOString());
+      .lte('published_at', new Date().toISOString())
+      .order('published_at', { ascending: false });
 
     if (error) {
       console.error('  Supabase error:', error.message);
@@ -224,7 +226,12 @@ async function getBlogPosts() {
       slug: p.slug,
       title: p.title,
       description: p.description || '',
+      content: p.content || '',
+      tags: p.tags || [],
+      category: p.category || 'Finansowanie',
+      author: p.author || 'TS Finanse',
       date: p.published_at,
+      updatedAt: p.updated_at,
       image: p.featured_image,
     }));
   } catch (err) {
@@ -274,8 +281,153 @@ function buildMetaTags(route) {
   return tags;
 }
 
-function esc(str) {
-  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function esc(str = '') {
+  return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function stripHtml(html = '') {
+  return String(html)
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function sanitizeStaticHtml(html = '') {
+  return String(html)
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/\son[a-z]+="[^"]*"/gi, '')
+    .replace(/\son[a-z]+='[^']*'/gi, '');
+}
+
+function normalizeSlug(slug = '') {
+  return decodeURIComponent(String(slug))
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function canonicalizeInternalUrl(rawUrl, publishedSlugs = new Set()) {
+  if (!rawUrl || rawUrl.startsWith('#') || rawUrl.startsWith('mailto:') || rawUrl.startsWith('tel:')) {
+    return rawUrl;
+  }
+
+  let url;
+  try {
+    url = new URL(rawUrl, SITE_URL);
+  } catch {
+    return rawUrl;
+  }
+
+  if (url.origin !== SITE_URL) {
+    return rawUrl;
+  }
+
+  if (url.pathname === '/kontakt') {
+    return `/${url.hash || '#contact'}`;
+  }
+
+  if (/\.[a-z0-9]{2,8}$/i.test(url.pathname)) {
+    return `${url.pathname}${url.search}${url.hash}`;
+  }
+
+  if (url.pathname.startsWith('/blog/')) {
+    const slug = normalizeSlug(url.pathname.replace(/^\/blog\//, '').replace(/\/$/, ''));
+    if (!slug) {
+      return `/blog/${url.search}${url.hash}`;
+    }
+    if (publishedSlugs.size > 0 && !publishedSlugs.has(slug)) {
+      return `/blog/`;
+    }
+    return `/blog/${slug}/${url.search}${url.hash}`;
+  }
+
+  if (url.pathname !== '/' && !url.pathname.endsWith('/')) {
+    return `${url.pathname}/${url.search}${url.hash}`;
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function normalizeContentLinks(content = '', publishedSlugs = new Set()) {
+  return String(content)
+    .replace(/href=(["'])([^"']+)\1/gi, (_match, quote, href) => {
+      return `href=${quote}${esc(canonicalizeInternalUrl(href, publishedSlugs))}${quote}`;
+    })
+    .replace(/\]\(([^)]+)\)/g, (_match, href) => {
+      return `](${canonicalizeInternalUrl(href, publishedSlugs)})`;
+    });
+}
+
+function inlineMarkdown(text = '') {
+  return esc(text)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" loading="lazy" />')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
+
+function markdownToStaticHtml(markdown = '') {
+  const lines = String(markdown).split(/\r?\n/);
+  const out = [];
+  let listOpen = false;
+
+  function closeList() {
+    if (listOpen) {
+      out.push('</ul>');
+      listOpen = false;
+    }
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) {
+      closeList();
+      continue;
+    }
+
+    if (/^[-*]\s+/.test(line)) {
+      if (!listOpen) {
+        out.push('<ul>');
+        listOpen = true;
+      }
+      out.push(`<li>${inlineMarkdown(line.replace(/^[-*]\s+/, ''))}</li>`);
+      continue;
+    }
+
+    closeList();
+
+    if (line.startsWith('### ')) {
+      out.push(`<h3>${inlineMarkdown(line.slice(4))}</h3>`);
+    } else if (line.startsWith('## ')) {
+      out.push(`<h2>${inlineMarkdown(line.slice(3))}</h2>`);
+    } else if (line.startsWith('# ')) {
+      out.push(`<h2>${inlineMarkdown(line.slice(2))}</h2>`);
+    } else {
+      out.push(`<p>${inlineMarkdown(line)}</p>`);
+    }
+  }
+
+  closeList();
+  return out.join('\n');
+}
+
+function renderStaticPostContent(post, publishedSlugs = new Set()) {
+  const content = normalizeContentLinks(post?.content || '', publishedSlugs);
+  if (!content.trim()) {
+    return `<p>${esc(post?.description || '')}</p>`;
+  }
+
+  return content.trim().startsWith('<')
+    ? sanitizeStaticHtml(content)
+    : markdownToStaticHtml(content);
 }
 
 // ---------------------------------------------------------------------------
@@ -284,8 +436,9 @@ function esc(str) {
 
 const NOSCRIPT_STYLE = 'style="max-width:800px;margin:0 auto;padding:40px 20px;font-family:system-ui,sans-serif"';
 
-function buildNoscript(route, post) {
+function buildNoscript(route, post, allPosts = []) {
   const path = route.path;
+  const publishedSlugs = new Set(allPosts.map((item) => normalizeSlug(item.slug)));
 
   if (path === '/') {
     return `<noscript><div ${NOSCRIPT_STYLE}>
@@ -302,9 +455,19 @@ function buildNoscript(route, post) {
   }
 
   if (path === '/blog/') {
+    const postLinks = allPosts
+      .slice(0, 80)
+      .map((item) => {
+        const postUrl = canonicalPath(`/blog/${item.slug}`);
+        return `<li><a href="${postUrl}">${esc(item.title)}</a><br><span>${esc(item.description)}</span></li>`;
+      })
+      .join('\n');
+
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>Blog TS Finanse - Porady Finansowe dla Przedsiębiorców</h1>
 <p>Aktualności ze świata finansów, porady dotyczące pożyczek hipotecznych i finansowania biznesu.</p>
+<h2>Najnowsze wpisy</h2>
+<ul>${postLinks}</ul>
 <p><a href="/">Strona główna TS Finanse</a> | <a href="/programpartnerski/">Program Partnerski</a></p>
 </div></noscript>`;
   }
@@ -321,10 +484,21 @@ function buildNoscript(route, post) {
 
   // Blog post routes (dynamic)
   if (path.startsWith('/blog/') && post) {
+    const date = post.date ? new Date(post.date).toISOString().slice(0, 10) : '';
+    const tags = Array.isArray(post.tags) && post.tags.length > 0
+      ? `<p>Tagi: ${post.tags.map(esc).join(', ')}</p>`
+      : '';
+
     return `<noscript><div ${NOSCRIPT_STYLE}>
+<article>
 <h1>${esc(post.title)}</h1>
 <p>${esc(post.description)}</p>
+<p>${esc(post.category || 'Finansowanie')} | ${esc(date)} | ${esc(post.author || 'TS Finanse')}</p>
+${post.image ? `<p><img src="${esc(post.image)}" alt="${esc(post.title)}" loading="lazy" style="max-width:100%;height:auto" /></p>` : ''}
+${renderStaticPostContent(post, publishedSlugs)}
+${tags}
 <p><a href="/blog/">Wszystkie wpisy na blogu TS Finanse</a> | <a href="/">Strona główna</a></p>
+</article>
 </div></noscript>`;
   }
 
@@ -357,12 +531,12 @@ function injectIntoHtml(baseHtml, metaTags) {
   return baseHtml.replace('</head>', metaTags + '  </head>');
 }
 
-function writeRoute(baseHtml, route, post) {
+function writeRoute(baseHtml, route, post, allPosts = []) {
   const metaTags = buildMetaTags(route);
   let html = injectIntoHtml(baseHtml, metaTags);
 
   // Inject noscript fallback content after <div id="root"></div>
-  const noscript = buildNoscript(route, post);
+  const noscript = buildNoscript(route, post, allPosts);
   if (noscript) {
     html = html.replace('<div id="root"></div>', `<div id="root"></div>\n${noscript}`);
   }
@@ -387,15 +561,15 @@ async function main() {
   console.log('Prerendering SEO meta tags (no Chromium)...\n');
 
   const baseHtml = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+  const posts = await getBlogPosts();
 
   // Static routes
   for (const route of STATIC_ROUTES) {
-    writeRoute(baseHtml, route);
+    writeRoute(baseHtml, route, undefined, posts);
     console.log(`  ✓ ${route.path}`);
   }
 
   // Blog post routes from Supabase
-  const posts = await getBlogPosts();
   for (const post of posts) {
     const route = {
       path: canonicalPath(`/blog/${post.slug}`),
@@ -416,7 +590,7 @@ async function main() {
         },
       ],
     };
-    writeRoute(baseHtml, route, post);
+    writeRoute(baseHtml, route, post, posts);
     console.log(`  ✓ ${canonicalPath(`/blog/${post.slug}`)}`);
   }
 
