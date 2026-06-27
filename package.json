@@ -30,7 +30,7 @@
       },
       "scripts": {
             "dev": "vite",
-            "build": "node scripts/clean-dist.mjs && vite build && node scripts/generate-sitemap.mjs && node scripts/prerender.mjs && node scripts/generate-md-variants.mjs",
+            "build": "node scripts/clean-dist.mjs && vite build && node scripts/generate-sitemap.mjs && node scripts/prerender.mjs && node scripts/generate-md-variants.mjs && node scripts/prune-dist-artifacts.mjs",
             "verify:seo": "node scripts/verify-seo-dist.mjs",
             "verify:predeploy": "node scripts/verify-predeploy.mjs",
             "verify:live": "node scripts/verify-live-seo.mjs",

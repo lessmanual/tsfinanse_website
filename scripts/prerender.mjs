@@ -220,6 +220,119 @@ function blogPostingSchema(post) {
   };
 }
 
+const minBlogFaqEntries = 3;
+const maxBlogFaqEntries = 8;
+
+function stripMarkdown(value = '') {
+  return stripHtml(value)
+    .replace(/!\[[^\]]*]\([^)]+\)/g, ' ')
+    .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
+    .replace(/[*_`>#-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanQuestion(value = '') {
+  return stripHtml(value)
+    .replace(/^Q:\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanAnswer(value = '') {
+  const answer = stripMarkdown(value);
+  return answer.length > 700 ? `${answer.slice(0, 697).trim()}...` : answer;
+}
+
+function toFaqEntry(question, answer) {
+  const cleanedQuestion = cleanQuestion(question);
+  const cleanedAnswer = cleanAnswer(answer);
+
+  if (!cleanedQuestion.includes('?')) return undefined;
+  if (cleanedQuestion.length < 12 || cleanedAnswer.length < 40) return undefined;
+
+  return { question: cleanedQuestion, answer: cleanedAnswer };
+}
+
+function extractHtmlFaqEntries(content = '') {
+  const headingPattern = /<h([2-4])[^>]*>([\s\S]*?)<\/h\1>/gi;
+  const headings = [...content.matchAll(headingPattern)];
+  const entries = [];
+
+  for (let index = 0; index < headings.length; index += 1) {
+    const heading = headings[index];
+    const question = cleanQuestion(heading[2]);
+    if (!question.includes('?')) continue;
+
+    const answerStart = (heading.index || 0) + heading[0].length;
+    const answerEnd = headings[index + 1]?.index ?? content.length;
+    const entry = toFaqEntry(question, content.slice(answerStart, answerEnd));
+    if (entry) entries.push(entry);
+  }
+
+  return entries;
+}
+
+function extractMarkdownFaqEntries(content = '') {
+  const lines = content.split(/\r?\n/);
+  const entries = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const heading = lines[index].match(/^#{2,4}\s+(.+\?)\s*$/);
+    if (!heading) continue;
+
+    const answerLines = [];
+    for (let answerIndex = index + 1; answerIndex < lines.length; answerIndex += 1) {
+      if (/^#{1,4}\s+/.test(lines[answerIndex])) break;
+      answerLines.push(lines[answerIndex]);
+    }
+
+    const entry = toFaqEntry(heading[1], answerLines.join(' '));
+    if (entry) entries.push(entry);
+  }
+
+  return entries;
+}
+
+function extractBlogFaqEntries(content = '') {
+  const normalizedContent = normalizeArticleContent(content, new Set());
+  const rawEntries = normalizedContent.trim().startsWith('<')
+    ? extractHtmlFaqEntries(normalizedContent)
+    : extractMarkdownFaqEntries(normalizedContent);
+  const seen = new Set();
+  const entries = rawEntries.filter((entry) => {
+    const key = entry.question.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return entries.slice(0, maxBlogFaqEntries);
+}
+
+function blogFaqPageSchema(post) {
+  const entries = extractBlogFaqEntries(post.content || '');
+  if (entries.length < minBlogFaqEntries) return undefined;
+  const canonicalUrl = `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${canonicalUrl}#faq`,
+    url: canonicalUrl,
+    mainEntityOfPage: canonicalUrl,
+    inLanguage: 'pl-PL',
+    mainEntity: entries.map((entry) => ({
+      '@type': 'Question',
+      name: entry.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: entry.answer,
+      },
+    })),
+  };
+}
+
 function blogIndexSchemas(posts) {
   const blogPosts = posts.map((post) => ({
     '@type': 'BlogPosting',
@@ -756,6 +869,7 @@ async function main() {
       modifiedTime: post.updatedAt || post.date,
       schemas: [
         blogPostingSchema(post),
+        blogFaqPageSchema(post),
         {
           '@context': 'https://schema.org',
           '@type': 'BreadcrumbList',

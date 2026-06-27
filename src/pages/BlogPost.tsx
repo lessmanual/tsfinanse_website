@@ -4,7 +4,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
-import { SEO, blogPostingSchema, breadcrumbSchema } from '../components/SEO';
+import { SEO, blogFaqPageSchema, blogPostingSchema, breadcrumbSchema } from '../components/SEO';
 import { getAllPosts, getPostBySlug, Post, selectRelatedPosts } from '../lib/posts';
 import { ArrowLeft, Calendar, User, Tag, Clock } from 'lucide-react';
 
@@ -66,6 +66,10 @@ export default function BlogPost() {
   // Calculate reading time (rough estimate: 200 words per minute)
   const wordCount = post.content.split(/\s+/).length;
   const readTime = Math.ceil(wordCount / 200);
+  const faqSchema = blogFaqPageSchema({
+    slug: post.slug,
+    content: post.content,
+  });
 
   return (
     <>
@@ -90,6 +94,7 @@ export default function BlogPost() {
             tags: post.tags,
             content: post.content,
           }),
+          ...(faqSchema ? [faqSchema] : []),
           breadcrumbSchema([
             { name: 'Strona główna', url: '/' },
             { name: 'Blog', url: '/blog/' },

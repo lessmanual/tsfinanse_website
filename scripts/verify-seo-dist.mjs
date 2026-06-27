@@ -90,6 +90,18 @@ function collectHtmlFiles(dir) {
     });
 }
 
+function collectDistPaths(dir) {
+  if (!existsSync(dir)) return [];
+
+  return readdirSync(dir)
+    .flatMap((entry) => {
+      const path = join(dir, entry);
+      const stats = statSync(path);
+      if (stats.isDirectory()) return [path, ...collectDistPaths(path)];
+      return [path];
+    });
+}
+
 function extractCanonical(html) {
   return html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1]
     || html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1];
@@ -152,6 +164,76 @@ function extractMarkdownBlogPostLinks(markdown, validBlogLocs, currentLoc) {
     .filter((target) => target && target !== currentLoc));
 }
 
+const minBlogFaqEntries = 3;
+const maxBlogFaqEntries = 8;
+
+function stripHtml(value = '') {
+  return String(value)
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function stripMarkdown(value = '') {
+  return stripHtml(value)
+    .replace(/!\[[^\]]*]\([^)]+\)/g, ' ')
+    .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
+    .replace(/[*_`>#-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanFaqQuestion(value = '') {
+  return stripHtml(value)
+    .replace(/^Q:\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanFaqAnswer(value = '') {
+  const answer = stripMarkdown(value);
+  return answer.length > 700 ? `${answer.slice(0, 697).trim()}...` : answer;
+}
+
+function expectedFaqEntry(question, answer) {
+  const cleanedQuestion = cleanFaqQuestion(question);
+  const cleanedAnswer = cleanFaqAnswer(answer);
+
+  if (!cleanedQuestion.includes('?')) return undefined;
+  if (cleanedQuestion.length < 12 || cleanedAnswer.length < 40) return undefined;
+
+  return { question: cleanedQuestion, answer: cleanedAnswer };
+}
+
+function extractExpectedFaqEntries(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const entries = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const heading = lines[index].match(/^#{2,4}\s+(.+\?)\s*$/);
+    if (!heading) continue;
+
+    const answerLines = [];
+    for (let answerIndex = index + 1; answerIndex < lines.length; answerIndex += 1) {
+      if (/^#{1,4}\s+/.test(lines[answerIndex])) break;
+      answerLines.push(lines[answerIndex]);
+    }
+
+    const entry = expectedFaqEntry(heading[1], answerLines.join(' '));
+    if (entry) entries.push(entry);
+  }
+
+  const seen = new Set();
+  return entries.filter((entry) => {
+    const key = entry.question.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, maxBlogFaqEntries);
+}
+
 function collectJsonLd(html, failures, loc) {
   const objects = [];
   const scripts = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
@@ -170,6 +252,52 @@ function collectJsonLd(html, failures, loc) {
   }
 
   return objects;
+}
+
+function verifyBlogFaqSchema({ html, markdown, loc, failures }) {
+  const expectedEntries = extractExpectedFaqEntries(markdown);
+  const objects = collectJsonLd(html, failures, loc);
+  const faqPage = objects.find((entry) => entry && entry['@type'] === 'FAQPage' && entry.url === loc);
+
+  if (expectedEntries.length < minBlogFaqEntries) {
+    if (faqPage) failures.push({ type: 'blog-faq-schema-unexpected', loc, expectedEntries: expectedEntries.length });
+    return;
+  }
+
+  if (!faqPage) {
+    failures.push({ type: 'blog-faq-schema', loc, expectedEntries: expectedEntries.length });
+    return;
+  }
+  if (faqPage.inLanguage !== 'pl-PL') failures.push({ type: 'blog-faq-language', loc, inLanguage: faqPage.inLanguage });
+  if (faqPage.mainEntityOfPage !== loc || faqPage['@id'] !== `${loc}#faq`) {
+    failures.push({ type: 'blog-faq-main-entity', loc, mainEntityOfPage: faqPage.mainEntityOfPage, id: faqPage['@id'] });
+  }
+  if (!Array.isArray(faqPage.mainEntity)) {
+    failures.push({ type: 'blog-faq-main-entity-list', loc });
+    return;
+  }
+  if (faqPage.mainEntity.length < minBlogFaqEntries || faqPage.mainEntity.length > maxBlogFaqEntries) {
+    failures.push({
+      type: 'blog-faq-count',
+      loc,
+      expectedMin: minBlogFaqEntries,
+      expectedMax: maxBlogFaqEntries,
+      sourceQuestions: expectedEntries.length,
+      actual: faqPage.mainEntity.length,
+    });
+  }
+
+  const questions = new Set();
+  for (const item of faqPage.mainEntity) {
+    if (item?.['@type'] !== 'Question') failures.push({ type: 'blog-faq-question-type', loc, item });
+    const question = item?.name;
+    if (!question || !question.includes('?') || questions.has(question)) failures.push({ type: 'blog-faq-question', loc, question });
+    questions.add(question);
+    const answer = item?.acceptedAnswer?.text;
+    if (item?.acceptedAnswer?.['@type'] !== 'Answer' || typeof answer !== 'string' || answer.length < 40) {
+      failures.push({ type: 'blog-faq-answer', loc, question, answer });
+    }
+  }
 }
 
 function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
@@ -645,6 +773,13 @@ for (const htmlFile of collectHtmlFiles(join(root, 'dist'))) {
   }
 }
 
+for (const artifactPath of collectDistPaths(join(root, 'dist'))) {
+  const relativePath = artifactPath.replace(`${join(root, 'dist')}/`, '');
+  if (relativePath.split('/').some((part) => /\s/.test(part))) {
+    failures.push({ type: 'space-named-dist-artifact', file: artifactPath });
+  }
+}
+
 for (const loc of locs) {
   const url = new URL(loc);
   const expectedCanonical = `${SITE_URL}${canonicalPath(url.pathname)}`;
@@ -689,6 +824,12 @@ for (const loc of locs) {
       markdown,
       loc,
       lastmod: sitemapLastmods.get(loc),
+      failures,
+    });
+    verifyBlogFaqSchema({
+      html,
+      markdown,
+      loc,
       failures,
     });
     verifyBlogCrawlLinks({
