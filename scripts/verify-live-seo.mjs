@@ -1,5 +1,6 @@
 const SITE_URL = 'https://tsfinanse.com';
 const SITEMAP_URL = `${SITE_URL}/sitemap.xml`;
+const RSS_URL = `${SITE_URL}/rss.xml`;
 const ROBOTS_URL = `${SITE_URL}/robots.txt`;
 const REQUEST_TIMEOUT_MS = 15000;
 const EXPECTED_LOC_COUNT = 73;
@@ -71,6 +72,11 @@ function hasAlternateMarkdown(html, loc) {
   const relFirst = new RegExp(`<link[^>]+rel=["']alternate["'][^>]+type=["']text/markdown["'][^>]+href=["']${escaped}["']`, 'i');
   const hrefFirst = new RegExp(`<link[^>]+href=["']${escaped}["'][^>]+rel=["']alternate["'][^>]+type=["']text/markdown["']`, 'i');
   return relFirst.test(html) || hrefFirst.test(html);
+}
+
+function hasAlternateRss(html) {
+  return /<link[^>]+rel=["']alternate["'][^>]+type=["']application\/rss\+xml["'][^>]+href=["']https:\/\/tsfinanse\.com\/rss\.xml["']/i.test(html)
+    || /<link[^>]+href=["']https:\/\/tsfinanse\.com\/rss\.xml["'][^>]+rel=["']alternate["'][^>]+type=["']application\/rss\+xml["']/i.test(html);
 }
 
 function extractMetaProperty(html, property) {
@@ -212,6 +218,31 @@ function verifyBlogIndexSchema({ html, locs, failures }) {
   }
 }
 
+function verifyRssFeed({ rss, locs, failures }) {
+  const blogPostLocs = new Set(locs.filter((item) => {
+    const pathname = new URL(item).pathname;
+    return pathname.startsWith('/blog/') && pathname !== '/blog/';
+  }));
+  const itemBlocks = [...rss.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((match) => match[1]);
+  const itemLinks = itemBlocks
+    .map((item) => item.match(/<link>([^<]+)<\/link>/)?.[1])
+    .filter(Boolean);
+
+  if (itemLinks.length !== blogPostLocs.size) {
+    failures.push({ type: 'rss-item-count', expected: blogPostLocs.size, actual: itemLinks.length });
+  }
+
+  for (const itemLink of itemLinks) {
+    if (!blogPostLocs.has(itemLink)) {
+      failures.push({ type: 'rss-item-not-in-sitemap', itemLink });
+    }
+  }
+
+  if (!rss.includes('<atom:link href="https://tsfinanse.com/rss.xml" rel="self" type="application/rss+xml" />')) {
+    failures.push({ type: 'rss-atom-self-link' });
+  }
+}
+
 function scanStale(content, loc, surface, hits) {
   for (const pattern of stalePatterns) {
     const match = content.match(pattern);
@@ -309,6 +340,19 @@ async function main() {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
   }
 
+  const { response: rssResponse, text: rss } = await fetchText(RSS_URL, {
+    headers: { accept: 'application/rss+xml,application/xml,text/xml,*/*' },
+  });
+  if (!rssResponse.ok) {
+    failures.push({ type: 'rss-status', status: rssResponse.status });
+  } else {
+    const contentType = rssResponse.headers.get('content-type') || '';
+    if (!contentType.toLowerCase().includes('xml') && !contentType.toLowerCase().includes('rss')) {
+      failures.push({ type: 'rss-content-type', contentType });
+    }
+    verifyRssFeed({ rss, locs, failures });
+  }
+
   for (const loc of locs) {
     const url = new URL(loc);
     const expectedCanonical = `${SITE_URL}${canonicalPath(url.pathname)}`;
@@ -325,6 +369,7 @@ async function main() {
     const canonical = extractCanonical(html);
     if (canonical !== expectedCanonical) failures.push({ type: 'canonical', loc, canonical });
     if (!hasAlternateMarkdown(html, expectedCanonical)) failures.push({ type: 'missing-markdown-alternate', loc });
+    if (!hasAlternateRss(html)) failures.push({ type: 'missing-rss-alternate', loc });
     if (/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html)) failures.push({ type: 'noindex', loc });
 
     const noscripts = (html.match(/<noscript\b/gi) || []).length;
@@ -369,6 +414,7 @@ async function main() {
 
   const result = {
     sitemapUrl: SITEMAP_URL,
+    rssUrl: RSS_URL,
     robotsUrl: ROBOTS_URL,
     locCount: locs.length,
     failureCount: failures.length,
