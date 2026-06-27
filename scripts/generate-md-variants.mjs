@@ -218,8 +218,8 @@ function canonicalizeInternalUrl(rawUrl, publishedSlugs = new Set()) {
     if (parsed.origin !== SITE_URL) return rawUrl;
     const path = canonicalPath(parsed.pathname);
     const postSlug = path.startsWith('/blog/') ? normalizeSlug(path.replace(/^\/blog\//, '').replace(/\/$/, '')) : '';
-    if (postSlug && !publishedSlugs.has(postSlug)) return '/blog/';
-    return `${path}${parsed.search}${parsed.hash}`;
+    if (postSlug && !publishedSlugs.has(postSlug)) return `${SITE_URL}/blog/`;
+    return `${SITE_URL}${path}${parsed.search}${parsed.hash}`;
   } catch {
     return rawUrl;
   }
@@ -270,7 +270,7 @@ function contentToMarkdown(content = '') {
   return normalised.replace(/\n{3,}/g, '\n\n').trim();
 }
 
-function staticPageMarkdown({ title, description, path, content }) {
+function staticPageMarkdown({ title, description, path, content, publishedSlugs = new Set() }) {
   return `${frontmatter({
     title,
     description,
@@ -282,7 +282,7 @@ ${description}
 
 Źródło kanoniczne: ${canonicalUrl(path)}
 
-${content}`;
+${normalizeContentLinks(content, publishedSlugs)}`;
 }
 
 function legalSourceMarkdown(sourceFile, fallback) {
@@ -291,6 +291,8 @@ function legalSourceMarkdown(sourceFile, fallback) {
 }
 
 function writeStaticPages(posts) {
+  const publishedSlugs = new Set(posts.map((post) => normalizeSlug(post.slug)).filter(Boolean));
+
   writeMarkdown('/', staticPageMarkdown({
     path: '/',
     title: 'TS Finanse - Pożyczki hipoteczne dla przedsiębiorców',
@@ -313,13 +315,15 @@ TS Finanse finansuje przedsiębiorców pod zabezpieczenie hipoteczne. Oferta obe
 - Warunki kosztowe: ustalane indywidualnie i przedstawiane w ofercie przed podpisaniem umowy.
 
 Kontakt: kontakt@tsfinanse.com, +48 506 711 242.`,
+    publishedSlugs,
   }));
 
   writeMarkdown('/blog/', staticPageMarkdown({
     path: '/blog/',
     title: 'Blog TS Finanse',
     description: 'Porady i analizy o finansowaniu przedsiębiorców, pożyczkach hipotecznych, faktoringu, leasingu i płynności firm.',
-    content: posts.map((post) => `- [${post.title}](${canonicalPath(`/blog/${post.slug}`)}) - ${post.description}`).join('\n'),
+    content: posts.map((post) => `- [${post.title}](${canonicalUrl(`/blog/${post.slug}`)}) - ${post.description}`).join('\n'),
+    publishedSlugs,
   }));
 
   writeMarkdown('/programpartnerski/', staticPageMarkdown({
@@ -335,6 +339,7 @@ Program jest dla pośredników kredytowych, doradców finansowych, agentów nier
 Warunki współpracy są ustalane indywidualnie przed obsługą klienta. TS Finanse nie komunikuje publicznie stałej prowizji procentowej od wartości pożyczki.
 
 Kontakt: kontakt@tsfinanse.com, +48 506 711 242.`,
+    publishedSlugs,
   }));
 
   const legalPages = [
@@ -351,6 +356,7 @@ Kontakt: kontakt@tsfinanse.com, +48 506 711 242.`,
       title,
       description: title,
       content,
+      publishedSlugs,
     }));
   }
 }
@@ -363,7 +369,7 @@ function writeBlogPosts(posts) {
     const markdownContent = contentToMarkdown(normalizeArticleContent(post.content, publishedSlugs));
     const relatedPosts = selectRelatedPosts(post, posts, 4);
     const relatedMarkdown = relatedPosts.length
-      ? `\n\n## Powiązane artykuły\n\n${relatedPosts.map((item) => `- [${item.title}](${canonicalPath(`/blog/${item.slug}`)})`).join('\n')}`
+      ? `\n\n## Powiązane artykuły\n\n${relatedPosts.map((item) => `- [${item.title}](${canonicalUrl(`/blog/${item.slug}`)})`).join('\n')}`
       : '';
     const tags = Array.isArray(post.tags) && post.tags.length ? post.tags.join(', ') : '';
     const body = `${frontmatter({

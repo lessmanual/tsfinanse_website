@@ -191,6 +191,30 @@ function extractMarkdownBlogPostLinks(markdown, validBlogLocs, currentLoc) {
     .filter((target) => target && target !== currentLoc));
 }
 
+function verifyMarkdownCanonicalLinks({ markdown, loc, failures }) {
+  const links = [...markdown.matchAll(/\]\(([^)]+)\)/g)].map((match) => match[1].trim());
+
+  for (const href of links) {
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) continue;
+    if (href.startsWith('/')) {
+      failures.push({ type: 'markdown-relative-internal-link', loc, href });
+      continue;
+    }
+
+    try {
+      const url = new URL(href);
+      if (url.origin === SITE_URL) {
+        const canonical = `${SITE_URL}${canonicalPath(url.pathname)}${url.search}${url.hash}`;
+        if (href !== canonical) {
+          failures.push({ type: 'markdown-noncanonical-internal-link', loc, href, canonical });
+        }
+      }
+    } catch {
+      failures.push({ type: 'markdown-invalid-link', loc, href });
+    }
+  }
+}
+
 const minBlogFaqEntries = 3;
 const maxBlogFaqEntries = 8;
 
@@ -481,6 +505,33 @@ function verifyBlogIndexSchema({ html, locs, failures }) {
     failures.push({ type: 'blog-index-itemlist-elements', loc });
   } else if (itemList.itemListElement.length !== blogPostLocs.length) {
     failures.push({ type: 'blog-index-itemlist-element-count', loc, expected: blogPostLocs.length, actual: itemList.itemListElement.length });
+  }
+}
+
+function verifyBlogIndexMarkdownLinks({ markdown, locs, failures }) {
+  const loc = `${SITE_URL}/blog/`;
+  const blogPostLocs = locs.filter((item) => {
+    const pathname = new URL(item).pathname;
+    return pathname.startsWith('/blog/') && pathname !== '/blog/';
+  });
+
+  const linkedLocs = new Set([...markdown.matchAll(/\]\(([^)]+)\)/g)]
+    .map((match) => match[1].trim())
+    .filter((href) => href.startsWith(SITE_URL))
+    .map((href) => {
+      const url = new URL(href);
+      return `${SITE_URL}${canonicalPath(url.pathname)}${url.search}${url.hash}`;
+    })
+    .filter((href) => blogPostLocs.includes(href)));
+
+  if (linkedLocs.size !== blogPostLocs.length) {
+    failures.push({ type: 'blog-index-markdown-link-count', loc, expected: blogPostLocs.length, actual: linkedLocs.size });
+  }
+
+  for (const blogPostLoc of blogPostLocs) {
+    if (!linkedLocs.has(blogPostLoc)) {
+      failures.push({ type: 'blog-index-markdown-missing-link', loc, missing: blogPostLoc });
+    }
   }
 }
 
@@ -978,6 +1029,7 @@ async function main() {
     if (!contentType.toLowerCase().includes('text/markdown')) failures.push({ type: 'markdown-content-type', loc, contentType });
     if (!markdown.includes(`canonical: "${expectedCanonical}"`)) failures.push({ type: 'markdown-canonical', loc });
     if (!/^#\s+.+/m.test(markdown)) failures.push({ type: 'markdown-h1', loc });
+    verifyMarkdownCanonicalLinks({ markdown, loc, failures });
     scanStale(markdown, loc, 'markdown', staleHits);
 
     if (isBlogPost) {
@@ -1011,6 +1063,7 @@ async function main() {
 
     if (isBlogIndex) {
       verifyBlogIndexSchema({ html, locs, failures });
+      verifyBlogIndexMarkdownLinks({ markdown, locs, failures });
     }
 
     if (url.pathname === '/') {
