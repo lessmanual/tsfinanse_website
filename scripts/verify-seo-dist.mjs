@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { createHash } from 'crypto';
 
@@ -64,6 +64,18 @@ function markdownPathForUrl(url) {
   if (pathname === '/') return join(root, 'dist', 'md', 'index.md');
   const normalised = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   return join(root, 'dist', `md${normalised}.md`);
+}
+
+function collectMarkdownFiles(dir) {
+  if (!existsSync(dir)) return [];
+
+  return readdirSync(dir)
+    .flatMap((entry) => {
+      const path = join(dir, entry);
+      const stats = statSync(path);
+      if (stats.isDirectory()) return collectMarkdownFiles(path);
+      return path.endsWith('.md') ? [path] : [];
+    });
 }
 
 function extractCanonical(html) {
@@ -585,6 +597,13 @@ verifyLlmsSurface(failures, staleHits);
 verifyApiCatalog(failures);
 verifyAgentSkills(failures, staleHits);
 verifyRobotsPolicy(failures);
+
+const expectedMarkdownFiles = new Set(locs.map((loc) => markdownPathForUrl(loc)));
+for (const markdownFile of collectMarkdownFiles(join(root, 'dist', 'md'))) {
+  if (!expectedMarkdownFiles.has(markdownFile)) {
+    failures.push({ type: 'unexpected-markdown-artifact', file: markdownFile });
+  }
+}
 
 for (const loc of locs) {
   const url = new URL(loc);

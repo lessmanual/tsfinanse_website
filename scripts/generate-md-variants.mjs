@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 
 if (existsSync('.env')) {
@@ -56,6 +56,10 @@ function writeMarkdown(routePath, body) {
   const outputPath = markdownOutputPath(routePath);
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, `${body.trim()}\n`, 'utf8');
+}
+
+function cleanMarkdownOutput() {
+  rmSync(resolve(DIST_DIR, 'md'), { recursive: true, force: true });
 }
 
 async function getBlogPosts() {
@@ -390,6 +394,7 @@ ${markdownContent}${relatedMarkdown}`;
 
 async function main() {
   console.log('Generating markdown variants...');
+  cleanMarkdownOutput();
   const posts = await getBlogPosts();
   writeStaticPages(posts);
   writeBlogPosts(posts);
