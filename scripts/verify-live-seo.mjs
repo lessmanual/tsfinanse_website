@@ -14,6 +14,8 @@ const minMetaTitleLength = 20;
 const maxMetaTitleLength = 70;
 const minMetaDescriptionLength = 70;
 const maxMetaDescriptionLength = 180;
+const minAnswerBlockLength = 70;
+const maxAnswerBlockLength = 360;
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 
@@ -182,6 +184,34 @@ function verifyUniqueSnippetMetadata({ titlesByValue, descriptionsByValue, failu
   }
   for (const [description, locs] of descriptionsByValue.entries()) {
     if (locs.length > 1) failures.push({ type: 'snippet-description-duplicate', description, locs });
+  }
+}
+
+function extractAnswerBlockText(html) {
+  const block = html.match(/<section[^>]+data-ai-answer=["']summary["'][^>]*>([\s\S]*?)<\/section>/i)?.[1] || '';
+  const answer = block.match(/Krótka odpowiedź:<\/strong>\s*([^<]+)/i)?.[1]?.trim() || '';
+  const sections = [...block.matchAll(/<li>([^<]+)<\/li>/gi)].map((match) => match[1].trim());
+
+  return { answer, sections };
+}
+
+function verifyAnswerBlock({ html, markdown, loc, failures }) {
+  const url = new URL(loc);
+  const isBlogPost = url.pathname.startsWith('/blog/') && url.pathname !== '/blog/';
+  if (!isBlogPost) return;
+
+  const { answer, sections } = extractAnswerBlockText(html);
+  if (!answer) {
+    failures.push({ type: 'answer-block-missing', loc });
+  } else if (answer.length < minAnswerBlockLength || answer.length > maxAnswerBlockLength) {
+    failures.push({ type: 'answer-block-length', loc, length: answer.length, answer });
+  }
+  if (sections.length === 0) failures.push({ type: 'answer-block-sections', loc });
+  if (!/^## W skrócie\s+[\s\S]*\*\*Krótka odpowiedź:\*\*/m.test(markdown)) {
+    failures.push({ type: 'answer-block-markdown-missing', loc });
+  }
+  if (answer && !markdown.includes(answer)) {
+    failures.push({ type: 'answer-block-markdown-mismatch', loc });
   }
 }
 
@@ -1117,6 +1147,7 @@ async function main() {
     if (!contentType.toLowerCase().includes('text/markdown')) failures.push({ type: 'markdown-content-type', loc, contentType });
     if (!markdown.includes(`canonical: "${expectedCanonical}"`)) failures.push({ type: 'markdown-canonical', loc });
     if (!/^#\s+.+/m.test(markdown)) failures.push({ type: 'markdown-h1', loc });
+    verifyAnswerBlock({ html, markdown, loc, failures });
     verifyMarkdownCanonicalLinks({ markdown, loc, failures });
     scanStale(markdown, loc, 'markdown', staleHits);
 

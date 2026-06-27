@@ -8,6 +8,62 @@ import { SEO, blogFaqPageSchema, blogPostingSchema, breadcrumbSchema } from '../
 import { getAllPosts, getPostBySlug, Post, selectRelatedPosts } from '../lib/posts';
 import { ArrowLeft, Calendar, User, Tag, Clock } from 'lucide-react';
 
+interface BlogAnswerBlock {
+  directAnswer: string;
+  sections: string[];
+}
+
+const maxAnswerBlockLength = 340;
+
+function normaliseAnswerText(value = '') {
+  return String(value).replace(/\s+/g, ' ').trim();
+}
+
+function compactAnswerText(value = '') {
+  const answer = normaliseAnswerText(value);
+  if (answer.length <= maxAnswerBlockLength) return answer;
+  return `${answer.slice(0, maxAnswerBlockLength - 3).trim()}...`;
+}
+
+function stripInlineMarkup(value = '') {
+  return normaliseAnswerText(value
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/!\[[^\]]*]\([^)]+\)/g, ' ')
+    .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
+    .replace(/[*_`>#-]+/g, ' '));
+}
+
+function extractAnswerSections(content = '') {
+  const htmlHeadings = [...content.matchAll(/<h[2-3][^>]*>([\s\S]*?)<\/h[2-3]>/gi)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const markdownHeadings = [...content.matchAll(/^#{2,3}\s+(.+)$/gm)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const seen = new Set<string>();
+
+  return [...htmlHeadings, ...markdownHeadings]
+    .filter((heading) => heading.length >= 8 && heading.length <= 90)
+    .filter((heading) => !/^(powiązane artykuły|spis treści|faq)$/i.test(heading))
+    .filter((heading) => {
+      const key = heading.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 3);
+}
+
+function buildBlogAnswerBlock(post: Post): BlogAnswerBlock | undefined {
+  const directAnswer = compactAnswerText(post.description);
+  if (directAnswer.length < 70) return undefined;
+  const extractedSections = extractAnswerSections(post.content);
+  const fallbackSections = [post.category, ...post.tags].filter(Boolean).slice(0, 3);
+
+  return {
+    directAnswer,
+    sections: extractedSections.length > 0 ? extractedSections : fallbackSections,
+  };
+}
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<Post | null>(null);
@@ -70,6 +126,7 @@ export default function BlogPost() {
     slug: post.slug,
     content: post.content,
   });
+  const answerBlock = buildBlogAnswerBlock(post);
 
   return (
     <>
@@ -151,6 +208,28 @@ export default function BlogPost() {
               </div>
             </div>
           </header>
+
+          {answerBlock && (
+            <section
+              data-ai-answer="summary"
+              aria-labelledby="answer-summary-heading"
+              className="mb-10 border-l-4 border-[#C5A572] bg-[#F8F5EF] px-5 py-5"
+            >
+              <h2 id="answer-summary-heading" className="text-xl font-bold text-[#3D1F1F] mb-3">
+                W skrócie
+              </h2>
+              <p className="text-base text-[#3D1F1F]/85 leading-relaxed mb-4">
+                <strong>Krótka odpowiedź:</strong> {answerBlock.directAnswer}
+              </p>
+              {answerBlock.sections.length > 0 && (
+                <ul className="list-disc pl-5 space-y-1 text-sm text-[#3D1F1F]/75">
+                  {answerBlock.sections.map((section) => (
+                    <li key={section}>{section}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
 
           {/* Featured Image */}
           {post.featuredImage && (

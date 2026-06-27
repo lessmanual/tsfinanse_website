@@ -270,6 +270,58 @@ function contentToMarkdown(content = '') {
   return normalised.replace(/\n{3,}/g, '\n\n').trim();
 }
 
+function normaliseAnswerText(value = '') {
+  return String(value).replace(/\s+/g, ' ').trim();
+}
+
+const maxAnswerBlockLength = 340;
+
+function compactAnswerText(value = '') {
+  const answer = normaliseAnswerText(value);
+  if (answer.length <= maxAnswerBlockLength) return answer;
+  return `${answer.slice(0, maxAnswerBlockLength - 3).trim()}...`;
+}
+
+function stripInlineMarkup(value = '') {
+  return normaliseAnswerText(stripTags(value)
+    .replace(/!\[[^\]]*]\([^)]+\)/g, ' ')
+    .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
+    .replace(/[*_`>#-]+/g, ' '));
+}
+
+function extractAnswerSections(content = '') {
+  const htmlHeadings = [...String(content).matchAll(/<h[2-3][^>]*>([\s\S]*?)<\/h[2-3]>/gi)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const markdownHeadings = [...String(content).matchAll(/^#{2,3}\s+(.+)$/gm)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const seen = new Set();
+
+  return [...htmlHeadings, ...markdownHeadings]
+    .filter((heading) => heading.length >= 8 && heading.length <= 90)
+    .filter((heading) => !/^(powiązane artykuły|spis treści|faq)$/i.test(heading))
+    .filter((heading) => {
+      const key = heading.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 3);
+}
+
+function renderAnswerBlockMarkdown(post = {}) {
+  const directAnswer = compactAnswerText(post.description || '');
+  if (directAnswer.length < 70) return '';
+
+  const extractedSections = extractAnswerSections(post.content || '');
+  const fallbackSections = [post.category, ...(post.tags || [])].filter(Boolean).slice(0, 3);
+  const sections = extractedSections.length > 0 ? extractedSections : fallbackSections;
+  const sectionList = sections.length > 0
+    ? `\n\n**Omówione sekcje:**\n\n${sections.map((section) => `- ${section}`).join('\n')}`
+    : '';
+
+  return `## W skrócie\n\n**Krótka odpowiedź:** ${directAnswer}${sectionList}`;
+}
+
 function staticPageMarkdown({ title, description, path, content, publishedSlugs = new Set() }) {
   return `${frontmatter({
     title,
@@ -385,6 +437,8 @@ function writeBlogPosts(posts) {
     })}# ${post.title}
 
 ${post.description}
+
+${renderAnswerBlockMarkdown(post)}
 
 Źródło kanoniczne: ${canonicalUrl(path)}
 

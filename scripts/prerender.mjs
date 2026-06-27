@@ -362,6 +362,7 @@ function blogPostingSchema(post) {
 
 const minBlogFaqEntries = 3;
 const maxBlogFaqEntries = 8;
+const maxAnswerBlockLength = 340;
 
 function stripMarkdown(value = '') {
   return stripHtml(value)
@@ -370,6 +371,65 @@ function stripMarkdown(value = '') {
     .replace(/[*_`>#-]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function stripInlineMarkup(value = '') {
+  return stripMarkdown(value)
+    .replace(/[*_`>#-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function compactAnswerText(value = '') {
+  const answer = normaliseWhitespace(value);
+  if (answer.length <= maxAnswerBlockLength) return answer;
+  return `${answer.slice(0, maxAnswerBlockLength - 3).trim()}...`;
+}
+
+function extractAnswerSections(content = '') {
+  const htmlHeadings = [...String(content).matchAll(/<h[2-3][^>]*>([\s\S]*?)<\/h[2-3]>/gi)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const markdownHeadings = [...String(content).matchAll(/^#{2,3}\s+(.+)$/gm)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const seen = new Set();
+
+  return [...htmlHeadings, ...markdownHeadings]
+    .filter((heading) => heading.length >= 8 && heading.length <= 90)
+    .filter((heading) => !/^(powiązane artykuły|spis treści|faq)$/i.test(heading))
+    .filter((heading) => {
+      const key = heading.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 3);
+}
+
+function buildBlogAnswerBlock(post = {}) {
+  const directAnswer = compactAnswerText(post.description || '');
+  if (directAnswer.length < 70) return undefined;
+  const extractedSections = extractAnswerSections(post.content || '');
+  const fallbackSections = [post.category, ...(post.tags || [])].filter(Boolean).slice(0, 3);
+
+  return {
+    directAnswer,
+    sections: extractedSections.length > 0 ? extractedSections : fallbackSections,
+  };
+}
+
+function renderAnswerBlock(post = {}) {
+  const answerBlock = buildBlogAnswerBlock(post);
+  if (!answerBlock) return '';
+
+  const sections = answerBlock.sections.length > 0
+    ? `<ul>${answerBlock.sections.map((section) => `<li>${esc(section)}</li>`).join('')}</ul>`
+    : '';
+
+  return `<section data-ai-answer="summary">
+<h2>W skrócie</h2>
+<p><strong>Krótka odpowiedź:</strong> ${esc(answerBlock.directAnswer)}</p>
+${sections}
+</section>`;
 }
 
 function cleanQuestion(value = '') {
@@ -922,6 +982,7 @@ function buildNoscript(route, post, allPosts = []) {
 <p>${esc(post.description)}</p>
 <p>${esc(post.category || 'Finansowanie')} | Opublikowano: ${esc(date)} | Aktualizacja: ${esc(updated)} | ${esc(post.author || 'TS Finanse')}</p>
 ${post.image ? `<p><img src="${esc(absoluteImageUrl(post.image) || post.image)}" alt="${esc(post.title)}" loading="lazy" style="max-width:100%;height:auto" /></p>` : ''}
+${renderAnswerBlock(post)}
 ${renderStaticPostContent(post, publishedSlugs)}
 ${renderRelatedPosts(post, allPosts)}
 ${tags}
