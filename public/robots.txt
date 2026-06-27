@@ -88,6 +88,7 @@ Allow: /
 
 # Perplexity AI
 User-agent: PerplexityBot
+User-agent: Perplexity-User
 Allow: /
 
 # Meta AI

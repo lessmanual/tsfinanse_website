@@ -51,6 +51,7 @@ const robotsPolicy = {
     'Claude-User',
     'Claude-SearchBot',
     'PerplexityBot',
+    'Perplexity-User',
     'Google-Extended',
   ],
   disallowed: [
