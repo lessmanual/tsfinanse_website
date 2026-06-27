@@ -20,15 +20,19 @@
 
 /sitemap.xml
   Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=300
 
 /rss.xml
   Content-Type: application/rss+xml; charset=utf-8
+  Cache-Control: public, max-age=300
 
 /robots.txt
   Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=300
 
 /llms.txt
   Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=300
 
 /BF7B57E849D44AF48F0B5D95B0D5B154.txt
   Content-Type: text/plain; charset=utf-8

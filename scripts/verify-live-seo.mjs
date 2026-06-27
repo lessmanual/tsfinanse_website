@@ -1245,6 +1245,18 @@ function verifyDiscoveryHeaders(headers, failures) {
   }
 }
 
+function verifyDiscoveryFileCache({ response, url, failures }) {
+  const cacheControl = response.headers.get('cache-control') || '';
+  if (!cacheControl.toLowerCase().includes('public, max-age=300')) {
+    failures.push({
+      type: 'discovery-cache-header',
+      url,
+      expected: 'public, max-age=300',
+      actual: cacheControl,
+    });
+  }
+}
+
 async function verifyIndexNowKeyFile(failures) {
   const candidates = readIndexNowKeyCandidates(PUBLIC_DIR);
   if (candidates.length !== 1) {
@@ -1326,6 +1338,8 @@ async function verifyLlmsSurface(failures, staleHits, locs) {
     failures.push({ type: 'llms-status', status: response.status });
     return;
   }
+
+  verifyDiscoveryFileCache({ response, url: LLMS_URL, failures });
 
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.toLowerCase().includes('text/plain')) {
@@ -1798,6 +1812,7 @@ async function main() {
   if (!robotsResponse.ok) {
     failures.push({ type: 'robots-status', status: robotsResponse.status });
   } else {
+    verifyDiscoveryFileCache({ response: robotsResponse, url: ROBOTS_URL, failures });
     verifyRobotsPolicy(robots, failures);
   }
 
@@ -1806,6 +1821,8 @@ async function main() {
   const { response: sitemapResponse, text: sitemap } = await fetchText(SITEMAP_URL);
   if (!sitemapResponse.ok) {
     failures.push({ type: 'sitemap-status', status: sitemapResponse.status });
+  } else {
+    verifyDiscoveryFileCache({ response: sitemapResponse, url: SITEMAP_URL, failures });
   }
 
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
@@ -1833,6 +1850,7 @@ async function main() {
   if (!rssResponse.ok) {
     failures.push({ type: 'rss-status', status: rssResponse.status });
   } else {
+    verifyDiscoveryFileCache({ response: rssResponse, url: RSS_URL, failures });
     const contentType = rssResponse.headers.get('content-type') || '';
     if (!contentType.toLowerCase().includes('xml') && !contentType.toLowerCase().includes('rss')) {
       failures.push({ type: 'rss-content-type', contentType });

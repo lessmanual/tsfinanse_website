@@ -1399,12 +1399,27 @@ function verifyDiscoveryHeaders(failures) {
   const requiredContentTypes = [
     '/.well-known/api-catalog\n  Content-Type: application/linkset+json',
     '/.well-known/agent-skills/index.json\n  Content-Type: application/json',
+    '/sitemap.xml\n  Content-Type: application/xml; charset=utf-8',
+    '/rss.xml\n  Content-Type: application/rss+xml; charset=utf-8',
+    '/robots.txt\n  Content-Type: text/plain; charset=utf-8',
     '/llms.txt\n  Content-Type: text/plain; charset=utf-8',
   ];
 
   for (const requiredContentType of requiredContentTypes) {
     if (!headers.includes(requiredContentType)) {
       failures.push({ type: 'netlify-header-content-type', expected: requiredContentType });
+    }
+  }
+
+  const discoveryCachePaths = ['/sitemap.xml', '/rss.xml', '/robots.txt', '/llms.txt'];
+  for (const path of discoveryCachePaths) {
+    const block = extractNetlifyHeaderBlock(headers, path).toLowerCase();
+    if (!block.includes('cache-control: public, max-age=300')) {
+      failures.push({
+        type: 'discovery-cache-header',
+        path,
+        expected: 'Cache-Control: public, max-age=300',
+      });
     }
   }
 
