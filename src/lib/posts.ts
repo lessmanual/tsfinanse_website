@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import priorityAnswerBlocks from '../../content/gsc-priority-answer-blocks.json';
 
 export interface Post {
   slug: string;
@@ -6,6 +7,7 @@ export interface Post {
   date: string;
   updatedAt?: string;
   description: string;
+  searchAnswer?: string;
   content: string;
   tags?: string[];
   category?: string;
@@ -64,6 +66,12 @@ function normalizeSlug(slug = '') {
     .replace(/[^a-z0-9-]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+function prioritySearchAnswerForSlug(slug = '', fallback = '') {
+  const normalizedSlug = normalizeSlug(slug);
+  const match = priorityAnswerBlocks.find((entry) => normalizeSlug(entry.slug || '') === normalizedSlug);
+  return match?.answer || fallback;
 }
 
 function canonicalizeInternalUrl(rawUrl: string, publishedSlugs: Set<string>) {
@@ -249,6 +257,7 @@ export async function getAllPosts(): Promise<Post[]> {
       date: publishedAt,
       updatedAt: latestDateValue(post.updated_at, publishedAt),
       description: post.description || '',
+      searchAnswer: prioritySearchAnswerForSlug(post.slug, post.description || ''),
       content: normalizeArticleContent(post.content || '', publishedSlugs),
       tags: post.tags || [],
       category: post.category || 'Finansowanie',
@@ -286,6 +295,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
     date: publishedAt,
     updatedAt: latestDateValue(data.updated_at, publishedAt),
     description: data.description || '',
+    searchAnswer: prioritySearchAnswerForSlug(data.slug, data.description || ''),
     content: normalizeArticleContent(data.content || '', publishedSlugs),
     tags: data.tags || [],
     category: data.category || 'Finansowanie',

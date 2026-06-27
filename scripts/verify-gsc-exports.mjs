@@ -207,6 +207,11 @@ function markdownPathForLoc(loc, sitemapPath) {
   return join(sitemapDir, 'md', `${pathname.replace(/^\//, '').replace(/\/$/, '')}.md`);
 }
 
+function extractAnswerBlockMarkdown(markdown) {
+  const match = String(markdown || '').match(/^## W skrócie\s+([\s\S]*?)(?=\n##\s+|$)/m);
+  return match?.[1]?.trim() || '';
+}
+
 function readSitemapLocs(sitemapPath) {
   if (!existsSync(sitemapPath)) {
     throw new Error(`${sitemapPath} does not exist. Run npm run build first or pass --sitemap.`);
@@ -346,11 +351,16 @@ function verifyPriorityQueryTargets({ queryRows, queryTargets, sitemapLocs, site
     const markdown = readFileSync(markdownPath, 'utf8');
     const normalisedMarkdown = normaliseText(markdown);
     const missingTerms = requiredTerms.filter((term) => !normalisedMarkdown.includes(normaliseText(term)));
+    const answerBlock = extractAnswerBlockMarkdown(markdown);
+    const normalisedAnswerBlock = normaliseText(answerBlock);
+    const missingAnswerTerms = requiredTerms.filter((term) => !normalisedAnswerBlock.includes(normaliseText(term)));
     if (missingTerms.length > 0) {
       failures.push({ type: 'priority-query-target-required-terms-missing', query, canonical, missingTerms });
     }
-    if (!markdown.includes('## W skrócie')) {
+    if (!answerBlock) {
       failures.push({ type: 'priority-query-target-answer-block-missing', query, canonical });
+    } else if (missingAnswerTerms.length > 0) {
+      failures.push({ type: 'priority-query-target-answer-block-terms-missing', query, canonical, missingAnswerTerms });
     }
 
     checks.push({
@@ -362,6 +372,7 @@ function verifyPriorityQueryTargets({ queryRows, queryTargets, sitemapLocs, site
       position: queryRow.Position,
       requiredTerms,
       missingTerms,
+      missingAnswerTerms,
     });
   }
 

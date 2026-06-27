@@ -13,6 +13,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
+import { prioritySearchAnswerForPost } from './lib/priority-search-answers.mjs';
 
 // Load .env manually since this script runs outside Vite
 if (existsSync('.env')) {
@@ -450,7 +451,7 @@ function extractAnswerSections(content = '') {
 }
 
 function buildBlogAnswerBlock(post = {}) {
-  const directAnswer = compactAnswerText(post.description || '');
+  const directAnswer = compactAnswerText(prioritySearchAnswerForPost(post));
   if (directAnswer.length < 70) return undefined;
   const extractedSections = extractAnswerSections(post.content || '');
   const fallbackSections = [post.category, ...(post.tags || [])].filter(Boolean).slice(0, 3);

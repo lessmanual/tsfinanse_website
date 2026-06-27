@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
+import { prioritySearchAnswerForPost } from './lib/priority-search-answers.mjs';
 
 if (existsSync('.env')) {
   const envContent = readFileSync('.env', 'utf8');
@@ -321,7 +322,7 @@ function extractAnswerSections(content = '') {
 }
 
 function renderAnswerBlockMarkdown(post = {}) {
-  const directAnswer = compactAnswerText(post.description || '');
+  const directAnswer = compactAnswerText(prioritySearchAnswerForPost(post));
   if (directAnswer.length < 70) return '';
 
   const extractedSections = extractAnswerSections(post.content || '');

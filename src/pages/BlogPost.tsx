@@ -113,7 +113,7 @@ function withHeadingAnchors(content = '', toc: ArticleTocItem[]) {
 }
 
 function buildBlogAnswerBlock(post: Post): BlogAnswerBlock | undefined {
-  const directAnswer = compactAnswerText(post.description);
+  const directAnswer = compactAnswerText(post.searchAnswer || post.description);
   if (directAnswer.length < 70) return undefined;
   const extractedSections = extractAnswerSections(post.content);
   const fallbackSections = [post.category, ...post.tags].filter(Boolean).slice(0, 3);
