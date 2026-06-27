@@ -1017,6 +1017,35 @@ function verifyDiscoveryHeaders(headers, failures) {
   }
 }
 
+async function verifyDirectMarkdownNoindexHeaders(failures, locs) {
+  const sampleLocs = [
+    `${SITE_URL}/`,
+    `${SITE_URL}/blog/`,
+    locs.find((loc) => new URL(loc).pathname.startsWith('/blog/') && new URL(loc).pathname !== '/blog/'),
+  ].filter(Boolean);
+
+  for (const loc of [...new Set(sampleLocs)]) {
+    const markdownUrl = markdownUrlForLoc(loc);
+    const { response } = await fetchText(markdownUrl, {
+      headers: { accept: 'text/markdown,text/plain' },
+    });
+    const contentType = response.headers.get('content-type') || '';
+    const xRobotsTag = response.headers.get('x-robots-tag') || '';
+    const xRobotsTagLower = xRobotsTag.toLowerCase();
+
+    if (!response.ok) {
+      failures.push({ type: 'direct-markdown-status', loc, markdownUrl, status: response.status });
+      continue;
+    }
+    if (!contentType.toLowerCase().includes('text/markdown')) {
+      failures.push({ type: 'direct-markdown-content-type', loc, markdownUrl, contentType });
+    }
+    if (!xRobotsTagLower.includes('noindex') || !xRobotsTagLower.includes('follow')) {
+      failures.push({ type: 'direct-markdown-x-robots-tag', loc, markdownUrl, xRobotsTag });
+    }
+  }
+}
+
 async function verifyLlmsSurface(failures, staleHits, locs) {
   const { response, text } = await fetchText(LLMS_URL, {
     headers: { accept: 'text/plain' },
@@ -1321,6 +1350,7 @@ async function main() {
   if (locs.length !== EXPECTED_LOC_COUNT) {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
   }
+  await verifyDirectMarkdownNoindexHeaders(failures, locs);
   await verifyLlmsSurface(failures, staleHits, locs);
 
   const { response: rssResponse, text: rss } = await fetchText(RSS_URL, {
@@ -1355,6 +1385,10 @@ async function main() {
     if (!hasAlternateMarkdown(html, markdownUrlForLoc(expectedCanonical))) failures.push({ type: 'missing-markdown-alternate', loc });
     if (!hasAlternateRss(html)) failures.push({ type: 'missing-rss-alternate', loc });
     if (/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html)) failures.push({ type: 'noindex', loc });
+    const htmlXRobotsTag = response.headers.get('x-robots-tag') || '';
+    if (htmlXRobotsTag.toLowerCase().includes('noindex')) {
+      failures.push({ type: 'html-x-robots-noindex-header', loc, xRobotsTag: htmlXRobotsTag });
+    }
 
     const noscripts = (html.match(/<noscript\b/gi) || []).length;
     if (noscripts !== 1) failures.push({ type: 'noscript-count', loc, noscripts });

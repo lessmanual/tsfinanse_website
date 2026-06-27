@@ -1002,6 +1002,21 @@ function sha256(content) {
   return createHash('sha256').update(content).digest('hex');
 }
 
+function extractNetlifyHeaderBlock(headers, path) {
+  const lines = headers.split(/\r?\n/);
+  const start = lines.findIndex((line) => line.trim() === path);
+  if (start === -1) return '';
+
+  const block = [];
+  for (const line of lines.slice(start + 1)) {
+    if (line.trim() === '') continue;
+    if (!/^\s/.test(line)) break;
+    block.push(line.trim());
+  }
+
+  return block.join('\n');
+}
+
 function verifyDiscoveryHeaders(failures) {
   if (!existsSync(headersPath)) {
     failures.push({ type: 'missing-netlify-headers', file: headersPath });
@@ -1030,6 +1045,24 @@ function verifyDiscoveryHeaders(failures) {
   for (const requiredContentType of requiredContentTypes) {
     if (!headers.includes(requiredContentType)) {
       failures.push({ type: 'netlify-header-content-type', expected: requiredContentType });
+    }
+  }
+
+  const rootBlock = extractNetlifyHeaderBlock(headers, '/*').toLowerCase();
+  if (rootBlock.includes('x-robots-tag:') && rootBlock.includes('noindex')) {
+    failures.push({ type: 'html-x-robots-noindex-header' });
+  }
+
+  const markdownBlock = extractNetlifyHeaderBlock(headers, '/md/*').toLowerCase();
+  const requiredMarkdownHeaders = [
+    'content-type: text/markdown; charset=utf-8',
+    'vary: accept',
+    'x-robots-tag: noindex, follow',
+  ];
+
+  for (const requiredMarkdownHeader of requiredMarkdownHeaders) {
+    if (!markdownBlock.includes(requiredMarkdownHeader)) {
+      failures.push({ type: 'markdown-header-policy', expected: requiredMarkdownHeader });
     }
   }
 }
