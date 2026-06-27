@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { latestSeoSurfaceDate } from './seoSurfaceDate';
 import priorityAnswerBlocks from '../../content/gsc-priority-answer-blocks.json';
 
 export interface Post {
@@ -255,7 +256,7 @@ export async function getAllPosts(): Promise<Post[]> {
       slug: post.slug,
       title: post.title,
       date: publishedAt,
-      updatedAt: latestDateValue(post.updated_at, publishedAt),
+      updatedAt: latestSeoSurfaceDate(latestDateValue(post.updated_at, publishedAt)),
       description: post.description || '',
       searchAnswer: prioritySearchAnswerForSlug(post.slug, post.description || ''),
       content: normalizeArticleContent(post.content || '', publishedSlugs),
@@ -293,7 +294,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
     slug: data.slug,
     title: data.title,
     date: publishedAt,
-    updatedAt: latestDateValue(data.updated_at, publishedAt),
+    updatedAt: latestSeoSurfaceDate(latestDateValue(data.updated_at, publishedAt)),
     description: data.description || '',
     searchAnswer: prioritySearchAnswerForSlug(data.slug, data.description || ''),
     content: normalizeArticleContent(data.content || '', publishedSlugs),

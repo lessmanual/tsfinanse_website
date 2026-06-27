@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import { latestSeoSurfaceDate } from './lib/seo-surface-date.mjs';
 
 // Load .env manually since this script runs outside Vite
 if (existsSync('.env')) {
@@ -95,7 +96,7 @@ function generateSitemap(posts) {
   xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n';
 
   for (const route of staticRoutes) {
-    const mod = route.lastmod || today;
+    const mod = latestSeoSurfaceDate(route.lastmod || today).split('T')[0];
     const loc = `${SITE_URL}${canonicalPath(route.path)}`;
     xml += `  <url>\n`;
     xml += `    <loc>${loc}</loc>\n`;
@@ -107,7 +108,7 @@ function generateSitemap(posts) {
   }
 
   for (const post of posts) {
-    const lastmod = (latestDateValue(post.updated_at, post.published_at) || today).split('T')[0];
+    const lastmod = latestSeoSurfaceDate(latestDateValue(post.updated_at, post.published_at) || today).split('T')[0];
     const postPath = canonicalPath(`/blog/${post.slug}`);
     const loc = `${SITE_URL}${postPath}`;
     const imageUrl = absoluteImageUrl(post.featured_image);

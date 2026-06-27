@@ -14,6 +14,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 import { prioritySearchAnswerForPost } from './lib/priority-search-answers.mjs';
+import { latestSeoSurfaceDate } from './lib/seo-surface-date.mjs';
 
 // Load .env manually since this script runs outside Vite
 if (existsSync('.env')) {
@@ -746,7 +747,7 @@ async function getBlogPosts() {
       category: p.category || 'Finansowanie',
       author: p.author || 'TS Finanse',
       date: p.published_at,
-      updatedAt: latestDateValue(p.updated_at, p.published_at),
+      updatedAt: latestSeoSurfaceDate(latestDateValue(p.updated_at, p.published_at)),
       image: absoluteImageUrl(p.featured_image),
     }));
   } catch (err) {

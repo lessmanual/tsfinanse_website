@@ -14,6 +14,7 @@ const PUBLIC_DIR = resolve(process.cwd(), 'public');
 const REQUEST_TIMEOUT_MS = 15000;
 const EXPECTED_LOC_COUNT = 73;
 const indexNowKeyFilePattern = /^[A-Za-z0-9_-]{8,128}\.txt$/;
+const minimumSitemapLastmodDate = '2026-06-27';
 const minimumLlmsUpdatedDate = '2026-06-01';
 const minMetaTitleLength = 20;
 const maxMetaTitleLength = 70;
@@ -450,8 +451,29 @@ function verifyBlogEditorialTrust({ html, markdown, loc, failures }) {
 }
 
 function parseSitemapLastmods(sitemap) {
-  return new Map([...sitemap.matchAll(/<url>\s*<loc>([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)]
-    .map((match) => [match[1], match[2]]));
+  const lastmods = new Map();
+  const urlBlocks = [...sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((match) => match[1]);
+
+  for (const block of urlBlocks) {
+    const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    const lastmod = block.match(/<lastmod>([^<]+)<\/lastmod>/)?.[1];
+    if (loc && lastmod) lastmods.set(loc, lastmod);
+  }
+
+  return lastmods;
+}
+
+function verifySitemapLastmods({ sitemapLastmods, locs, failures }) {
+  for (const loc of locs) {
+    const lastmod = sitemapLastmods.get(loc);
+    if (!lastmod) {
+      failures.push({ type: 'sitemap-lastmod-missing', loc });
+      continue;
+    }
+    if (datePart(lastmod) < minimumSitemapLastmodDate) {
+      failures.push({ type: 'sitemap-lastmod-stale', loc, lastmod, minimum: minimumSitemapLastmodDate });
+    }
+  }
 }
 
 function parseSitemapImages(sitemap) {
@@ -1760,6 +1782,7 @@ async function main() {
   if (!sitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"')) {
     failures.push({ type: 'sitemap-image-namespace' });
   }
+  verifySitemapLastmods({ sitemapLastmods, locs, failures });
   verifySitemapHrefLangs({ sitemap, locs, failures });
   if (locs.length !== EXPECTED_LOC_COUNT) {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });

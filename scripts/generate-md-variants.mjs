@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { prioritySearchAnswerForPost } from './lib/priority-search-answers.mjs';
+import { latestSeoSurfaceDate } from './lib/seo-surface-date.mjs';
 
 if (existsSync('.env')) {
   const envContent = readFileSync('.env', 'utf8');
@@ -106,7 +107,7 @@ async function getBlogPosts() {
     category: post.category || 'Finansowanie',
     author: post.author || 'TS Finanse',
     date: post.published_at,
-    updatedAt: latestDateValue(post.updated_at, post.published_at),
+    updatedAt: latestSeoSurfaceDate(latestDateValue(post.updated_at, post.published_at)),
   }));
 }
 
