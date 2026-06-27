@@ -132,9 +132,29 @@ function extractMetaProperty(html, property) {
     || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${escaped}["']`, 'i'))?.[1];
 }
 
+function extractMetaName(html, name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return html.match(new RegExp(`<meta[^>]+name=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i'))?.[1]
+    || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${escaped}["']`, 'i'))?.[1];
+}
+
 function parseSitemapLastmods(sitemap) {
   return new Map([...sitemap.matchAll(/<url>\s*<loc>([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)]
     .map((match) => [match[1], match[2]]));
+}
+
+function parseSitemapImages(sitemap) {
+  const images = new Map();
+  const urlBlocks = [...sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((match) => match[1]);
+
+  for (const block of urlBlocks) {
+    const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    if (!loc) continue;
+    const imageLocs = [...block.matchAll(/<image:loc>([^<]+)<\/image:loc>/g)].map((match) => match[1]);
+    images.set(loc, imageLocs);
+  }
+
+  return images;
 }
 
 function datePart(value) {
@@ -241,6 +261,15 @@ function extractExpectedFaqEntries(markdown) {
   }).slice(0, maxBlogFaqEntries);
 }
 
+function isAbsoluteHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function collectJsonLd(html, failures, loc) {
   const objects = [];
   const scripts = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
@@ -259,6 +288,41 @@ function collectJsonLd(html, failures, loc) {
   }
 
   return objects;
+}
+
+function verifyBlogImageSignals({ html, loc, sitemapImages, failures }) {
+  const objects = collectJsonLd(html, failures, loc);
+  const blogPosting = objects.find((entry) => entry && entry['@type'] === 'BlogPosting');
+  const sitemapImageLocs = sitemapImages.get(loc) || [];
+  const sitemapImage = sitemapImageLocs[0];
+  const ogImage = extractMetaProperty(html, 'og:image');
+  const twitterImage = extractMetaName(html, 'twitter:image');
+  const blogPostingImage = typeof blogPosting?.image === 'string' ? blogPosting.image : undefined;
+
+  if (sitemapImageLocs.length !== 1) {
+    failures.push({ type: 'blog-sitemap-image-count', loc, actual: sitemapImageLocs.length });
+  }
+
+  for (const [surface, imageUrl] of [
+    ['sitemap', sitemapImage],
+    ['og', ogImage],
+    ['twitter', twitterImage],
+    ['blogposting', blogPostingImage],
+  ]) {
+    if (!imageUrl || !isAbsoluteHttpUrl(imageUrl)) {
+      failures.push({ type: 'blog-image-absolute-url', loc, surface, imageUrl });
+    }
+  }
+
+  if (sitemapImage && ogImage && sitemapImage !== ogImage) {
+    failures.push({ type: 'blog-image-og-sitemap', loc, sitemapImage, ogImage });
+  }
+  if (sitemapImage && twitterImage && sitemapImage !== twitterImage) {
+    failures.push({ type: 'blog-image-twitter-sitemap', loc, sitemapImage, twitterImage });
+  }
+  if (sitemapImage && blogPostingImage && sitemapImage !== blogPostingImage) {
+    failures.push({ type: 'blog-image-schema-sitemap', loc, sitemapImage, blogPostingImage });
+  }
 }
 
 function verifyBlogFaqSchema({ html, markdown, loc, failures }) {
@@ -765,6 +829,10 @@ async function main() {
 
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
   const sitemapLastmods = parseSitemapLastmods(sitemap);
+  const sitemapImages = parseSitemapImages(sitemap);
+  if (!sitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"')) {
+    failures.push({ type: 'sitemap-image-namespace' });
+  }
   if (locs.length !== EXPECTED_LOC_COUNT) {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
   }
@@ -820,6 +888,12 @@ async function main() {
     scanStale(markdown, loc, 'markdown', staleHits);
 
     if (isBlogPost) {
+      verifyBlogImageSignals({
+        html,
+        loc,
+        sitemapImages,
+        failures,
+      });
       verifyBlogFreshness({
         html,
         markdown,

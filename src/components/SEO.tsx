@@ -37,6 +37,18 @@ function latestDateValue(first?: string, second?: string): string {
   return firstTime >= secondTime ? firstValue : secondValue;
 }
 
+function absoluteImageUrl(rawUrl?: string) {
+  if (!rawUrl) return undefined;
+
+  try {
+    const url = new URL(rawUrl, siteUrl);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined;
+    return url.href;
+  } catch {
+    return undefined;
+  }
+}
+
 function stripHtml(value = '') {
   return value
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -166,6 +178,7 @@ export function SEO({
   const fullTitle = title ? `${title} | TS Finanse` : defaultTitle;
   const canonical = canonicalUrl ? `${siteUrl}${normalizeCanonicalPath(canonicalUrl)}` : `${siteUrl}/`;
   const normalisedModifiedTime = latestDateValue(modifiedTime, publishedTime);
+  const resolvedOgImage = absoluteImageUrl(ogImage) || defaultOgImage;
 
   return (
     <Helmet>
@@ -181,7 +194,7 @@ export function SEO({
       <meta property="og:url" content={canonical} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={ogImage} />
+      <meta property="og:image" content={resolvedOgImage} />
       <meta property="og:site_name" content="TS Finanse" />
       <meta property="og:locale" content="pl_PL" />
       {ogType === 'article' && publishedTime && (
@@ -196,7 +209,7 @@ export function SEO({
       <meta name="twitter:url" content={canonical} />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:image" content={resolvedOgImage} />
 
       {/* Additional SEO Meta Tags */}
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -442,7 +455,7 @@ export const blogPostingSchema = (post: {
         url: 'https://tsfinanse.com/logo.webp',
       },
     },
-    image: post.image || 'https://tsfinanse.com/og-image.webp',
+    image: absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp',
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `https://tsfinanse.com/blog/${post.slug}/`,

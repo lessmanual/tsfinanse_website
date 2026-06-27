@@ -23,6 +23,18 @@ function canonicalPath(path) {
   return path.endsWith('/') ? path : `${path}/`;
 }
 
+function absoluteImageUrl(rawUrl) {
+  if (!rawUrl) return undefined;
+
+  try {
+    const url = new URL(rawUrl, SITE_URL);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined;
+    return url.href;
+  } catch {
+    return undefined;
+  }
+}
+
 function latestDateValue(first, second) {
   const firstValue = first || '';
   const secondValue = second || '';
@@ -58,7 +70,7 @@ async function getBlogPosts() {
   const supabase = createClient(supabaseUrl, supabaseKey);
   const { data, error } = await supabase
     .from('ts_finanse_posts')
-    .select('slug, title, description, published_at, updated_at')
+    .select('slug, title, description, featured_image, published_at, updated_at')
     .not('published_at', 'is', null)
     .lte('published_at', new Date().toISOString())
     .order('published_at', { ascending: false });
@@ -75,7 +87,7 @@ function generateSitemap(posts) {
   const today = new Date().toISOString().split('T')[0];
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
 
   for (const route of staticRoutes) {
     const mod = route.lastmod || today;
@@ -90,11 +102,21 @@ function generateSitemap(posts) {
   for (const post of posts) {
     const lastmod = (latestDateValue(post.updated_at, post.published_at) || today).split('T')[0];
     const postPath = canonicalPath(`/blog/${post.slug}`);
+    const imageUrl = absoluteImageUrl(post.featured_image);
     xml += `  <url>\n`;
     xml += `    <loc>${SITE_URL}${postPath}</loc>\n`;
     xml += `    <lastmod>${lastmod}</lastmod>\n`;
     xml += `    <changefreq>monthly</changefreq>\n`;
     xml += `    <priority>0.6</priority>\n`;
+    if (imageUrl) {
+      xml += `    <image:image>\n`;
+      xml += `      <image:loc>${escapeXml(imageUrl)}</image:loc>\n`;
+      xml += `      <image:title>${escapeXml(post.title || post.slug)}</image:title>\n`;
+      if (post.description) {
+        xml += `      <image:caption>${escapeXml(post.description)}</image:caption>\n`;
+      }
+      xml += `    </image:image>\n`;
+    }
     xml += `  </url>\n`;
   }
 

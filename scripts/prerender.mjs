@@ -36,6 +36,18 @@ function canonicalPath(path) {
   return path.endsWith('/') ? path : `${path}/`;
 }
 
+function absoluteImageUrl(rawUrl) {
+  if (!rawUrl) return undefined;
+
+  try {
+    const url = new URL(rawUrl, SITE_URL);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined;
+    return url.href;
+  } catch {
+    return undefined;
+  }
+}
+
 function latestDateValue(first, second) {
   const firstValue = first || '';
   const secondValue = second || '';
@@ -214,7 +226,7 @@ function blogPostingSchema(post) {
     ...(articleText ? { wordCount: articleText.split(/\s+/).filter(Boolean).length } : {}),
     author: { '@type': 'Organization', name: 'TS Finanse', url: 'https://tsfinanse.com' },
     publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' } },
-    image: post.image || 'https://tsfinanse.com/og-image.webp',
+    image: absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp',
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
     ...(articleText ? { articleBody: articleText.slice(0, 5000) } : {}),
   };
@@ -408,7 +420,7 @@ async function getBlogPosts() {
       author: p.author || 'TS Finanse',
       date: p.published_at,
       updatedAt: latestDateValue(p.updated_at, p.published_at),
-      image: p.featured_image,
+      image: absoluteImageUrl(p.featured_image),
     }));
   } catch (err) {
     console.error('  Failed to fetch blog posts:', err.message);
@@ -423,7 +435,7 @@ async function getBlogPosts() {
 function buildMetaTags(route) {
   const canonical = `${SITE_URL}${canonicalPath(route.path)}`;
   const ogType = route.ogType || 'website';
-  const ogImage = route.ogImage || `${SITE_URL}/og-image.webp`;
+  const ogImage = absoluteImageUrl(route.ogImage) || `${SITE_URL}/og-image.webp`;
 
   let tags = '';
   tags += `    <title>${esc(route.title)}</title>\n`;
@@ -778,7 +790,7 @@ function buildNoscript(route, post, allPosts = []) {
 <h1>${esc(post.title)}</h1>
 <p>${esc(post.description)}</p>
 <p>${esc(post.category || 'Finansowanie')} | Opublikowano: ${esc(date)} | Aktualizacja: ${esc(updated)} | ${esc(post.author || 'TS Finanse')}</p>
-${post.image ? `<p><img src="${esc(post.image)}" alt="${esc(post.title)}" loading="lazy" style="max-width:100%;height:auto" /></p>` : ''}
+${post.image ? `<p><img src="${esc(absoluteImageUrl(post.image) || post.image)}" alt="${esc(post.title)}" loading="lazy" style="max-width:100%;height:auto" /></p>` : ''}
 ${renderStaticPostContent(post, publishedSlugs)}
 ${renderRelatedPosts(post, allPosts)}
 ${tags}

@@ -30,6 +30,18 @@ const relatedStopWords = new Set([
 const siteUrl = 'https://tsfinanse.com';
 let publishedSlugCache: Set<string> | null = null;
 
+function absoluteImageUrl(rawUrl?: string | null) {
+  if (!rawUrl) return undefined;
+
+  try {
+    const url = new URL(rawUrl, siteUrl);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined;
+    return url.href;
+  } catch {
+    return undefined;
+  }
+}
+
 function latestDateValue(first?: string | null, second?: string | null): string {
   const firstValue = first || '';
   const secondValue = second || '';
@@ -240,7 +252,7 @@ export async function getAllPosts(): Promise<Post[]> {
       content: normalizeArticleContent(post.content || '', publishedSlugs),
       tags: post.tags || [],
       category: post.category || 'Finansowanie',
-      featuredImage: post.featured_image,
+      featuredImage: absoluteImageUrl(post.featured_image),
       author: post.author || 'TS Finanse',
     };
   });
@@ -277,7 +289,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
     content: normalizeArticleContent(data.content || '', publishedSlugs),
     tags: data.tags || [],
     category: data.category || 'Finansowanie',
-    featuredImage: data.featured_image,
+    featuredImage: absoluteImageUrl(data.featured_image),
     author: data.author || 'TS Finanse',
   };
 }
