@@ -79,6 +79,13 @@ function markdownPathForUrl(url) {
   return join(root, 'dist', `md${normalised}.md`);
 }
 
+function markdownUrlForLoc(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return `${SITE_URL}/md/index.md`;
+  const normalised = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  return `${SITE_URL}/md${normalised}.md`;
+}
+
 function collectMarkdownFiles(dir) {
   if (!existsSync(dir)) return [];
 
@@ -926,7 +933,7 @@ function verifyDiscoveryHeaders(failures) {
   }
 }
 
-function verifyLlmsSurface(failures, staleHits) {
+function verifyLlmsSurface(failures, staleHits, locs) {
   if (!existsSync(llmsPath)) {
     failures.push({ type: 'missing-llms', file: llmsPath });
     return;
@@ -952,6 +959,17 @@ function verifyLlmsSurface(failures, staleHits) {
   for (const fragment of requiredFragments) {
     if (!llms.includes(fragment)) {
       failures.push({ type: 'llms-required-fragment', fragment });
+    }
+  }
+
+  for (const loc of locs) {
+    if (!llms.includes(loc)) {
+      failures.push({ type: 'llms-missing-canonical-url', loc });
+    }
+
+    const markdownUrl = markdownUrlForLoc(loc);
+    if (!llms.includes(markdownUrl)) {
+      failures.push({ type: 'llms-missing-markdown-url', loc, markdownUrl });
     }
   }
 
@@ -1193,7 +1211,7 @@ if (!sitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/
 }
 
 verifyDiscoveryHeaders(failures);
-verifyLlmsSurface(failures, staleHits);
+verifyLlmsSurface(failures, staleHits, locs);
 verifyApiCatalog(failures);
 verifyAgentSkills(failures, staleHits);
 verifyRobotsPolicy(failures);

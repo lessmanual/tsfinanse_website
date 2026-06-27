@@ -64,6 +64,13 @@ function canonicalPath(pathname) {
   return pathname.endsWith('/') ? pathname : `${pathname}/`;
 }
 
+function markdownUrlForLoc(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return `${SITE_URL}/md/index.md`;
+  const normalised = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  return `${SITE_URL}/md${normalised}.md`;
+}
+
 async function fetchText(url, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -909,7 +916,7 @@ function verifyDiscoveryHeaders(headers, failures) {
   }
 }
 
-async function verifyLlmsSurface(failures, staleHits) {
+async function verifyLlmsSurface(failures, staleHits, locs) {
   const { response, text } = await fetchText(LLMS_URL, {
     headers: { accept: 'text/plain' },
   });
@@ -943,6 +950,17 @@ async function verifyLlmsSurface(failures, staleHits) {
   for (const fragment of requiredFragments) {
     if (!text.includes(fragment)) {
       failures.push({ type: 'llms-required-fragment', fragment });
+    }
+  }
+
+  for (const loc of locs) {
+    if (!text.includes(loc)) {
+      failures.push({ type: 'llms-missing-canonical-url', loc });
+    }
+
+    const markdownUrl = markdownUrlForLoc(loc);
+    if (!text.includes(markdownUrl)) {
+      failures.push({ type: 'llms-missing-markdown-url', loc, markdownUrl });
     }
   }
 
@@ -1174,7 +1192,6 @@ async function main() {
     verifyDiscoveryHeaders(homepageResponse.headers, failures);
   }
 
-  await verifyLlmsSurface(failures, staleHits);
   await verifyApiCatalog(failures);
   await verifyAgentSkills(failures, staleHits);
 
@@ -1203,6 +1220,7 @@ async function main() {
   if (locs.length !== EXPECTED_LOC_COUNT) {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
   }
+  await verifyLlmsSurface(failures, staleHits, locs);
 
   const { response: rssResponse, text: rss } = await fetchText(RSS_URL, {
     headers: { accept: 'application/rss+xml,application/xml,text/xml,*/*' },
