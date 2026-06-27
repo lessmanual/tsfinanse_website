@@ -19,6 +19,7 @@ const defaultOgImage = `${siteUrl}/og-image.webp`;
 const titleSuffix = ' | TS Finanse';
 const maxMetaTitleLength = 70;
 const maxMetaDescriptionLength = 180;
+const indexingMetaDirective = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
 export const officialReferenceLinks = [
   {
@@ -379,9 +380,9 @@ export function SEO({
       <meta name="twitter:image" content={resolvedOgImage} />
 
       {/* Additional SEO Meta Tags */}
-      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-      <meta name="googlebot" content="index, follow" />
-      <meta name="bingbot" content="index, follow" />
+      <meta name="robots" content={indexingMetaDirective} />
+      <meta name="googlebot" content={indexingMetaDirective} />
+      <meta name="bingbot" content={indexingMetaDirective} />
       <meta name="language" content="Polish" />
       <meta name="geo.region" content="PL" />
       <meta name="geo.placename" content="Polska" />

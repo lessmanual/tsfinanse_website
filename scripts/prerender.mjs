@@ -35,6 +35,7 @@ const SITE_URL = 'https://tsfinanse.com';
 const TITLE_SUFFIX = ' | TS Finanse';
 const MAX_META_TITLE_LENGTH = 70;
 const MAX_META_DESCRIPTION_LENGTH = 180;
+const INDEXING_META_DIRECTIVE = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 const OFFICIAL_REFERENCE_LINKS = [
   ['KNF - ostrzeżenia publiczne', 'https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne'],
   ['UOKiK - informacje publiczne', 'https://uokik.gov.pl/'],
@@ -776,7 +777,9 @@ function buildMetaTags(route) {
   tags += `    <link rel="alternate" hreflang="pl-PL" href="${canonical}" />\n`;
   tags += `    <link rel="alternate" hreflang="x-default" href="${canonical}" />\n`;
   tags += `    <link rel="alternate" type="text/markdown" href="${markdownAlternate}" />\n`;
-  tags += `    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />\n`;
+  tags += `    <meta name="robots" content="${INDEXING_META_DIRECTIVE}" />\n`;
+  tags += `    <meta name="googlebot" content="${INDEXING_META_DIRECTIVE}" />\n`;
+  tags += `    <meta name="bingbot" content="${INDEXING_META_DIRECTIVE}" />\n`;
   // Open Graph
   tags += `    <meta property="og:type" content="${ogType}" />\n`;
   tags += `    <meta property="og:url" content="${canonical}" />\n`;

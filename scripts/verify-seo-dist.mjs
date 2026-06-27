@@ -29,6 +29,7 @@ const maxMetaDescriptionLength = 180;
 const minAnswerBlockLength = 70;
 const maxAnswerBlockLength = 360;
 const minArticleTocLinks = 2;
+const expectedIndexingMetaDirective = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 const officialReferenceUrls = [
   'https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne',
   'https://uokik.gov.pl/',
@@ -360,6 +361,9 @@ function verifySnippetMetadata({ html, loc, failures, titlesByValue, description
   const ogDescription = extractMetaProperty(html, 'og:description') || '';
   const twitterTitle = extractMetaName(html, 'twitter:title') || '';
   const twitterDescription = extractMetaName(html, 'twitter:description') || '';
+  const robots = extractMetaName(html, 'robots') || '';
+  const googlebot = extractMetaName(html, 'googlebot') || '';
+  const bingbot = extractMetaName(html, 'bingbot') || '';
 
   if (title.length < minMetaTitleLength || title.length > maxMetaTitleLength) {
     failures.push({ type: 'snippet-title-length', loc, length: title.length, title });
@@ -372,6 +376,15 @@ function verifySnippetMetadata({ html, loc, failures, titlesByValue, description
   if (ogDescription !== description) failures.push({ type: 'snippet-og-description-mismatch', loc });
   if (twitterTitle !== title) failures.push({ type: 'snippet-twitter-title-mismatch', loc, title, twitterTitle });
   if (twitterDescription !== description) failures.push({ type: 'snippet-twitter-description-mismatch', loc });
+  if (robots !== expectedIndexingMetaDirective) {
+    failures.push({ type: 'snippet-robots-directive', loc, robots, expected: expectedIndexingMetaDirective });
+  }
+  if (googlebot !== expectedIndexingMetaDirective) {
+    failures.push({ type: 'snippet-googlebot-directive', loc, googlebot, expected: expectedIndexingMetaDirective });
+  }
+  if (bingbot !== expectedIndexingMetaDirective) {
+    failures.push({ type: 'snippet-bingbot-directive', loc, bingbot, expected: expectedIndexingMetaDirective });
+  }
 
   rememberSnippetValue(titlesByValue, title, loc);
   rememberSnippetValue(descriptionsByValue, description, loc);
