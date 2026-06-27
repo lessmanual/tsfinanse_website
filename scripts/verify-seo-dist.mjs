@@ -78,6 +78,18 @@ function collectMarkdownFiles(dir) {
     });
 }
 
+function collectHtmlFiles(dir) {
+  if (!existsSync(dir)) return [];
+
+  return readdirSync(dir)
+    .flatMap((entry) => {
+      const path = join(dir, entry);
+      const stats = statSync(path);
+      if (stats.isDirectory()) return collectHtmlFiles(path);
+      return path.endsWith('.html') ? [path] : [];
+    });
+}
+
 function extractCanonical(html) {
   return html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1]
     || html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1];
@@ -602,6 +614,17 @@ const expectedMarkdownFiles = new Set(locs.map((loc) => markdownPathForUrl(loc))
 for (const markdownFile of collectMarkdownFiles(join(root, 'dist', 'md'))) {
   if (!expectedMarkdownFiles.has(markdownFile)) {
     failures.push({ type: 'unexpected-markdown-artifact', file: markdownFile });
+  }
+}
+
+const expectedHtmlFiles = new Set([
+  ...locs.map((loc) => htmlPathForUrl(loc)),
+  join(root, 'dist', '404.html'),
+  join(root, 'dist', 'admin', 'index.html'),
+]);
+for (const htmlFile of collectHtmlFiles(join(root, 'dist'))) {
+  if (!expectedHtmlFiles.has(htmlFile)) {
+    failures.push({ type: 'unexpected-html-artifact', file: htmlFile });
   }
 }
 
