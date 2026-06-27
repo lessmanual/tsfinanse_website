@@ -1,4 +1,6 @@
 import { createHash } from 'crypto';
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
 
 const SITE_URL = 'https://tsfinanse.com';
 const SITEMAP_URL = `${SITE_URL}/sitemap.xml`;
@@ -7,6 +9,7 @@ const ROBOTS_URL = `${SITE_URL}/robots.txt`;
 const LLMS_URL = `${SITE_URL}/llms.txt`;
 const API_CATALOG_URL = `${SITE_URL}/.well-known/api-catalog`;
 const AGENT_SKILLS_INDEX_URL = `${SITE_URL}/.well-known/agent-skills/index.json`;
+const VARIANT_REDIRECT_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-variant-redirect-targets.json');
 const REQUEST_TIMEOUT_MS = 15000;
 const EXPECTED_LOC_COUNT = 73;
 const minimumLlmsUpdatedDate = '2026-06-01';
@@ -1533,6 +1536,60 @@ async function verifyNoSlashCanonicalRedirects(failures, locs) {
   }
 }
 
+function readVariantRedirectTargets(failures) {
+  if (!existsSync(VARIANT_REDIRECT_TARGETS_PATH)) {
+    failures.push({ type: 'variant-redirect-targets-file-missing', file: VARIANT_REDIRECT_TARGETS_PATH });
+    return [];
+  }
+
+  try {
+    const targets = JSON.parse(readFileSync(VARIANT_REDIRECT_TARGETS_PATH, 'utf8'));
+    if (!Array.isArray(targets) || targets.length === 0) {
+      failures.push({ type: 'variant-redirect-targets-empty', file: VARIANT_REDIRECT_TARGETS_PATH });
+      return [];
+    }
+
+    return targets;
+  } catch (error) {
+    failures.push({
+      type: 'variant-redirect-targets-json-invalid',
+      file: VARIANT_REDIRECT_TARGETS_PATH,
+      message: error.message,
+    });
+    return [];
+  }
+}
+
+async function verifyGscVariantRedirectTargets(failures, locs) {
+  const locSet = new Set(locs);
+  const targets = readVariantRedirectTargets(failures);
+
+  for (const target of targets) {
+    const rawUrl = target.rawUrl;
+    const canonical = target.canonical;
+
+    if (!rawUrl || !canonical) {
+      failures.push({ type: 'variant-redirect-target-invalid-entry', target });
+      continue;
+    }
+    if (!locSet.has(canonical)) {
+      failures.push({ type: 'variant-redirect-target-canonical-missing-from-sitemap', rawUrl, canonical });
+      continue;
+    }
+
+    const result = await fetchRedirectTrace(rawUrl);
+    if (result.finalStatus !== 200) {
+      failures.push({ type: 'variant-redirect-target-status', rawUrl, canonical, finalStatus: result.finalStatus, trace: result.trace });
+    }
+    if (result.finalUrl !== canonical) {
+      failures.push({ type: 'variant-redirect-target-final-url', rawUrl, canonical, finalUrl: result.finalUrl, trace: result.trace });
+    }
+    if (result.redirectCount < 1) {
+      failures.push({ type: 'variant-redirect-target-count', rawUrl, canonical, redirectCount: result.redirectCount, trace: result.trace });
+    }
+  }
+}
+
 async function main() {
   const failures = [];
   const staleHits = [];
@@ -1579,6 +1636,7 @@ async function main() {
   }
   await verifyIndexHtmlCanonicalRedirects(failures, locs);
   await verifyNoSlashCanonicalRedirects(failures, locs);
+  await verifyGscVariantRedirectTargets(failures, locs);
   await verifyDirectMarkdownNoindexHeaders(failures, locs);
   await verifyLlmsSurface(failures, staleHits, locs);
 

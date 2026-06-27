@@ -6,6 +6,7 @@ const HOSTS = new Set(['tsfinanse.com', 'www.tsfinanse.com']);
 const DEFAULT_SITEMAP_PATH = resolve(process.cwd(), 'dist', 'sitemap.xml');
 const DEFAULT_QUERY_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-priority-query-targets.json');
 const DEFAULT_BRAND_QUERY_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-brand-query-targets.json');
+const DEFAULT_VARIANT_REDIRECT_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-variant-redirect-targets.json');
 const COVERAGE_REASON_THRESHOLDS = {
   redirectError: 'Redirect error',
   discoveredNotIndexed: 'Discovered - currently not indexed',
@@ -18,6 +19,7 @@ function parseArgs(args) {
     sitemapPath: DEFAULT_SITEMAP_PATH,
     queryTargetsPath: DEFAULT_QUERY_TARGETS_PATH,
     brandQueryTargetsPath: DEFAULT_BRAND_QUERY_TARGETS_PATH,
+    variantRedirectTargetsPath: DEFAULT_VARIANT_REDIRECT_TARGETS_PATH,
     coverageDir: process.env.GSC_COVERAGE_DIR,
     performanceDir: process.env.GSC_PERFORMANCE_DIR,
     coverageLimits: {},
@@ -43,6 +45,13 @@ function parseArgs(args) {
       const value = args[index + 1];
       if (!value) throw new Error('--brand-query-targets requires a file path');
       options.brandQueryTargetsPath = resolve(process.cwd(), value);
+      index += 1;
+      continue;
+    }
+    if (arg === '--variant-redirect-targets') {
+      const value = args[index + 1];
+      if (!value) throw new Error('--variant-redirect-targets requires a file path');
+      options.variantRedirectTargetsPath = resolve(process.cwd(), value);
       index += 1;
       continue;
     }
@@ -198,6 +207,12 @@ function canonicaliseGoogleUrl(rawUrl) {
   };
 }
 
+function noSlashRedirectPathForLoc(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return undefined;
+  return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+}
+
 function normaliseText(value) {
   return String(value || '')
     .toLowerCase()
@@ -227,6 +242,33 @@ function readSitemapLocs(sitemapPath) {
   }
   const sitemap = readFileSync(sitemapPath, 'utf8');
   return new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]));
+}
+
+function parseRedirectRules(source) {
+  return source
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => {
+      const [from, to, status] = line.split(/\s+/);
+      return { from, to, status };
+    });
+}
+
+function readRedirectRulesForSitemap(sitemapPath) {
+  const redirectsPath = join(dirname(sitemapPath), '_redirects');
+  if (!existsSync(redirectsPath)) {
+    return { redirectsPath, rules: [] };
+  }
+
+  return {
+    redirectsPath,
+    rules: parseRedirectRules(readFileSync(redirectsPath, 'utf8')),
+  };
+}
+
+function hasRedirectRule(rules, { from, to, status = '301' }) {
+  return rules.some((rule) => rule.from === from && rule.to === to && rule.status === status);
 }
 
 function groupCoverageIssues(coverageRows) {
@@ -452,13 +494,116 @@ function verifyBrandQueryTargets({ queryRows, brandQueryTargets, sitemapLocs, si
   return { checks, failures };
 }
 
-function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck, brandQueryTargetCheck) {
+function verifyVariantRedirectTargets({ performanceCheck, variantRedirectTargets, sitemapLocs, sitemapPath }) {
+  if (!Array.isArray(variantRedirectTargets) || variantRedirectTargets.length === 0) {
+    return {
+      checks: [],
+      failures: [{ type: 'variant-redirect-targets-empty' }],
+    };
+  }
+
+  const performanceVariantsByRawUrl = new Map(performanceCheck.variants.map((entry) => [entry.rawUrl, entry]));
+  const targetsByRawUrl = new Map(variantRedirectTargets.map((entry) => [entry.rawUrl, entry]));
+  const { redirectsPath, rules } = readRedirectRulesForSitemap(sitemapPath);
+  const checks = [];
+  const failures = [];
+
+  for (const variant of performanceCheck.variants) {
+    if (!targetsByRawUrl.has(variant.rawUrl)) {
+      failures.push({
+        type: 'variant-redirect-target-missing-for-performance-url',
+        rawUrl: variant.rawUrl,
+        canonical: variant.canonical,
+        impressions: variant.impressions,
+      });
+    }
+  }
+
+  for (const target of variantRedirectTargets) {
+    const rawUrl = target.rawUrl;
+    const canonical = target.canonical;
+
+    if (!rawUrl || !canonical) {
+      failures.push({ type: 'variant-redirect-target-invalid-entry', target });
+      continue;
+    }
+
+    const canonicalised = canonicaliseGoogleUrl(rawUrl);
+    const performanceVariant = performanceVariantsByRawUrl.get(rawUrl);
+    const rawPathname = new URL(rawUrl).pathname;
+    const canonicalPathname = new URL(canonical).pathname;
+    const requiredRedirects = [];
+
+    if (!canonicalised.isVariant) {
+      failures.push({ type: 'variant-redirect-target-not-variant', rawUrl, canonical });
+    }
+    if (!performanceVariant) {
+      failures.push({ type: 'variant-redirect-target-not-in-performance-export', rawUrl, canonical });
+    }
+    if (canonicalised.canonical !== canonical) {
+      failures.push({
+        type: 'variant-redirect-target-canonical-mismatch',
+        rawUrl,
+        expectedCanonical: canonicalised.canonical,
+        canonical,
+      });
+    }
+    if (!sitemapLocs.has(canonical)) {
+      failures.push({ type: 'variant-redirect-target-canonical-missing-from-sitemap', rawUrl, canonical });
+    }
+
+    if (rawPathname.endsWith('/index.html')) {
+      requiredRedirects.push({
+        from: rawPathname,
+        to: canonicalPathname,
+        status: '301',
+      });
+    } else if (!rawPathname.endsWith('/')) {
+      const from = noSlashRedirectPathForLoc(canonical);
+      if (from) {
+        requiredRedirects.push({
+          from,
+          to: canonicalPathname,
+          status: '301',
+        });
+      }
+    }
+
+    for (const redirect of requiredRedirects) {
+      if (!hasRedirectRule(rules, redirect)) {
+        failures.push({
+          type: 'variant-redirect-rule-missing',
+          rawUrl,
+          canonical,
+          redirectsPath,
+          ...redirect,
+        });
+      }
+    }
+
+    checks.push({
+      rawUrl,
+      canonical,
+      clicks: performanceVariant?.clicks ?? 0,
+      impressions: performanceVariant?.impressions ?? 0,
+      ctr: performanceVariant?.ctr ?? '',
+      position: performanceVariant?.position ?? '',
+      reason: target.reason || '',
+      requiredRedirects,
+    });
+  }
+
+  return { checks, failures };
+}
+
+function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck, brandQueryTargetCheck, variantRedirectTargetCheck) {
   const totalImpressions = performanceCheck.mapped.reduce((sum, item) => sum + item.impressions, 0);
   const totalClicks = performanceCheck.mapped.reduce((sum, item) => sum + item.clicks, 0);
   const variantImpressions = performanceCheck.variants.reduce((sum, item) => sum + item.impressions, 0);
   const coverageIssuePages = coverageIssues.reduce((sum, issue) => sum + issue.pages, 0);
   const queryTargetImpressions = queryTargetCheck.checks.reduce((sum, item) => sum + item.impressions, 0);
   const brandQueryTargetImpressions = brandQueryTargetCheck.checks.reduce((sum, item) => sum + item.impressions, 0);
+  const variantRedirectTargetImpressions = variantRedirectTargetCheck.checks.reduce((sum, item) => sum + item.impressions, 0);
 
   return {
     sitemapUrlCount: sitemapLocs.size,
@@ -482,6 +627,10 @@ function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFai
     brandQueryTargetImpressions: brandQueryTargetImpressions,
     brandQueryTargetFailures: brandQueryTargetCheck.failures,
     brandQueryTargets: brandQueryTargetCheck.checks.slice(0, 20),
+    variantRedirectTargetCount: variantRedirectTargetCheck.checks.length,
+    variantRedirectTargetImpressions,
+    variantRedirectTargetFailures: variantRedirectTargetCheck.failures,
+    variantRedirectTargets: variantRedirectTargetCheck.checks.slice(0, 20),
     variants: performanceCheck.variants.slice(0, 20),
     unmapped: performanceCheck.unmapped.slice(0, 20),
     unexpectedHosts: performanceCheck.unexpectedHosts.slice(0, 20),
@@ -499,6 +648,7 @@ function main() {
   const queryRows = readCsv(join(options.performanceDir, 'Queries.csv'));
   const queryTargets = readJson(options.queryTargetsPath);
   const brandQueryTargets = readJson(options.brandQueryTargetsPath);
+  const variantRedirectTargets = readJson(options.variantRedirectTargetsPath);
   const queryTargetCheck = verifyPriorityQueryTargets({
     queryRows,
     queryTargets,
@@ -511,6 +661,12 @@ function main() {
     sitemapLocs,
     sitemapPath: options.sitemapPath,
   });
+  const variantRedirectTargetCheck = verifyVariantRedirectTargets({
+    performanceCheck,
+    variantRedirectTargets,
+    sitemapLocs,
+    sitemapPath: options.sitemapPath,
+  });
   const summary = summarise(
     performanceCheck,
     coverageIssues,
@@ -519,6 +675,7 @@ function main() {
     sitemapLocs,
     queryTargetCheck,
     brandQueryTargetCheck,
+    variantRedirectTargetCheck,
   );
 
   console.log(JSON.stringify(summary, null, 2));
@@ -529,6 +686,7 @@ function main() {
     || summary.coverageFailures.length > 0
     || summary.priorityQueryTargetFailures.length > 0
     || summary.brandQueryTargetFailures.length > 0
+    || summary.variantRedirectTargetFailures.length > 0
     || summary.performanceUrlCount === 0
   ) {
     process.exit(1);
