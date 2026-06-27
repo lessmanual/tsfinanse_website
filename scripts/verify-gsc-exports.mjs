@@ -7,6 +7,7 @@ const DEFAULT_SITEMAP_PATH = resolve(process.cwd(), 'dist', 'sitemap.xml');
 const DEFAULT_QUERY_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-priority-query-targets.json');
 const DEFAULT_BRAND_QUERY_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-brand-query-targets.json');
 const DEFAULT_VARIANT_REDIRECT_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-variant-redirect-targets.json');
+const DEFAULT_COVERAGE_REMEDIATION_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-coverage-remediation-targets.json');
 const COVERAGE_REASON_THRESHOLDS = {
   redirectError: 'Redirect error',
   discoveredNotIndexed: 'Discovered - currently not indexed',
@@ -20,6 +21,7 @@ function parseArgs(args) {
     queryTargetsPath: DEFAULT_QUERY_TARGETS_PATH,
     brandQueryTargetsPath: DEFAULT_BRAND_QUERY_TARGETS_PATH,
     variantRedirectTargetsPath: DEFAULT_VARIANT_REDIRECT_TARGETS_PATH,
+    coverageRemediationTargetsPath: DEFAULT_COVERAGE_REMEDIATION_TARGETS_PATH,
     coverageDir: process.env.GSC_COVERAGE_DIR,
     performanceDir: process.env.GSC_PERFORMANCE_DIR,
     coverageLimits: {},
@@ -52,6 +54,13 @@ function parseArgs(args) {
       const value = args[index + 1];
       if (!value) throw new Error('--variant-redirect-targets requires a file path');
       options.variantRedirectTargetsPath = resolve(process.cwd(), value);
+      index += 1;
+      continue;
+    }
+    if (arg === '--coverage-remediation-targets') {
+      const value = args[index + 1];
+      if (!value) throw new Error('--coverage-remediation-targets requires a file path');
+      options.coverageRemediationTargetsPath = resolve(process.cwd(), value);
       index += 1;
       continue;
     }
@@ -317,6 +326,86 @@ function verifyCoverageIssues(coverageIssues, coverageLimits) {
   }
 
   return failures;
+}
+
+function verifyCoverageRemediationTargets({ coverageIssues, coverageRemediationTargets }) {
+  if (!Array.isArray(coverageRemediationTargets) || coverageRemediationTargets.length === 0) {
+    return {
+      checks: [],
+      failures: [{ type: 'coverage-remediation-targets-empty' }],
+    };
+  }
+
+  const issuesByReason = new Map(coverageIssues.map((issue) => [issue.reason, issue]));
+  const targetsByReason = new Map();
+  const checks = [];
+  const failures = [];
+
+  for (const target of coverageRemediationTargets) {
+    const reason = target.reason;
+    const owner = target.owner;
+    const severity = target.severity;
+    const status = target.status;
+    const currentPages = target.currentPages;
+    const targetPagesAfterValidation = target.targetPagesAfterValidation;
+    const localGates = target.localGates;
+    const postDeployProof = target.postDeployProof;
+
+    if (!reason) {
+      failures.push({ type: 'coverage-remediation-target-invalid-entry', target });
+      continue;
+    }
+    if (targetsByReason.has(reason)) {
+      failures.push({ type: 'coverage-remediation-target-duplicate-reason', reason });
+    }
+    targetsByReason.set(reason, target);
+
+    const issue = issuesByReason.get(reason);
+    if (!issue) {
+      failures.push({ type: 'coverage-remediation-target-reason-missing-from-export', reason });
+      continue;
+    }
+    if (!owner || !severity || !status) {
+      failures.push({ type: 'coverage-remediation-target-metadata-missing', reason, owner, severity, status });
+    }
+    if (!Number.isInteger(currentPages)) {
+      failures.push({ type: 'coverage-remediation-target-current-pages-invalid', reason, currentPages });
+    } else if (currentPages !== issue.pages) {
+      failures.push({ type: 'coverage-remediation-target-current-pages-drift', reason, currentPages, exportPages: issue.pages });
+    }
+    if (!Number.isInteger(targetPagesAfterValidation) || targetPagesAfterValidation < 0) {
+      failures.push({ type: 'coverage-remediation-target-after-validation-invalid', reason, targetPagesAfterValidation });
+    } else if (Number.isInteger(currentPages) && targetPagesAfterValidation > currentPages) {
+      failures.push({ type: 'coverage-remediation-target-after-validation-regression', reason, currentPages, targetPagesAfterValidation });
+    }
+    if (!Array.isArray(localGates) || localGates.length === 0) {
+      failures.push({ type: 'coverage-remediation-target-local-gates-empty', reason });
+    }
+    if (!Array.isArray(postDeployProof) || postDeployProof.length === 0) {
+      failures.push({ type: 'coverage-remediation-target-post-deploy-proof-empty', reason });
+    }
+
+    checks.push({
+      reason,
+      source: issue.source,
+      validation: issue.validation,
+      currentPages: issue.pages,
+      targetPagesAfterValidation,
+      severity,
+      status,
+      owner,
+      localGates,
+      postDeployProof,
+    });
+  }
+
+  for (const issue of coverageIssues) {
+    if (issue.pages > 0 && !targetsByReason.has(issue.reason)) {
+      failures.push({ type: 'coverage-remediation-target-missing-for-export-reason', reason: issue.reason, pages: issue.pages });
+    }
+  }
+
+  return { checks, failures };
 }
 
 function verifyPerformancePages(performanceRows, sitemapLocs) {
@@ -596,7 +685,7 @@ function verifyVariantRedirectTargets({ performanceCheck, variantRedirectTargets
   return { checks, failures };
 }
 
-function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck, brandQueryTargetCheck, variantRedirectTargetCheck) {
+function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck, brandQueryTargetCheck, variantRedirectTargetCheck, coverageRemediationTargetCheck) {
   const totalImpressions = performanceCheck.mapped.reduce((sum, item) => sum + item.impressions, 0);
   const totalClicks = performanceCheck.mapped.reduce((sum, item) => sum + item.clicks, 0);
   const variantImpressions = performanceCheck.variants.reduce((sum, item) => sum + item.impressions, 0);
@@ -612,6 +701,9 @@ function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFai
     coverageIssuePages,
     coverageIssuePageCountByReason: coverageIssuePageCountByReason(coverageIssues),
     coverageFailures,
+    coverageRemediationTargetCount: coverageRemediationTargetCheck.checks.length,
+    coverageRemediationTargetFailures: coverageRemediationTargetCheck.failures,
+    coverageRemediationTargets: coverageRemediationTargetCheck.checks.slice(0, 20),
     performanceUrlCount: performanceCheck.mapped.length + performanceCheck.unmapped.length,
     mappedPerformanceUrlCount: performanceCheck.mapped.length,
     unmappedPerformanceUrlCount: performanceCheck.unmapped.length,
@@ -649,6 +741,11 @@ function main() {
   const queryTargets = readJson(options.queryTargetsPath);
   const brandQueryTargets = readJson(options.brandQueryTargetsPath);
   const variantRedirectTargets = readJson(options.variantRedirectTargetsPath);
+  const coverageRemediationTargets = readJson(options.coverageRemediationTargetsPath);
+  const coverageRemediationTargetCheck = verifyCoverageRemediationTargets({
+    coverageIssues,
+    coverageRemediationTargets,
+  });
   const queryTargetCheck = verifyPriorityQueryTargets({
     queryRows,
     queryTargets,
@@ -676,6 +773,7 @@ function main() {
     queryTargetCheck,
     brandQueryTargetCheck,
     variantRedirectTargetCheck,
+    coverageRemediationTargetCheck,
   );
 
   console.log(JSON.stringify(summary, null, 2));
@@ -684,6 +782,7 @@ function main() {
     summary.unmappedPerformanceUrlCount > 0
     || summary.unexpectedHosts.length > 0
     || summary.coverageFailures.length > 0
+    || summary.coverageRemediationTargetFailures.length > 0
     || summary.priorityQueryTargetFailures.length > 0
     || summary.brandQueryTargetFailures.length > 0
     || summary.variantRedirectTargetFailures.length > 0

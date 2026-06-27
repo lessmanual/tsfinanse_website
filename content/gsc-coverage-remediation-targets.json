@@ -1,0 +1,136 @@
+[
+  {
+    "reason": "Alternate page with proper canonical tag",
+    "currentPages": 33,
+    "targetPagesAfterValidation": 33,
+    "severity": "monitor",
+    "status": "known_noncanonical_surface",
+    "owner": "CTO",
+    "localGates": [
+      "canonical-html-internal-link-gate",
+      "canonical-redirect-gate",
+      "no-slash-canonical-redirect-gate",
+      "markdown-noindex-header-gate"
+    ],
+    "postDeployProof": [
+      "npm run verify:live",
+      "fresh GSC Coverage export: monitor reason count and sample URLs manually in GSC"
+    ],
+    "notes": "Canonical alternates are expected for known noncanonical variants. Keep monitored until fresh GSC sample URLs prove they are intentional variants."
+  },
+  {
+    "reason": "Redirect error",
+    "currentPages": 13,
+    "targetPagesAfterValidation": 0,
+    "severity": "critical",
+    "status": "fix_with_redirect_gates_then_validate",
+    "owner": "CTO",
+    "localGates": [
+      "canonical-redirect-gate",
+      "no-slash-canonical-redirect-gate",
+      "gsc-variant-redirect-gate"
+    ],
+    "postDeployProof": [
+      "npm run verify:live",
+      "npm run verify:gsc -- --strict-coverage on fresh Coverage export after validation"
+    ],
+    "notes": "Redirect error is a hard indexing blocker. Fresh GSC export must reach zero after deploy and validation."
+  },
+  {
+    "reason": "Page with redirect",
+    "currentPages": 12,
+    "targetPagesAfterValidation": 12,
+    "severity": "monitor",
+    "status": "known_redirect_surface",
+    "owner": "CTO",
+    "localGates": [
+      "canonical-redirect-gate",
+      "no-slash-canonical-redirect-gate",
+      "gsc-variant-redirect-gate"
+    ],
+    "postDeployProof": [
+      "npm run verify:live",
+      "fresh GSC Coverage export: confirm pages are intentional canonical variants, not sitemap URLs"
+    ],
+    "notes": "Redirected variants are not meant to index. Monitor count and sample URLs; do not treat as critical unless canonical sitemap URLs appear in this bucket."
+  },
+  {
+    "reason": "Discovered - currently not indexed",
+    "currentPages": 51,
+    "targetPagesAfterValidation": 0,
+    "severity": "critical",
+    "status": "fix_with_extractability_and_crawl_graph_then_validate",
+    "owner": "CTO",
+    "localGates": [
+      "blog-answer-block-gate",
+      "article-toc-gate",
+      "official-reference-gate",
+      "crawl-graph-gate",
+      "llms-index-gate",
+      "webpage-schema-gate"
+    ],
+    "postDeployProof": [
+      "npm run verify:live",
+      "submit live sitemap",
+      "fresh GSC Coverage export with --strict-coverage"
+    ],
+    "notes": "These URLs need stronger crawl graph, extractability and sitemap rediscovery. Target zero after deploy, sitemap refresh and GSC validation."
+  },
+  {
+    "reason": "Crawled - currently not indexed",
+    "currentPages": 10,
+    "targetPagesAfterValidation": 0,
+    "severity": "critical",
+    "status": "fix_quality_signals_then_validate",
+    "owner": "CTO",
+    "localGates": [
+      "snippet-metadata-gate",
+      "blogposting-schema-gate",
+      "faqpage-schema-gate",
+      "editorial-trust-gate",
+      "official-reference-gate"
+    ],
+    "postDeployProof": [
+      "npm run verify:live",
+      "fresh GSC Coverage export with --strict-coverage",
+      "manual URL Inspection for representative blog URLs"
+    ],
+    "notes": "These URLs were crawled but not selected for indexing. Target zero after quality-signal deploy and GSC validation."
+  },
+  {
+    "reason": "Duplicate, Google chose different canonical than user",
+    "currentPages": 1,
+    "targetPagesAfterValidation": 0,
+    "severity": "critical",
+    "status": "fix_with_canonical_contract_then_validate",
+    "owner": "CTO",
+    "localGates": [
+      "canonical-html-internal-link-gate",
+      "canonical-redirect-gate",
+      "direct-markdown-alternate-gate",
+      "sitemap-hreflang-gate"
+    ],
+    "postDeployProof": [
+      "npm run verify:live",
+      "fresh GSC Coverage export with --strict-coverage",
+      "manual URL Inspection for the affected canonical sample"
+    ],
+    "notes": "Google-selected canonical mismatch must reach zero after deploy and validation."
+  },
+  {
+    "reason": "Not found (404)",
+    "currentPages": 0,
+    "targetPagesAfterValidation": 0,
+    "severity": "guard",
+    "status": "guard_with_soft_404_gate",
+    "owner": "CTO",
+    "localGates": [
+      "soft-404-gate"
+    ],
+    "postDeployProof": [
+      "npm run verify:live",
+      "targeted unknown URL probe"
+    ],
+    "notes": "Current count is zero. Keep real unknown URLs as 404 noindex without canonical fallback."
+  }
+]
