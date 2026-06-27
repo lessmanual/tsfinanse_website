@@ -4,6 +4,7 @@ import { join } from 'path';
 const SITE_URL = 'https://tsfinanse.com';
 const root = process.cwd();
 const sitemapPath = join(root, 'dist', 'sitemap.xml');
+const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negotiation.js');
 
 const stalePatterns = [
   /Prowizja TS Finanse:?\s*1%/i,
@@ -53,6 +54,54 @@ function scanStale(content, loc, surface, hits) {
   }
 }
 
+async function verifyMarkdownEdgeFunction(failures) {
+  if (!existsSync(edgeFunctionPath)) {
+    failures.push({ type: 'missing-edge-function', file: edgeFunctionPath });
+    return;
+  }
+
+  const source = readFileSync(edgeFunctionPath, 'utf8');
+  const moduleUrl = `data:text/javascript,${encodeURIComponent(source)}#${Date.now()}`;
+  const edge = await import(moduleUrl);
+
+  const cases = [
+    {
+      url: 'https://tsfinanse.com/',
+      accept: 'text/markdown',
+      expectedPath: '/md/index.md',
+    },
+    {
+      url: 'https://tsfinanse.com/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/',
+      accept: 'text/markdown; q=1, text/html; q=0.8',
+      expectedPath: '/md/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca.md',
+    },
+    {
+      url: 'https://tsfinanse.com/sitemap.xml',
+      accept: 'text/markdown',
+      expectedPath: undefined,
+    },
+    {
+      url: 'https://tsfinanse.com/blog/',
+      accept: 'text/html',
+      expectedPath: undefined,
+    },
+  ];
+
+  for (const testCase of cases) {
+    const result = edge.default(new Request(testCase.url, { headers: { accept: testCase.accept } }));
+    const actualPath = result instanceof URL ? result.pathname : undefined;
+    if (actualPath !== testCase.expectedPath) {
+      failures.push({
+        type: 'edge-markdown-mapping',
+        url: testCase.url,
+        accept: testCase.accept,
+        expectedPath: testCase.expectedPath,
+        actualPath,
+      });
+    }
+  }
+}
+
 if (!existsSync(sitemapPath)) {
   console.error('dist/sitemap.xml does not exist. Run npm run build first.');
   process.exit(1);
@@ -98,6 +147,8 @@ for (const loc of locs) {
   if (!/^#\s+.+/m.test(markdown)) failures.push({ type: 'markdown-h1', loc });
   scanStale(markdown, loc, 'markdown', staleHits);
 }
+
+await verifyMarkdownEdgeFunction(failures);
 
 const result = {
   locCount: locs.length,

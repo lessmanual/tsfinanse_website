@@ -32,12 +32,12 @@ function markdownPath(pathname) {
   return `/md${normalised}.md`;
 }
 
-export default function handler(request, context) {
+export default function handler(request) {
   const accept = request.headers.get('accept') || '';
   const url = new URL(request.url);
 
   if (!accept.toLowerCase().includes('text/markdown') || shouldSkip(url.pathname)) {
-    return context.next();
+    return;
   }
 
   const target = new URL(request.url);
