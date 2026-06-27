@@ -135,6 +135,41 @@ function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
   }
 }
 
+function verifyBlogIndexSchema({ html, locs, failures }) {
+  const loc = `${SITE_URL}/blog/`;
+  const blogPostLocs = locs.filter((item) => {
+    const pathname = new URL(item).pathname;
+    return pathname.startsWith('/blog/') && pathname !== '/blog/';
+  });
+
+  const objects = collectJsonLd(html, failures, loc);
+  const blog = objects.find((entry) => entry && entry['@type'] === 'Blog');
+  const itemList = objects.find((entry) => entry && entry['@type'] === 'ItemList');
+
+  if (!blog) {
+    failures.push({ type: 'blog-index-schema', loc });
+    return;
+  }
+  if (!Array.isArray(blog.blogPost)) {
+    failures.push({ type: 'blog-index-blogpost-list', loc });
+  } else if (blog.blogPost.length !== blogPostLocs.length) {
+    failures.push({ type: 'blog-index-blogpost-count', loc, expected: blogPostLocs.length, actual: blog.blogPost.length });
+  }
+
+  if (!itemList) {
+    failures.push({ type: 'blog-index-itemlist-schema', loc });
+    return;
+  }
+  if (itemList.numberOfItems !== blogPostLocs.length) {
+    failures.push({ type: 'blog-index-itemlist-count', loc, expected: blogPostLocs.length, actual: itemList.numberOfItems });
+  }
+  if (!Array.isArray(itemList.itemListElement)) {
+    failures.push({ type: 'blog-index-itemlist-elements', loc });
+  } else if (itemList.itemListElement.length !== blogPostLocs.length) {
+    failures.push({ type: 'blog-index-itemlist-element-count', loc, expected: blogPostLocs.length, actual: itemList.itemListElement.length });
+  }
+}
+
 function scanStale(content, loc, surface, hits) {
   for (const pattern of stalePatterns) {
     const match = content.match(pattern);
@@ -279,6 +314,7 @@ for (const loc of locs) {
   const url = new URL(loc);
   const expectedCanonical = `${SITE_URL}${canonicalPath(url.pathname)}`;
   const isBlogPost = url.pathname.startsWith('/blog/') && url.pathname !== '/blog/';
+  const isBlogIndex = url.pathname === '/blog/';
   const htmlPath = htmlPathForUrl(loc);
   const mdPath = markdownPathForUrl(loc);
 
@@ -319,6 +355,10 @@ for (const loc of locs) {
       lastmod: sitemapLastmods.get(loc),
       failures,
     });
+  }
+
+  if (isBlogIndex) {
+    verifyBlogIndexSchema({ html, locs, failures });
   }
 }
 

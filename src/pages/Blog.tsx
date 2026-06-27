@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
-import { SEO, breadcrumbSchema } from '../components/SEO';
+import { SEO, blogIndexSchemas, breadcrumbSchema } from '../components/SEO';
 import { getAllPosts, Post } from '../lib/posts';
 import { BLOG_CATEGORIES } from '../lib/constants';
 import { Calendar, ArrowRight, Clock } from 'lucide-react';
@@ -27,10 +27,13 @@ export default function Blog() {
         title="Blog - Aktualności i Porady Finansowe"
         description="Blog TS Finanse - aktualności ze świata finansów dla przedsiębiorców, porady dotyczące pożyczek hipotecznych i finansowania biznesu."
         canonicalUrl="/blog/"
-        schema={breadcrumbSchema([
-          { name: 'Strona główna', url: '/' },
-          { name: 'Blog', url: '/blog/' },
-        ])}
+        schema={[
+          breadcrumbSchema([
+            { name: 'Strona główna', url: '/' },
+            { name: 'Blog', url: '/blog/' },
+          ]),
+          ...blogIndexSchemas(posts),
+        ]}
       />
 
       <Navigation />

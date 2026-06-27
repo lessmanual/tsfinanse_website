@@ -195,6 +195,43 @@ function blogPostingSchema(post) {
   };
 }
 
+function blogIndexSchemas(posts) {
+  const blogPosts = posts.map((post) => ({
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description || '',
+    url: `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`,
+    datePublished: post.date,
+    dateModified: post.updatedAt || post.date,
+  }));
+
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Blog',
+      name: 'Blog TS Finanse',
+      url: `${SITE_URL}/blog/`,
+      inLanguage: 'pl-PL',
+      description: 'Porady i analizy o finansowaniu przedsiębiorców, pożyczkach hipotecznych, faktoringu, leasingu i płynności firm.',
+      publisher: { '@type': 'Organization', name: 'TS Finanse', url: SITE_URL },
+      blogPost: blogPosts,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Artykuły bloga TS Finanse',
+      itemListOrder: 'https://schema.org/ItemListOrderDescending',
+      numberOfItems: blogPosts.length,
+      itemListElement: posts.map((post, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`,
+        name: post.title,
+      })),
+    },
+  ];
+}
+
 // ---------------------------------------------------------------------------
 // Fetch blog posts from Supabase
 // ---------------------------------------------------------------------------
@@ -607,7 +644,10 @@ async function main() {
 
   // Static routes
   for (const route of STATIC_ROUTES) {
-    writeRoute(baseHtml, route, undefined, posts);
+    const routeWithSchemas = route.path === '/blog/'
+      ? { ...route, schemas: [...(route.schemas || []), ...blogIndexSchemas(posts)] }
+      : route;
+    writeRoute(baseHtml, routeWithSchemas, undefined, posts);
     console.log(`  ✓ ${route.path}`);
   }
 
