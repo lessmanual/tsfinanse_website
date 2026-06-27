@@ -46,6 +46,25 @@ const editorialTrustFragments = [
   'kontakt@tsfinanse.com',
   'warunki finansowania są ustalane indywidualnie',
 ];
+const llmsEntityFragments = [
+  'TRANSBUD NOWAK SPÓŁKA JAWNA',
+  'Spółka jawna',
+  'Address: ul. Gdańska 60, 84-240 Reda, Poland',
+  'pożyczki hipoteczne dla firm',
+  'wyłącznie hipoteka',
+  'pierwsza hipoteka',
+  'cała Polska',
+  'This information was last verified and updated on: 2026-06-27',
+];
+const llmsForbiddenEntityFragments = [
+  'TRANSBUD NOWAK SPOLKA JAWNA',
+  'Spolka jawna',
+  'ul. Gdanska 60',
+  'pozyczki hipoteczne dla firm',
+  'wylacznie hipoteka',
+  'cala Polska',
+  'This information was last verified and updated on: 2026-03-27',
+];
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 
@@ -1540,6 +1559,16 @@ async function verifyLlmsSurface(failures, staleHits, locs) {
   for (const fragment of requiredFragments) {
     if (!text.includes(fragment)) {
       failures.push({ type: 'llms-required-fragment', fragment });
+    }
+  }
+  for (const fragment of llmsEntityFragments) {
+    if (!text.includes(fragment)) {
+      failures.push({ type: 'llms-entity-fragment', fragment });
+    }
+  }
+  for (const fragment of llmsForbiddenEntityFragments) {
+    if (text.includes(fragment)) {
+      failures.push({ type: 'llms-forbidden-entity-fragment', fragment });
     }
   }
 
