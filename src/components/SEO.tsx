@@ -244,6 +244,13 @@ function normalizeCanonicalPath(path: string) {
   return search ? `${normalizedPath}?${search}` : normalizedPath;
 }
 
+function markdownUrlForCanonical(canonical: string) {
+  const pathname = new URL(canonical).pathname;
+  if (pathname === '/') return `${siteUrl}/md/index.md`;
+  const normalised = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  return `${siteUrl}/md${normalised}.md`;
+}
+
 function webPageSchema({
   canonical,
   name,
@@ -301,6 +308,7 @@ export function SEO({
   const fullTitle = compactMetaTitle(title ? `${title} | TS Finanse` : defaultTitle);
   const metaDescription = compactMetaDescription(description);
   const canonical = canonicalUrl ? `${siteUrl}${normalizeCanonicalPath(canonicalUrl)}` : `${siteUrl}/`;
+  const markdownAlternate = markdownUrlForCanonical(canonical);
   const normalisedModifiedTime = latestDateValue(modifiedTime, publishedTime);
   const resolvedOgImage = absoluteImageUrl(ogImage) || defaultOgImage;
   const customSchemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
@@ -321,7 +329,7 @@ export function SEO({
       <meta name="title" content={fullTitle} />
       <meta name="description" content={metaDescription} />
       <link rel="canonical" href={canonical} />
-      <link rel="alternate" type="text/markdown" href={canonical} />
+      <link rel="alternate" type="text/markdown" href={markdownAlternate} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />

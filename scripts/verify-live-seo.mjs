@@ -138,8 +138,8 @@ function extractTitle(html) {
   return html.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim();
 }
 
-function hasAlternateMarkdown(html, loc) {
-  const escaped = loc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function hasAlternateMarkdown(html, markdownUrl) {
+  const escaped = markdownUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const relFirst = new RegExp(`<link[^>]+rel=["']alternate["'][^>]+type=["']text/markdown["'][^>]+href=["']${escaped}["']`, 'i');
   const hrefFirst = new RegExp(`<link[^>]+href=["']${escaped}["'][^>]+rel=["']alternate["'][^>]+type=["']text/markdown["']`, 'i');
   return relFirst.test(html) || hrefFirst.test(html);
@@ -1283,7 +1283,7 @@ async function main() {
     const canonical = extractCanonical(html);
     if (canonical !== expectedCanonical) failures.push({ type: 'canonical', loc, canonical });
     verifySnippetMetadata({ html, loc, failures, titlesByValue, descriptionsByValue });
-    if (!hasAlternateMarkdown(html, expectedCanonical)) failures.push({ type: 'missing-markdown-alternate', loc });
+    if (!hasAlternateMarkdown(html, markdownUrlForLoc(expectedCanonical))) failures.push({ type: 'missing-markdown-alternate', loc });
     if (!hasAlternateRss(html)) failures.push({ type: 'missing-rss-alternate', loc });
     if (/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html)) failures.push({ type: 'noindex', loc });
 

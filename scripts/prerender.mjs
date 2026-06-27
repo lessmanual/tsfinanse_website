@@ -45,6 +45,13 @@ function canonicalPath(path) {
   return path.endsWith('/') ? path : `${path}/`;
 }
 
+function markdownUrlForCanonical(canonical) {
+  const pathname = new URL(canonical).pathname;
+  if (pathname === '/') return `${SITE_URL}/md/index.md`;
+  const normalised = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  return `${SITE_URL}/md${normalised}.md`;
+}
+
 function absoluteImageUrl(rawUrl) {
   if (!rawUrl) return undefined;
 
@@ -727,13 +734,14 @@ function buildMetaTags(route) {
   const ogImage = absoluteImageUrl(route.ogImage) || `${SITE_URL}/og-image.webp`;
   const metaTitle = compactMetaTitle(route.title);
   const metaDescription = compactMetaDescription(route.description);
+  const markdownAlternate = markdownUrlForCanonical(canonical);
 
   let tags = '';
   tags += `    <title>${esc(metaTitle)}</title>\n`;
   tags += `    <meta name="title" content="${esc(metaTitle)}" />\n`;
   tags += `    <meta name="description" content="${esc(metaDescription)}" />\n`;
   tags += `    <link rel="canonical" href="${canonical}" />\n`;
-  tags += `    <link rel="alternate" type="text/markdown" href="${canonical}" />\n`;
+  tags += `    <link rel="alternate" type="text/markdown" href="${markdownAlternate}" />\n`;
   tags += `    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />\n`;
   // Open Graph
   tags += `    <meta property="og:type" content="${ogType}" />\n`;
