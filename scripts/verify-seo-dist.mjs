@@ -12,6 +12,7 @@ const llmsPath = join(root, 'dist', 'llms.txt');
 const apiCatalogPath = join(root, 'dist', '.well-known', 'api-catalog');
 const agentSkillsIndexPath = join(root, 'dist', '.well-known', 'agent-skills', 'index.json');
 const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negotiation.js');
+const notFoundPath = join(root, 'dist', '404.html');
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 const minimumLlmsUpdatedDate = '2026-06-01';
@@ -173,6 +174,12 @@ function verifyCanonicalRedirectRules({ locs, failures }) {
   }
 
   const rules = parseRedirectRules(readFileSync(redirectsPath, 'utf8'));
+  for (const rule of rules) {
+    if (rule.from === '/*' && rule.status === '200' && /index\.html|^\/$/.test(rule.to || '')) {
+      failures.push({ type: 'spa-fallback-soft-404-risk', rule });
+    }
+  }
+
   for (const loc of locs) {
     const expected = {
       from: indexHtmlRedirectPathForLoc(loc),
@@ -247,6 +254,43 @@ function extractMetaName(html, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return html.match(new RegExp(`<meta[^>]+name=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i'))?.[1]
     || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${escaped}["']`, 'i'))?.[1];
+}
+
+function hasNoindexNofollow(value = '') {
+  const tokens = String(value).toLowerCase().split(',').map((token) => token.trim());
+  return tokens.includes('noindex') && tokens.includes('nofollow');
+}
+
+function verifyNotFoundArtifact(failures) {
+  if (!existsSync(notFoundPath)) {
+    failures.push({ type: 'missing-not-found-artifact', file: notFoundPath });
+    return;
+  }
+
+  const html = readFileSync(notFoundPath, 'utf8');
+  const robots = extractMetaName(html, 'robots') || '';
+  if (!hasNoindexNofollow(robots)) {
+    failures.push({ type: 'not-found-robots', file: notFoundPath, robots });
+  }
+
+  const canonical = extractCanonical(html);
+  if (canonical) {
+    failures.push({ type: 'not-found-canonical', file: notFoundPath, canonical });
+  }
+
+  const title = extractTitle(html) || '';
+  if (!title.includes('Nie znaleziono strony') || !title.includes('TS Finanse')) {
+    failures.push({ type: 'not-found-title', file: notFoundPath, title });
+  }
+
+  const h1s = (html.match(/<h1\b/gi) || []).length;
+  if (h1s !== 1) {
+    failures.push({ type: 'not-found-h1-count', file: notFoundPath, h1s });
+  }
+
+  if (!/<a\b[^>]+href=["']\/["']/i.test(html)) {
+    failures.push({ type: 'not-found-home-link', file: notFoundPath });
+  }
 }
 
 function rememberSnippetValue(map, value, loc) {
@@ -1592,6 +1636,7 @@ verifyApiCatalog(failures);
 verifyAgentSkills(failures, staleHits);
 verifyRobotsPolicy(failures);
 verifyCanonicalRedirectRules({ locs, failures });
+verifyNotFoundArtifact(failures);
 
 const expectedMarkdownFiles = new Set(locs.map((loc) => markdownPathForUrl(loc)));
 for (const markdownFile of collectMarkdownFiles(join(root, 'dist', 'md'))) {
@@ -1602,7 +1647,7 @@ for (const markdownFile of collectMarkdownFiles(join(root, 'dist', 'md'))) {
 
 const expectedHtmlFiles = new Set([
   ...locs.map((loc) => htmlPathForUrl(loc)),
-  join(root, 'dist', '404.html'),
+  notFoundPath,
   join(root, 'dist', 'admin', 'index.html'),
 ]);
 for (const htmlFile of collectHtmlFiles(join(root, 'dist'))) {
@@ -1714,6 +1759,7 @@ verifyUniqueSnippetMetadata({ titlesByValue, descriptionsByValue, failures });
 
 const result = {
   locCount: locs.length,
+  notFoundArtifact: notFoundPath,
   failureCount: failures.length,
   staleHitCount: staleHits.length,
   failures: failures.slice(0, 20),

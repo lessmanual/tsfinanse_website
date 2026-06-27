@@ -70,6 +70,12 @@ const stalePatterns = [
   /prowizja \(1%\)/i,
 ];
 
+const unknownUrl404Targets = [
+  `${SITE_URL}/this-url-should-404-tsfinanse-seo-geo/`,
+  `${SITE_URL}/blog/this-post-should-not-exist-tsfinanse/`,
+  `${SITE_URL}/.well-known/mcp/server-card.json`,
+];
+
 function canonicalPath(pathname) {
   if (pathname === '/') return '/';
   return pathname.endsWith('/') ? pathname : `${pathname}/`;
@@ -191,6 +197,11 @@ function extractMetaName(html, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return html.match(new RegExp(`<meta[^>]+name=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i'))?.[1]
     || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${escaped}["']`, 'i'))?.[1];
+}
+
+function hasNoindexNofollow(value = '') {
+  const tokens = String(value).toLowerCase().split(',').map((token) => token.trim());
+  return tokens.includes('noindex') && tokens.includes('nofollow');
 }
 
 function rememberSnippetValue(map, value, loc) {
@@ -1536,6 +1547,39 @@ async function verifyNoSlashCanonicalRedirects(failures, locs) {
   }
 }
 
+async function verifyUnknownUrl404s(failures) {
+  for (const url of unknownUrl404Targets) {
+    const { response, text } = await fetchText(url, {
+      redirect: 'manual',
+      headers: { accept: 'text/html,application/json;q=0.8,*/*;q=0.1' },
+    });
+    const location = response.headers.get('location');
+    const contentType = response.headers.get('content-type') || '';
+
+    if (response.status !== 404) {
+      failures.push({ type: 'unknown-url-status', url, status: response.status, contentType, location });
+    }
+    if (location) {
+      failures.push({ type: 'unknown-url-redirect', url, status: response.status, location });
+    }
+
+    const robots = extractMetaName(text, 'robots') || '';
+    if (!hasNoindexNofollow(robots)) {
+      failures.push({ type: 'unknown-url-robots', url, status: response.status, robots, contentType });
+    }
+
+    const canonical = extractCanonical(text);
+    if (canonical) {
+      failures.push({ type: 'unknown-url-canonical', url, canonical });
+    }
+
+    const title = extractTitle(text) || '';
+    if (!title.includes('Nie znaleziono strony') || !title.includes('TS Finanse')) {
+      failures.push({ type: 'unknown-url-title', url, title, contentType });
+    }
+  }
+}
+
 function readVariantRedirectTargets(failures) {
   if (!existsSync(VARIANT_REDIRECT_TARGETS_PATH)) {
     failures.push({ type: 'variant-redirect-targets-file-missing', file: VARIANT_REDIRECT_TARGETS_PATH });
@@ -1637,6 +1681,7 @@ async function main() {
   await verifyIndexHtmlCanonicalRedirects(failures, locs);
   await verifyNoSlashCanonicalRedirects(failures, locs);
   await verifyGscVariantRedirectTargets(failures, locs);
+  await verifyUnknownUrl404s(failures);
   await verifyDirectMarkdownNoindexHeaders(failures, locs);
   await verifyLlmsSurface(failures, staleHits, locs);
 
@@ -1753,6 +1798,7 @@ async function main() {
     rssUrl: RSS_URL,
     robotsUrl: ROBOTS_URL,
     locCount: locs.length,
+    unknownUrl404Count: unknownUrl404Targets.length,
     failureCount: failures.length,
     staleHitCount: staleHits.length,
     failures: failures.slice(0, 30),
