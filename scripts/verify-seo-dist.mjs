@@ -1316,7 +1316,7 @@ function verifyHomepageEntitySchema({ html, failures }) {
   }
 }
 
-function verifyRssFeed({ rss, locs, failures }) {
+function verifyRssFeed({ rss, locs, sitemapLastmods, failures }) {
   const blogPostLocs = new Set(locs.filter((item) => {
     const pathname = new URL(item).pathname;
     return pathname.startsWith('/blog/') && pathname !== '/blog/';
@@ -1338,6 +1338,25 @@ function verifyRssFeed({ rss, locs, failures }) {
 
   if (!rss.includes('<atom:link href="https://tsfinanse.com/rss.xml" rel="self" type="application/rss+xml" />')) {
     failures.push({ type: 'rss-atom-self-link' });
+  }
+
+  if (!rss.includes('<ttl>5</ttl>')) {
+    failures.push({ type: 'rss-ttl', expected: 5 });
+  }
+
+  for (const item of itemBlocks) {
+    const itemLink = item.match(/<link>([^<]+)<\/link>/)?.[1];
+    if (!itemLink || !blogPostLocs.has(itemLink)) continue;
+
+    const updated = item.match(/<atom:updated>([^<]+)<\/atom:updated>/)?.[1];
+    const lastmod = sitemapLastmods.get(itemLink);
+    if (!updated) {
+      failures.push({ type: 'rss-item-updated-missing', itemLink });
+      continue;
+    }
+    if (lastmod && datePart(updated) !== datePart(lastmod)) {
+      failures.push({ type: 'rss-item-updated-lastmod', itemLink, updated, lastmod });
+    }
   }
 }
 
@@ -1931,7 +1950,7 @@ for (const loc of locs) {
 }
 
 await verifyMarkdownEdgeFunction(failures);
-verifyRssFeed({ rss, locs, failures });
+verifyRssFeed({ rss, locs, sitemapLastmods, failures });
 verifyUniqueSnippetMetadata({ titlesByValue, descriptionsByValue, failures });
 
 const result = {

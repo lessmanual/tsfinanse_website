@@ -146,15 +146,19 @@ function generateRSS(posts) {
   rss += '    <language>pl</language>\n';
   rss += `    <lastBuildDate>${now}</lastBuildDate>\n`;
   rss += `    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml" />\n`;
+  rss += '    <ttl>5</ttl>\n';
 
   for (const post of posts) {
     const pubDate = new Date(post.published_at).toUTCString();
+    const updated = latestSeoSurfaceDate(latestDateValue(post.updated_at, post.published_at) || post.published_at);
+    const updatedDate = new Date(updated).toISOString();
     const postUrl = `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`;
     rss += '    <item>\n';
     rss += `      <title>${escapeXml(post.title || post.slug)}</title>\n`;
     rss += `      <link>${postUrl}</link>\n`;
     rss += `      <guid isPermaLink="true">${postUrl}</guid>\n`;
     rss += `      <pubDate>${pubDate}</pubDate>\n`;
+    rss += `      <atom:updated>${updatedDate}</atom:updated>\n`;
     if (post.description) {
       rss += `      <description>${escapeXml(post.description)}</description>\n`;
     }
