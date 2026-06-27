@@ -65,6 +65,10 @@ function canonicalPath(path) {
   return path.endsWith('/') ? path : `${path}/`;
 }
 
+function canonicalUrl(path) {
+  return `${SITE_URL}${canonicalPath(path)}`;
+}
+
 function markdownUrlForCanonical(canonical) {
   const pathname = new URL(canonical).pathname;
   if (pathname === '/') return `${SITE_URL}/md/index.md`;
@@ -908,29 +912,29 @@ function canonicalizeInternalUrl(rawUrl, publishedSlugs = new Set()) {
   }
 
   if (url.pathname === '/kontakt') {
-    return `/${url.hash || '#contact'}`;
+    return `${SITE_URL}/${url.hash || '#contact'}`;
   }
 
   if (/\.[a-z0-9]{2,8}$/i.test(url.pathname)) {
-    return `${url.pathname}${url.search}${url.hash}`;
+    return `${SITE_URL}${url.pathname}${url.search}${url.hash}`;
   }
 
   if (url.pathname.startsWith('/blog/')) {
     const slug = normalizeSlug(url.pathname.replace(/^\/blog\//, '').replace(/\/$/, ''));
     if (!slug) {
-      return `/blog/${url.search}${url.hash}`;
+      return `${SITE_URL}/blog/${url.search}${url.hash}`;
     }
     if (publishedSlugs.size > 0 && !publishedSlugs.has(slug)) {
-      return `/blog/`;
+      return `${SITE_URL}/blog/`;
     }
-    return `/blog/${slug}/${url.search}${url.hash}`;
+    return `${SITE_URL}/blog/${slug}/${url.search}${url.hash}`;
   }
 
   if (url.pathname !== '/' && !url.pathname.endsWith('/')) {
-    return `${url.pathname}/${url.search}${url.hash}`;
+    return `${SITE_URL}${url.pathname}/${url.search}${url.hash}`;
   }
 
-  return `${url.pathname}${url.search}${url.hash}`;
+  return `${SITE_URL}${url.pathname}${url.search}${url.hash}`;
 }
 
 function normalizeContentLinks(content = '', publishedSlugs = new Set()) {
@@ -1055,7 +1059,7 @@ function renderRelatedPosts(post, allPosts = []) {
   return `<section>
 <h2>Powiązane artykuły</h2>
 <ul>
-${related.map((item) => `<li><a href="${esc(canonicalPath(`/blog/${item.slug}`))}">${esc(item.title)}</a></li>`).join('\n')}
+${related.map((item) => `<li><a href="${esc(canonicalUrl(`/blog/${item.slug}`))}">${esc(item.title)}</a></li>`).join('\n')}
 </ul>
 </section>`;
 }
@@ -1098,7 +1102,7 @@ function buildNoscript(route, post, allPosts = []) {
 <ol><li>Kontakt - wyślij zapytanie przez formularz lub email</li><li>Analiza - analizujemy wniosek w ciągu 24h</li><li>Oferta - przygotowujemy indywidualną ofertę</li><li>Finalizacja - podpisanie umowy i obsługa notarialna</li><li>Wypłata - uruchomienie środków na Twoje konto</li></ol>
 <h2>Kontakt</h2>
 <p>Email: <a href="mailto:kontakt@tsfinanse.com">kontakt@tsfinanse.com</a> | Tel: +48 506 711 242</p>
-<p><a href="/blog/">Blog</a> | <a href="/programpartnerski/">Program Partnerski</a></p>
+<p><a href="${canonicalUrl('/blog/')}">Blog</a> | <a href="${canonicalUrl('/programpartnerski/')}">Program Partnerski</a></p>
 </div></noscript>`;
   }
 
@@ -1106,7 +1110,7 @@ function buildNoscript(route, post, allPosts = []) {
     const postLinks = allPosts
       .slice(0, 80)
       .map((item) => {
-        const postUrl = canonicalPath(`/blog/${item.slug}`);
+        const postUrl = canonicalUrl(`/blog/${item.slug}`);
         return `<li><a href="${postUrl}">${esc(item.title)}</a><br><span>${esc(item.description)}</span></li>`;
       })
       .join('\n');
@@ -1116,7 +1120,7 @@ function buildNoscript(route, post, allPosts = []) {
 <p>Aktualności ze świata finansów, porady dotyczące pożyczek hipotecznych i finansowania biznesu.</p>
 <h2>Najnowsze wpisy</h2>
 <ul>${postLinks}</ul>
-<p><a href="/">Strona główna TS Finanse</a> | <a href="/programpartnerski/">Program Partnerski</a></p>
+<p><a href="${canonicalUrl('/')}">Strona główna TS Finanse</a> | <a href="${canonicalUrl('/programpartnerski/')}">Program Partnerski</a></p>
 </div></noscript>`;
   }
 
@@ -1151,7 +1155,7 @@ ${renderOfficialReferences()}
 ${renderEditorialTrust()}
 ${renderRelatedPosts(post, allPosts)}
 ${tags}
-<p><a href="/blog/">Wszystkie wpisy na blogu TS Finanse</a> | <a href="/">Strona główna</a></p>
+<p><a href="${canonicalUrl('/blog/')}">Wszystkie wpisy na blogu TS Finanse</a> | <a href="${canonicalUrl('/')}">Strona główna</a></p>
 </article>
 </div></noscript>`;
   }
@@ -1168,7 +1172,7 @@ ${tags}
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>${legalTitles[path]}</h1>
 <p>Aby wyświetlić pełną treść, włącz JavaScript w przeglądarce.</p>
-<p><a href="/">Powrót na stronę główną TS Finanse</a></p>
+<p><a href="${canonicalUrl('/')}">Powrót na stronę główną TS Finanse</a></p>
 </div></noscript>`;
   }
 

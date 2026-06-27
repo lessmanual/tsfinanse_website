@@ -31,6 +31,8 @@ dist
 3. `scripts/generate-sitemap.mjs`.
 4. `scripts/prerender.mjs`.
 5. `scripts/generate-md-variants.mjs`.
+6. `scripts/generate-llms-index.mjs`.
+7. `scripts/prune-dist-artifacts.mjs`.
 
 ## SEO/GEO Gate
 
@@ -57,8 +59,11 @@ Oczekiwany wynik `verify:seo`:
 - `staleHitCount: 0`,
 - wszystkie URL-e z `dist/sitemap.xml` mają HTML,
 - każdy URL ma self canonical,
-- każdy URL ma `link rel="alternate" type="text/markdown"` do canonical URL,
+- każdy URL ma `link rel="alternate" type="text/markdown"` do bezpośredniego `/md/*.md`,
+- każdy URL ma self-referencing `hreflang="pl-PL"` i `hreflang="x-default"` w HTML head,
+- `sitemap.xml` ma `xhtml:link` dla `pl-PL` i `x-default` przy każdym URL-u,
 - każdy URL ma wariant markdown w `dist/md`,
+- każdy link wewnętrzny w prerenderowanym HTML wskazuje absolutny canonical URL z sitemap,
 - `dist` nie ma dodatkowych HTML artefaktów poza sitemap, `404.html` i `admin/index.html`,
 - `dist/md` nie ma dodatkowych markdown artefaktów poza sitemap,
 - każdy URL ma jeden `noscript` i jeden `h1`,

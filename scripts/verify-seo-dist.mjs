@@ -497,6 +497,72 @@ function verifyMarkdownCanonicalLinks({ markdown, loc, failures }) {
   }
 }
 
+function verifyHtmlInternalLinks({ html, loc, locs, failures }) {
+  const locSet = new Set(locs);
+  const allowedFiles = new Set([
+    '/robots.txt',
+    '/sitemap.xml',
+    '/rss.xml',
+    '/llms.txt',
+    '/BF7B57E849D44AF48F0B5D95B0D5B154.txt',
+  ]);
+  const anchors = [...html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>/gi)].map((match) => match[1].trim());
+
+  for (const href of anchors) {
+    if (!href || href.startsWith('mailto:') || href.startsWith('tel:')) continue;
+    if (href.startsWith('#')) {
+      if (!htmlHasId(html, href.slice(1))) {
+        failures.push({ type: 'html-internal-link-missing-hash-target', loc, href });
+      }
+      continue;
+    }
+    if (/^(javascript:|data:)/i.test(href)) {
+      failures.push({ type: 'html-internal-link-unsafe-scheme', loc, href });
+      continue;
+    }
+
+    let url;
+    try {
+      url = new URL(href, loc);
+    } catch {
+      failures.push({ type: 'html-internal-link-invalid-url', loc, href });
+      continue;
+    }
+
+    if (url.origin !== SITE_URL) continue;
+
+    const pathname = decodeURIComponent(url.pathname);
+    if (
+      allowedFiles.has(pathname)
+      || pathname.startsWith('/assets/')
+      || pathname.startsWith('/uploads/')
+      || pathname.startsWith('/.well-known/')
+      || pathname.startsWith('/md/')
+    ) {
+      continue;
+    }
+
+    const canonical = `${SITE_URL}${canonicalPath(pathname)}`;
+    if (!locSet.has(canonical)) {
+      failures.push({ type: 'html-internal-link-not-in-sitemap', loc, href, canonical });
+      continue;
+    }
+
+    if (url.search) {
+      failures.push({ type: 'html-internal-link-query', loc, href });
+      continue;
+    }
+
+    const expectedHref = `${canonical}${url.hash}`;
+    if (href !== expectedHref) {
+      failures.push({ type: 'html-internal-link-noncanonical', loc, href, expectedHref });
+    }
+    if (url.hash && canonical === loc && !htmlHasId(html, url.hash.slice(1))) {
+      failures.push({ type: 'html-internal-link-missing-hash-target', loc, href });
+    }
+  }
+}
+
 const minBlogFaqEntries = 3;
 const maxBlogFaqEntries = 8;
 
@@ -1451,6 +1517,7 @@ for (const loc of locs) {
 
   verifyBreadcrumbSchema({ html, loc, failures });
   verifyWebPageSchema({ html, loc, failures });
+  verifyHtmlInternalLinks({ html, loc, locs, failures });
   scanStale(html, loc, 'html', staleHits);
 
   if (!existsSync(mdPath)) {
