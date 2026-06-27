@@ -68,6 +68,47 @@ async function fetchText(url, options = {}) {
   }
 }
 
+async function fetchRedirectTrace(rawUrl, limit = 8) {
+  const trace = [];
+  let currentUrl = rawUrl;
+
+  for (let count = 0; count < limit; count += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(currentUrl, {
+        redirect: 'manual',
+        headers: { accept: 'text/html' },
+        signal: controller.signal,
+      });
+      const location = response.headers.get('location');
+      trace.push({ url: currentUrl, status: response.status, location });
+
+      if (response.status >= 300 && response.status < 400 && location) {
+        currentUrl = new URL(location, currentUrl).toString();
+        continue;
+      }
+
+      return {
+        finalUrl: currentUrl,
+        finalStatus: response.status,
+        redirectCount: trace.length - 1,
+        trace,
+      };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  return {
+    finalUrl: currentUrl,
+    finalStatus: undefined,
+    redirectCount: trace.length,
+    trace,
+  };
+}
+
 function extractCanonical(html) {
   return html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1]
     || html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1];
@@ -526,6 +567,36 @@ function verifyRobotsPolicy(robots, failures) {
   }
 }
 
+async function verifyCanonicalRedirects(failures) {
+  const cases = [
+    {
+      url: 'https://www.tsfinanse.com/',
+      expectedFinalUrl: `${SITE_URL}/`,
+    },
+    {
+      url: `${SITE_URL}/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca`,
+      expectedFinalUrl: `${SITE_URL}/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/`,
+    },
+    {
+      url: 'https://www.tsfinanse.com/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca',
+      expectedFinalUrl: `${SITE_URL}/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/`,
+    },
+  ];
+
+  for (const testCase of cases) {
+    const result = await fetchRedirectTrace(testCase.url);
+    if (result.finalStatus !== 200) {
+      failures.push({ type: 'canonical-redirect-status', url: testCase.url, finalStatus: result.finalStatus, trace: result.trace });
+    }
+    if (result.finalUrl !== testCase.expectedFinalUrl) {
+      failures.push({ type: 'canonical-redirect-final-url', url: testCase.url, expectedFinalUrl: testCase.expectedFinalUrl, finalUrl: result.finalUrl, trace: result.trace });
+    }
+    if (result.redirectCount < 1) {
+      failures.push({ type: 'canonical-redirect-count', url: testCase.url, redirectCount: result.redirectCount, trace: result.trace });
+    }
+  }
+}
+
 async function main() {
   const failures = [];
   const staleHits = [];
@@ -551,6 +622,8 @@ async function main() {
   } else {
     verifyRobotsPolicy(robots, failures);
   }
+
+  await verifyCanonicalRedirects(failures);
 
   const { response: sitemapResponse, text: sitemap } = await fetchText(SITEMAP_URL);
   if (!sitemapResponse.ok) {
