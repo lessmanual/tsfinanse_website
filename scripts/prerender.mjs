@@ -1093,6 +1093,20 @@ function renderEditorialTrust() {
 
 const NOSCRIPT_STYLE = 'style="max-width:800px;margin:0 auto;padding:40px 20px;font-family:system-ui,sans-serif"';
 
+function renderNoscriptCanonicalLinks() {
+  return `<nav aria-label="Główne linki TS Finanse">
+<p>
+<a href="${canonicalUrl('/')}">Strona główna</a> |
+<a href="${canonicalUrl('/blog/')}">Blog</a> |
+<a href="${canonicalUrl('/programpartnerski/')}">Program Partnerski</a> |
+<a href="${canonicalUrl('/polityka-prywatnosci/')}">Polityka Prywatności</a> |
+<a href="${canonicalUrl('/polityka-cookies/')}">Polityka Cookies</a> |
+<a href="${canonicalUrl('/regulamin/')}">Regulamin</a> |
+<a href="${canonicalUrl('/rodo/')}">RODO</a>
+</p>
+</nav>`;
+}
+
 function buildNoscript(route, post, allPosts = []) {
   const path = route.path;
   const publishedSlugs = new Set(allPosts.map((item) => normalizeSlug(item.slug)));
@@ -1107,7 +1121,7 @@ function buildNoscript(route, post, allPosts = []) {
 <ol><li>Kontakt - wyślij zapytanie przez formularz lub email</li><li>Analiza - analizujemy wniosek w ciągu 24h</li><li>Oferta - przygotowujemy indywidualną ofertę</li><li>Finalizacja - podpisanie umowy i obsługa notarialna</li><li>Wypłata - uruchomienie środków na Twoje konto</li></ol>
 <h2>Kontakt</h2>
 <p>Email: <a href="mailto:kontakt@tsfinanse.com">kontakt@tsfinanse.com</a> | Tel: +48 506 711 242</p>
-<p><a href="${canonicalUrl('/blog/')}">Blog</a> | <a href="${canonicalUrl('/programpartnerski/')}">Program Partnerski</a></p>
+${renderNoscriptCanonicalLinks()}
 </div></noscript>`;
   }
 
@@ -1130,7 +1144,7 @@ function buildNoscript(route, post, allPosts = []) {
 </form>
 <h2>Najnowsze wpisy</h2>
 <ul>${postLinks}</ul>
-<p><a href="${canonicalUrl('/')}">Strona główna TS Finanse</a> | <a href="${canonicalUrl('/programpartnerski/')}">Program Partnerski</a></p>
+${renderNoscriptCanonicalLinks()}
 </div></noscript>`;
   }
 
@@ -1141,6 +1155,7 @@ function buildNoscript(route, post, allPosts = []) {
 <h2>Dla kogo?</h2>
 <ul><li>Pośrednicy kredytowi</li><li>Doradcy finansowi</li><li>Agenci nieruchomości</li><li>Kancelarie prawne</li></ul>
 <p>Kontakt: <a href="mailto:kontakt@tsfinanse.com">kontakt@tsfinanse.com</a> | +48 506 711 242</p>
+${renderNoscriptCanonicalLinks()}
 </div></noscript>`;
   }
 
@@ -1165,7 +1180,7 @@ ${renderOfficialReferences()}
 ${renderEditorialTrust()}
 ${renderRelatedPosts(post, allPosts)}
 ${tags}
-<p><a href="${canonicalUrl('/blog/')}">Wszystkie wpisy na blogu TS Finanse</a> | <a href="${canonicalUrl('/')}">Strona główna</a></p>
+${renderNoscriptCanonicalLinks()}
 </article>
 </div></noscript>`;
   }
@@ -1182,7 +1197,7 @@ ${tags}
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>${legalTitles[path]}</h1>
 <p>Aby wyświetlić pełną treść, włącz JavaScript w przeglądarce.</p>
-<p><a href="${canonicalUrl('/')}">Powrót na stronę główną TS Finanse</a></p>
+${renderNoscriptCanonicalLinks()}
 </div></noscript>`;
   }
 

@@ -650,6 +650,74 @@ function verifyHtmlInternalLinks({ html, loc, locs, failures }) {
   }
 }
 
+function canonicalInternalTargetFromHref(href, baseLoc, locSet) {
+  if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return undefined;
+  if (/^(javascript:|data:)/i.test(href)) return undefined;
+
+  let url;
+  try {
+    url = new URL(href, baseLoc);
+  } catch {
+    return undefined;
+  }
+
+  if (url.origin !== SITE_URL) return undefined;
+
+  const pathname = decodeURIComponent(url.pathname);
+  if (
+    pathname.startsWith('/assets/')
+    || pathname.startsWith('/uploads/')
+    || pathname.startsWith('/.well-known/')
+    || pathname.startsWith('/md/')
+  ) {
+    return undefined;
+  }
+
+  const canonical = `${SITE_URL}${canonicalPath(pathname)}`;
+  return locSet.has(canonical) ? canonical : undefined;
+}
+
+function extractCanonicalHtmlTargets(html, loc, locSet) {
+  return new Set([...html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>/gi)]
+    .map((match) => canonicalInternalTargetFromHref(match[1].trim(), loc, locSet))
+    .filter(Boolean));
+}
+
+function verifyStaticCrawlGraph({ htmlByLoc, locs, failures }) {
+  const locSet = new Set(locs);
+  const outgoingByLoc = new Map();
+
+  for (const loc of locs) {
+    const html = htmlByLoc.get(loc);
+    if (!html) continue;
+    const outgoing = extractCanonicalHtmlTargets(html, loc, locSet);
+    outgoingByLoc.set(loc, outgoing);
+
+    if (loc !== `${SITE_URL}/` && outgoing.size === 0) {
+      failures.push({ type: 'static-crawl-dead-end', loc });
+    }
+  }
+
+  const rootLoc = `${SITE_URL}/`;
+  const reachable = new Set([rootLoc]);
+  const queue = [rootLoc];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    for (const target of outgoingByLoc.get(current) || []) {
+      if (reachable.has(target)) continue;
+      reachable.add(target);
+      queue.push(target);
+    }
+  }
+
+  for (const loc of locs) {
+    if (!reachable.has(loc)) {
+      failures.push({ type: 'static-crawl-orphan', loc });
+    }
+  }
+}
+
 const minBlogFaqEntries = 3;
 const maxBlogFaqEntries = 8;
 
@@ -1880,6 +1948,7 @@ async function main() {
   const titlesByValue = new Map();
   const descriptionsByValue = new Map();
   const blogTopicSignalsByLoc = new Map();
+  const htmlByLoc = new Map();
 
   const { response: homepageResponse } = await fetchText(`${SITE_URL}/`, {
     headers: { accept: 'text/html' },
@@ -1957,6 +2026,7 @@ async function main() {
       continue;
     }
     if (response.url !== expectedCanonical) failures.push({ type: 'html-effective-url', loc, effectiveUrl: response.url });
+    htmlByLoc.set(loc, html);
 
     const canonical = extractCanonical(html);
     if (canonical !== expectedCanonical) failures.push({ type: 'canonical', loc, canonical });
@@ -2043,6 +2113,8 @@ async function main() {
       verifyHomepageEntitySchema({ html, failures });
     }
   }
+
+  verifyStaticCrawlGraph({ htmlByLoc, locs, failures });
 
   if (rssResponse.ok) {
     verifyRssFeed({ rss, locs, sitemapLastmods, blogTopicSignalsByLoc, failures });

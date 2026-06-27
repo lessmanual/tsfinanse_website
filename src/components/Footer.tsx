@@ -109,6 +109,18 @@ export function Footer() {
                   Polityka Prywatności
                 </Link>
                 <Link
+                  to="/polityka-cookies/"
+                  className="block text-white/70 hover:text-white transition-colors"
+                >
+                  Polityka Cookies
+                </Link>
+                <Link
+                  to="/regulamin/"
+                  className="block text-white/70 hover:text-white transition-colors"
+                >
+                  Regulamin
+                </Link>
+                <Link
                   to="/rodo/"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
