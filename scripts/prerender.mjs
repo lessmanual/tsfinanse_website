@@ -39,6 +39,26 @@ const OFFICIAL_REFERENCE_LINKS = [
   ['Biznes.gov.pl - informacje dla przedsiębiorców', 'https://www.biznes.gov.pl/pl/portal/00120'],
   ['KRS - wyszukiwarka podmiotów', 'https://prs.ms.gov.pl/krs'],
 ];
+const EDITORIAL_TRUST_PROFILE = {
+  name: 'TS Finanse',
+  legalName: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
+  url: SITE_URL,
+  email: 'kontakt@tsfinanse.com',
+  telephone: '+48506711242',
+};
+const EDITORIAL_TRUST_STATEMENT = 'Materiał przygotowany i aktualizowany przez zespół TS Finanse. Treści mają charakter informacyjny, a warunki finansowania są ustalane indywidualnie po analizie zabezpieczenia i sytuacji przedsiębiorcy.';
+
+function editorialOrganizationSchema() {
+  return {
+    '@type': 'Organization',
+    '@id': `${SITE_URL}/#organization`,
+    name: EDITORIAL_TRUST_PROFILE.name,
+    legalName: EDITORIAL_TRUST_PROFILE.legalName,
+    url: EDITORIAL_TRUST_PROFILE.url,
+    email: EDITORIAL_TRUST_PROFILE.email,
+    telephone: EDITORIAL_TRUST_PROFILE.telephone,
+  };
+}
 
 function canonicalPath(path) {
   if (path === '/') return '/';
@@ -346,6 +366,7 @@ const SCHEMAS = {
 function blogPostingSchema(post) {
   const normalizedContent = normalizeArticleContent(post.content || '', new Set());
   const articleText = stripHtml(normalizedContent);
+  const editorialOrganization = editorialOrganizationSchema();
   const keywords = Array.from(new Set([
     post.category || 'Finansowanie',
     ...(Array.isArray(post.tags) ? post.tags : []),
@@ -365,8 +386,13 @@ function blogPostingSchema(post) {
     keywords,
     isAccessibleForFree: true,
     ...(articleText ? { wordCount: articleText.split(/\s+/).filter(Boolean).length } : {}),
-    author: { '@type': 'Organization', name: 'TS Finanse', url: 'https://tsfinanse.com' },
-    publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' } },
+    author: editorialOrganization,
+    publisher: {
+      ...editorialOrganization,
+      logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' },
+    },
+    reviewedBy: editorialOrganization,
+    copyrightHolder: editorialOrganization,
     image: absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp',
     citation: OFFICIAL_REFERENCE_LINKS.map(([, url]) => url),
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
@@ -1042,6 +1068,14 @@ ${OFFICIAL_REFERENCE_LINKS.map(([label, url]) => `<li><a href="${esc(url)}">${es
 </section>`;
 }
 
+function renderEditorialTrust() {
+  return `<section data-ai-author="editorial">
+<h2>Autor i weryfikacja merytoryczna</h2>
+<p>${esc(EDITORIAL_TRUST_STATEMENT)}</p>
+<p>Podmiot odpowiedzialny: ${esc(EDITORIAL_TRUST_PROFILE.name)} (${esc(EDITORIAL_TRUST_PROFILE.legalName)}), kontakt: <a href="mailto:${esc(EDITORIAL_TRUST_PROFILE.email)}">${esc(EDITORIAL_TRUST_PROFILE.email)}</a>.</p>
+</section>`;
+}
+
 // ---------------------------------------------------------------------------
 // Noscript fallback content per route (for non-JS crawlers)
 // ---------------------------------------------------------------------------
@@ -1112,6 +1146,7 @@ ${renderAnswerBlock(post)}
 ${renderArticleToc(post, publishedSlugs)}
 ${renderStaticPostContent(post, publishedSlugs)}
 ${renderOfficialReferences()}
+${renderEditorialTrust()}
 ${renderRelatedPosts(post, allPosts)}
 ${tags}
 <p><a href="/blog/">Wszystkie wpisy na blogu TS Finanse</a> | <a href="/">Strona główna</a></p>

@@ -4,7 +4,15 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
-import { SEO, blogFaqPageSchema, blogPostingSchema, breadcrumbSchema, officialReferenceLinks } from '../components/SEO';
+import {
+  SEO,
+  blogFaqPageSchema,
+  blogPostingSchema,
+  breadcrumbSchema,
+  editorialTrustProfile,
+  editorialTrustStatement,
+  officialReferenceLinks,
+} from '../components/SEO';
 import { getAllPosts, getPostBySlug, Post, selectRelatedPosts } from '../lib/posts';
 import { ArrowLeft, Calendar, User, Tag, Clock } from 'lucide-react';
 
@@ -396,6 +404,29 @@ export default function BlogPost() {
                 </li>
               ))}
             </ul>
+          </section>
+
+          <section
+            data-ai-author="editorial"
+            aria-labelledby="editorial-trust-heading"
+            className="mt-12 pt-8 border-t border-gray-100"
+          >
+            <h2 id="editorial-trust-heading" className="text-2xl font-bold text-[#3D1F1F] mb-4">
+              Autor i weryfikacja merytoryczna
+            </h2>
+            <p className="text-base text-gray-700 leading-relaxed mb-4">
+              {editorialTrustStatement}
+            </p>
+            <p className="text-base text-gray-700 leading-relaxed">
+              Podmiot odpowiedzialny: {editorialTrustProfile.name} ({editorialTrustProfile.legalName}), kontakt:{' '}
+              <a
+                href={`mailto:${editorialTrustProfile.email}`}
+                className="text-[#C5A572] font-medium hover:text-[#3D1F1F] hover:underline transition-colors"
+              >
+                {editorialTrustProfile.email}
+              </a>
+              .
+            </p>
           </section>
 
           {/* Tags */}

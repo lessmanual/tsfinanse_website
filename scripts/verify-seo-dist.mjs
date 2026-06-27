@@ -28,6 +28,12 @@ const officialReferenceUrls = [
   'https://www.biznes.gov.pl/pl/portal/00120',
   'https://prs.ms.gov.pl/krs',
 ];
+const editorialTrustFragments = [
+  'TS Finanse',
+  '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
+  'kontakt@tsfinanse.com',
+  'warunki finansowania są ustalane indywidualnie',
+];
 
 const robotsPolicy = {
   allowed: [
@@ -319,6 +325,69 @@ function verifyOfficialReferences({ html, markdown, loc, failures }) {
     if (!citations.includes(referenceUrl)) {
       failures.push({ type: 'official-reference-citation', loc, referenceUrl });
     }
+  }
+}
+
+function extractEditorialTrustTextFromHtml(html) {
+  const block = html.match(/<section[^>]+data-ai-author=["']editorial["'][^>]*>([\s\S]*?)<\/section>/i)?.[1] || '';
+  return stripHtml(block)
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+
+function extractEditorialTrustTextFromMarkdown(markdown) {
+  const start = markdown.indexOf('## Autor i weryfikacja merytoryczna');
+  if (start === -1) return '';
+  const section = markdown.slice(start);
+  const nextSection = section.slice(1).search(/\n##\s+/);
+  return nextSection >= 0 ? section.slice(0, nextSection + 1) : section;
+}
+
+function verifyBlogEditorialTrust({ html, markdown, loc, failures }) {
+  const url = new URL(loc);
+  const isBlogPost = url.pathname.startsWith('/blog/') && url.pathname !== '/blog/';
+  if (!isBlogPost) return;
+
+  const htmlTrustText = extractEditorialTrustTextFromHtml(html);
+  const markdownTrustText = extractEditorialTrustTextFromMarkdown(markdown);
+  for (const fragment of editorialTrustFragments) {
+    if (!htmlTrustText.includes(fragment)) {
+      failures.push({ type: 'blog-editorial-trust-html', loc, fragment });
+    }
+    if (!markdownTrustText.includes(fragment)) {
+      failures.push({ type: 'blog-editorial-trust-markdown', loc, fragment });
+    }
+  }
+
+  const objects = collectJsonLd(html, failures, loc);
+  const blogPosting = objects.find((entry) => entry && entry['@type'] === 'BlogPosting');
+  if (!blogPosting) return;
+
+  const author = blogPosting.author || {};
+  if (
+    author['@type'] !== 'Organization'
+    || author.name !== 'TS Finanse'
+    || author.legalName !== '"TRANSBUD" NOWAK SPÓŁKA JAWNA'
+    || author.url !== SITE_URL
+    || author.email !== 'kontakt@tsfinanse.com'
+  ) {
+    failures.push({ type: 'blog-editorial-trust-author', loc, author });
+  }
+
+  const reviewedBy = blogPosting.reviewedBy || {};
+  if (
+    reviewedBy['@type'] !== 'Organization'
+    || reviewedBy.name !== 'TS Finanse'
+    || reviewedBy.legalName !== '"TRANSBUD" NOWAK SPÓŁKA JAWNA'
+    || reviewedBy.url !== SITE_URL
+  ) {
+    failures.push({ type: 'blog-editorial-trust-reviewed-by', loc, reviewedBy });
+  }
+
+  const copyrightHolder = blogPosting.copyrightHolder || {};
+  if (copyrightHolder['@type'] !== 'Organization' || copyrightHolder.name !== 'TS Finanse') {
+    failures.push({ type: 'blog-editorial-trust-copyright-holder', loc, copyrightHolder });
   }
 }
 
@@ -1315,6 +1384,7 @@ for (const loc of locs) {
   verifyAnswerBlock({ html, markdown, loc, failures });
   verifyArticleToc({ html, markdown, loc, failures });
   verifyOfficialReferences({ html, markdown, loc, failures });
+  verifyBlogEditorialTrust({ html, markdown, loc, failures });
   verifyMarkdownCanonicalLinks({ markdown, loc, failures });
   scanStale(markdown, loc, 'markdown', staleHits);
 

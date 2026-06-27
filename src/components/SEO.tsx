@@ -39,6 +39,29 @@ export const officialReferenceLinks = [
   },
 ] as const;
 
+export const editorialTrustProfile = {
+  name: 'TS Finanse',
+  legalName: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
+  url: siteUrl,
+  email: 'kontakt@tsfinanse.com',
+  telephone: '+48506711242',
+} as const;
+
+export const editorialTrustStatement =
+  'Materiał przygotowany i aktualizowany przez zespół TS Finanse. Treści mają charakter informacyjny, a warunki finansowania są ustalane indywidualnie po analizie zabezpieczenia i sytuacji przedsiębiorcy.';
+
+function editorialOrganizationSchema() {
+  return {
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: editorialTrustProfile.name,
+    legalName: editorialTrustProfile.legalName,
+    url: editorialTrustProfile.url,
+    email: editorialTrustProfile.email,
+    telephone: editorialTrustProfile.telephone,
+  };
+}
+
 interface BlogIndexPost {
   slug: string;
   title: string;
@@ -570,6 +593,7 @@ export const blogPostingSchema = (post: {
     .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
     .map((item) => item.trim())));
   const wordCount = countWords(post.content);
+  const editorialOrganization = editorialOrganizationSchema();
 
   return {
     '@context': 'https://schema.org',
@@ -583,12 +607,9 @@ export const blogPostingSchema = (post: {
     keywords,
     isAccessibleForFree: true,
     ...(wordCount > 0 ? { wordCount } : {}),
-    author: {
-      '@type': 'Organization',
-      name: post.author || 'TS Finanse',
-      url: 'https://tsfinanse.com',
-    },
+    author: editorialOrganization,
     publisher: {
+      ...editorialOrganization,
       '@type': 'Organization',
       name: 'TS Finanse',
       logo: {
@@ -596,6 +617,8 @@ export const blogPostingSchema = (post: {
         url: 'https://tsfinanse.com/logo.webp',
       },
     },
+    reviewedBy: editorialOrganization,
+    copyrightHolder: editorialOrganization,
     image: absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp',
     citation: officialReferenceLinks.map((reference) => reference.url),
     mainEntityOfPage: {

@@ -23,6 +23,12 @@ const OFFICIAL_REFERENCE_LINKS = [
   ['Biznes.gov.pl - informacje dla przedsiębiorców', 'https://www.biznes.gov.pl/pl/portal/00120'],
   ['KRS - wyszukiwarka podmiotów', 'https://prs.ms.gov.pl/krs'],
 ];
+const EDITORIAL_TRUST_PROFILE = {
+  name: 'TS Finanse',
+  legalName: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
+  email: 'kontakt@tsfinanse.com',
+};
+const EDITORIAL_TRUST_STATEMENT = 'Materiał przygotowany i aktualizowany przez zespół TS Finanse. Treści mają charakter informacyjny, a warunki finansowania są ustalane indywidualnie po analizie zabezpieczenia i sytuacji przedsiębiorcy.';
 
 function canonicalPath(path) {
   if (path === '/') return '/';
@@ -373,6 +379,10 @@ function renderOfficialReferencesMarkdown() {
   return `## Źródła i weryfikacja\n\nPrzed decyzją finansową sprawdź aktualne rejestry, ostrzeżenia publiczne i informacje urzędowe.\n\n${OFFICIAL_REFERENCE_LINKS.map(([label, url]) => `- [${label}](${url})`).join('\n')}`;
 }
 
+function renderEditorialTrustMarkdown() {
+  return `## Autor i weryfikacja merytoryczna\n\n${EDITORIAL_TRUST_STATEMENT}\n\nPodmiot odpowiedzialny: ${EDITORIAL_TRUST_PROFILE.name} (${EDITORIAL_TRUST_PROFILE.legalName}), kontakt: ${EDITORIAL_TRUST_PROFILE.email}.`;
+}
+
 function staticPageMarkdown({ title, description, path, content, publishedSlugs = new Set() }) {
   return `${frontmatter({
     title,
@@ -503,7 +513,9 @@ Data publikacji: ${post.date ? post.date.slice(0, 10) : ''}
 
 ${markdownContent}
 
-${renderOfficialReferencesMarkdown()}${relatedMarkdown}`;
+${renderOfficialReferencesMarkdown()}
+
+${renderEditorialTrustMarkdown()}${relatedMarkdown}`;
 
     writeMarkdown(path, body);
   }
