@@ -1,0 +1,56 @@
+[
+  {
+    "query": "alternatywa dla kredytu firmowego",
+    "canonical": "https://tsfinanse.com/blog/alternatywy-dla-kredytu-bankowego-dla-firm-5-opcji/",
+    "intent": "Alternatywy dla kredytu bankowego dla firmy po odmowie finansowania",
+    "requiredTerms": ["alternatyw", "kredytu", "firm"]
+  },
+  {
+    "query": "alternatywa dla kredytu w banku",
+    "canonical": "https://tsfinanse.com/blog/alternatywy-dla-kredytu-bankowego-dla-firm-5-opcji/",
+    "intent": "Alternatywy dla kredytu w banku",
+    "requiredTerms": ["alternatyw", "kredytu", "banku"]
+  },
+  {
+    "query": "restrukturyzacja zadłużenia firmy",
+    "canonical": "https://tsfinanse.com/blog/restrukturyzacja-zadluzenia-firmy-kiedy-jak/",
+    "intent": "Restrukturyzacja zadłużenia firmy",
+    "requiredTerms": ["restrukturyzac", "zadlu", "firm"]
+  },
+  {
+    "query": "restrukturyzacja długu",
+    "canonical": "https://tsfinanse.com/blog/restrukturyzacja-zadluzenia-firmy-kiedy-jak/",
+    "intent": "Restrukturyzacja długu firmowego",
+    "requiredTerms": ["restrukturyzac", "dlug"]
+  },
+  {
+    "query": "restrukturyzacja zadłużenia",
+    "canonical": "https://tsfinanse.com/blog/restrukturyzacja-zadluzenia-firmy-kiedy-jak/",
+    "intent": "Restrukturyzacja zadłużenia",
+    "requiredTerms": ["restrukturyzac", "zadlu"]
+  },
+  {
+    "query": "restrukturyzacja zadłużonych firm",
+    "canonical": "https://tsfinanse.com/blog/restrukturyzacja-zadluzenia-firmy-kiedy-jak/",
+    "intent": "Restrukturyzacja zadłużonych firm",
+    "requiredTerms": ["restrukturyzac", "zadlu", "firm"]
+  },
+  {
+    "query": "pożyczka dla firm pod zastaw działki",
+    "canonical": "https://tsfinanse.com/blog/pozyczka-pod-zastaw-dzialki-inwestycyjnej-dla-firmy/",
+    "intent": "Pożyczka dla firm pod zastaw działki",
+    "requiredTerms": ["pozyczka", "zastaw", "dzialk", "firm"]
+  },
+  {
+    "query": "pożyczka pod zastaw działki dla firm",
+    "canonical": "https://tsfinanse.com/blog/pozyczka-pod-zastaw-dzialki-inwestycyjnej-dla-firmy/",
+    "intent": "Pożyczka pod zastaw działki dla firm",
+    "requiredTerms": ["pozyczka", "zastaw", "dzialk", "firm"]
+  },
+  {
+    "query": "ubezpieczenie naleznosci koszt",
+    "canonical": "https://tsfinanse.com/blog/ubezpieczenie-naleznosci-handlowych-ile-kosztuje/",
+    "intent": "Koszt ubezpieczenia należności handlowych",
+    "requiredTerms": ["ubezpieczenie", "naleznosci", "koszt"]
+  }
+]

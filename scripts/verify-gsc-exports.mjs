@@ -1,9 +1,10 @@
 import { existsSync, readFileSync } from 'fs';
-import { join, resolve } from 'path';
+import { dirname, join, resolve } from 'path';
 
 const SITE_URL = 'https://tsfinanse.com';
 const HOSTS = new Set(['tsfinanse.com', 'www.tsfinanse.com']);
 const DEFAULT_SITEMAP_PATH = resolve(process.cwd(), 'dist', 'sitemap.xml');
+const DEFAULT_QUERY_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-priority-query-targets.json');
 const COVERAGE_REASON_THRESHOLDS = {
   redirectError: 'Redirect error',
   discoveredNotIndexed: 'Discovered - currently not indexed',
@@ -14,6 +15,7 @@ const COVERAGE_REASON_THRESHOLDS = {
 function parseArgs(args) {
   const options = {
     sitemapPath: DEFAULT_SITEMAP_PATH,
+    queryTargetsPath: DEFAULT_QUERY_TARGETS_PATH,
     coverageDir: process.env.GSC_COVERAGE_DIR,
     performanceDir: process.env.GSC_PERFORMANCE_DIR,
     coverageLimits: {},
@@ -25,6 +27,13 @@ function parseArgs(args) {
       const value = args[index + 1];
       if (!value) throw new Error('--sitemap requires a file path');
       options.sitemapPath = resolve(process.cwd(), value);
+      index += 1;
+      continue;
+    }
+    if (arg === '--query-targets') {
+      const value = args[index + 1];
+      if (!value) throw new Error('--query-targets requires a file path');
+      options.queryTargetsPath = resolve(process.cwd(), value);
       index += 1;
       continue;
     }
@@ -149,6 +158,13 @@ function readCsv(filePath) {
   return parseCsv(readFileSync(filePath, 'utf8'));
 }
 
+function readJson(filePath) {
+  if (!existsSync(filePath)) {
+    throw new Error(`Missing JSON: ${filePath}`);
+  }
+  return JSON.parse(readFileSync(filePath, 'utf8'));
+}
+
 function parseInteger(value) {
   const parsed = Number.parseInt(String(value || '').replace(/[^\d-]/g, ''), 10);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -171,6 +187,24 @@ function canonicaliseGoogleUrl(rawUrl) {
     canonical,
     isVariant: rawUrl !== canonical,
   };
+}
+
+function normaliseText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[ł]/g, 'l')
+    .replace(/[^a-z0-9\s/-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function markdownPathForLoc(loc, sitemapPath) {
+  const sitemapDir = dirname(sitemapPath);
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return join(sitemapDir, 'md', 'index.md');
+  return join(sitemapDir, 'md', `${pathname.replace(/^\//, '').replace(/\/$/, '')}.md`);
 }
 
 function readSitemapLocs(sitemapPath) {
@@ -267,11 +301,79 @@ function verifyPerformancePages(performanceRows, sitemapLocs) {
   };
 }
 
-function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs) {
+function verifyPriorityQueryTargets({ queryRows, queryTargets, sitemapLocs, sitemapPath }) {
+  if (!Array.isArray(queryTargets) || queryTargets.length === 0) {
+    return {
+      checks: [],
+      failures: [{ type: 'priority-query-targets-empty' }],
+    };
+  }
+
+  const queryRowsByQuery = new Map(queryRows.map((row) => [normaliseText(row['Top queries']), row]));
+  const checks = [];
+  const failures = [];
+
+  for (const target of queryTargets) {
+    const query = target.query;
+    const canonical = target.canonical;
+    const requiredTerms = target.requiredTerms;
+
+    if (!query || !canonical) {
+      failures.push({ type: 'priority-query-target-invalid-entry', target });
+      continue;
+    }
+    if (!Array.isArray(requiredTerms) || requiredTerms.length === 0) {
+      failures.push({ type: 'priority-query-target-required-terms-empty', query, canonical });
+      continue;
+    }
+
+    const queryRow = queryRowsByQuery.get(normaliseText(query));
+    if (!queryRow) {
+      failures.push({ type: 'priority-query-target-query-missing', query, canonical });
+      continue;
+    }
+    if (!sitemapLocs.has(canonical)) {
+      failures.push({ type: 'priority-query-target-canonical-missing-from-sitemap', query, canonical });
+      continue;
+    }
+
+    const markdownPath = markdownPathForLoc(canonical, sitemapPath);
+    if (!existsSync(markdownPath)) {
+      failures.push({ type: 'priority-query-target-markdown-missing', query, canonical, markdownPath });
+      continue;
+    }
+
+    const markdown = readFileSync(markdownPath, 'utf8');
+    const normalisedMarkdown = normaliseText(markdown);
+    const missingTerms = requiredTerms.filter((term) => !normalisedMarkdown.includes(normaliseText(term)));
+    if (missingTerms.length > 0) {
+      failures.push({ type: 'priority-query-target-required-terms-missing', query, canonical, missingTerms });
+    }
+    if (!markdown.includes('## W skrócie')) {
+      failures.push({ type: 'priority-query-target-answer-block-missing', query, canonical });
+    }
+
+    checks.push({
+      query,
+      canonical,
+      clicks: parseInteger(queryRow.Clicks),
+      impressions: parseInteger(queryRow.Impressions),
+      ctr: queryRow.CTR,
+      position: queryRow.Position,
+      requiredTerms,
+      missingTerms,
+    });
+  }
+
+  return { checks, failures };
+}
+
+function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck) {
   const totalImpressions = performanceCheck.mapped.reduce((sum, item) => sum + item.impressions, 0);
   const totalClicks = performanceCheck.mapped.reduce((sum, item) => sum + item.clicks, 0);
   const variantImpressions = performanceCheck.variants.reduce((sum, item) => sum + item.impressions, 0);
   const coverageIssuePages = coverageIssues.reduce((sum, issue) => sum + issue.pages, 0);
+  const queryTargetImpressions = queryTargetCheck.checks.reduce((sum, item) => sum + item.impressions, 0);
 
   return {
     sitemapUrlCount: sitemapLocs.size,
@@ -287,6 +389,10 @@ function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFai
     totalClicks,
     totalImpressions,
     variantImpressions,
+    priorityQueryTargetCount: queryTargetCheck.checks.length,
+    priorityQueryTargetImpressions: queryTargetImpressions,
+    priorityQueryTargetFailures: queryTargetCheck.failures,
+    priorityQueryTargets: queryTargetCheck.checks.slice(0, 20),
     variants: performanceCheck.variants.slice(0, 20),
     unmapped: performanceCheck.unmapped.slice(0, 20),
     unexpectedHosts: performanceCheck.unexpectedHosts.slice(0, 20),
@@ -301,7 +407,15 @@ function main() {
   const coverageFailures = verifyCoverageIssues(coverageIssues, options.coverageLimits);
   const performanceRows = readCsv(join(options.performanceDir, 'Pages.csv'));
   const performanceCheck = verifyPerformancePages(performanceRows, sitemapLocs);
-  const summary = summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs);
+  const queryRows = readCsv(join(options.performanceDir, 'Queries.csv'));
+  const queryTargets = readJson(options.queryTargetsPath);
+  const queryTargetCheck = verifyPriorityQueryTargets({
+    queryRows,
+    queryTargets,
+    sitemapLocs,
+    sitemapPath: options.sitemapPath,
+  });
+  const summary = summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck);
 
   console.log(JSON.stringify(summary, null, 2));
 
@@ -309,6 +423,7 @@ function main() {
     summary.unmappedPerformanceUrlCount > 0
     || summary.unexpectedHosts.length > 0
     || summary.coverageFailures.length > 0
+    || summary.priorityQueryTargetFailures.length > 0
     || summary.performanceUrlCount === 0
   ) {
     process.exit(1);
