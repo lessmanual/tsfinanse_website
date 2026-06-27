@@ -32,6 +32,7 @@
             "dev": "vite",
             "build": "node scripts/clean-dist.mjs && vite build && node scripts/generate-sitemap.mjs && node scripts/prerender.mjs && node scripts/generate-md-variants.mjs",
             "verify:seo": "node scripts/verify-seo-dist.mjs",
+            "verify:predeploy": "node scripts/verify-predeploy.mjs",
             "verify:live": "node scripts/verify-live-seo.mjs",
             "verify:gsc": "node scripts/verify-gsc-exports.mjs",
             "indexnow": "node scripts/indexnow.mjs",

@@ -26,22 +26,30 @@ dist
 
 `npm run build` wykonuje:
 
-1. Vite production build.
-2. `scripts/generate-sitemap.mjs`.
-3. `scripts/prerender.mjs`.
-4. `scripts/generate-md-variants.mjs`.
+1. `scripts/clean-dist.mjs`.
+2. Vite production build.
+3. `scripts/generate-sitemap.mjs`.
+4. `scripts/prerender.mjs`.
+5. `scripts/generate-md-variants.mjs`.
 
 ## SEO/GEO Gate
 
-Przed deployem produkcyjnym uruchom:
+Przed deployem produkcyjnym uruchom jeden gate:
 
 ```bash
-npm run build
-npm run verify:seo
-npm run verify:gsc -- \
+npm run verify:predeploy -- \
   --coverage-dir "/Users/bartlomiejchudzik/Downloads/tsfinanse.com-Coverage-2026-06-27" \
   --performance-dir "/Users/bartlomiejchudzik/Downloads/tsfinanse.com-Performance-on-Search-2026-06-27"
 ```
+
+Ten gate wykonuje kolejno:
+
+1. `npm run build`,
+2. `node scripts/verify-seo-dist.mjs`,
+3. `node scripts/verify-gsc-exports.mjs`,
+4. `node scripts/indexnow.mjs --dry-run`.
+
+Jeśli eksporty GSC nie są dostępne lokalnie, można technicznie użyć `--skip-gsc`, ale nie traktuj tego jako zgody na produkcyjny deploy.
 
 Oczekiwany wynik `verify:seo`:
 
@@ -51,6 +59,8 @@ Oczekiwany wynik `verify:seo`:
 - każdy URL ma self canonical,
 - każdy URL ma `link rel="alternate" type="text/markdown"` do canonical URL,
 - każdy URL ma wariant markdown w `dist/md`,
+- `dist` nie ma dodatkowych HTML artefaktów poza sitemap, `404.html` i `admin/index.html`,
+- `dist/md` nie ma dodatkowych markdown artefaktów poza sitemap,
 - każdy URL ma jeden `noscript` i jeden `h1`,
 - renderowany HTML i markdown nie zawierają starych claimów o stałej prowizji TS Finanse.
 
