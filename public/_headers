@@ -40,5 +40,9 @@
   Vary: Accept
   X-Robots-Tag: noindex, follow
 
+/admin/*
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

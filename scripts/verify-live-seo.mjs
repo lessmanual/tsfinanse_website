@@ -7,6 +7,7 @@ const SITEMAP_URL = `${SITE_URL}/sitemap.xml`;
 const RSS_URL = `${SITE_URL}/rss.xml`;
 const ROBOTS_URL = `${SITE_URL}/robots.txt`;
 const LLMS_URL = `${SITE_URL}/llms.txt`;
+const ADMIN_URL = `${SITE_URL}/admin/`;
 const API_CATALOG_URL = `${SITE_URL}/.well-known/api-catalog`;
 const AGENT_SKILLS_INDEX_URL = `${SITE_URL}/.well-known/agent-skills/index.json`;
 const VARIANT_REDIRECT_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-variant-redirect-targets.json');
@@ -1687,6 +1688,37 @@ async function verifyUnknownUrl404s(failures) {
   }
 }
 
+async function verifyAdminSurface(failures) {
+  const { response, text } = await fetchText(ADMIN_URL, {
+    headers: { accept: 'text/html' },
+  });
+
+  if (!response.ok) {
+    failures.push({ type: 'admin-status', url: ADMIN_URL, status: response.status });
+    return;
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('html')) {
+    failures.push({ type: 'admin-content-type', url: ADMIN_URL, contentType });
+  }
+
+  const xRobotsTag = response.headers.get('x-robots-tag') || '';
+  if (!hasNoindexNofollow(xRobotsTag)) {
+    failures.push({ type: 'admin-x-robots-tag', url: ADMIN_URL, xRobotsTag });
+  }
+
+  const robots = extractMetaName(text, 'robots') || '';
+  if (!hasNoindexNofollow(robots)) {
+    failures.push({ type: 'admin-robots', url: ADMIN_URL, robots });
+  }
+
+  const canonical = extractCanonical(text);
+  if (canonical) {
+    failures.push({ type: 'admin-canonical', url: ADMIN_URL, canonical });
+  }
+}
+
 function readVariantRedirectTargets(failures) {
   if (!existsSync(VARIANT_REDIRECT_TARGETS_PATH)) {
     failures.push({ type: 'variant-redirect-targets-file-missing', file: VARIANT_REDIRECT_TARGETS_PATH });
@@ -1791,6 +1823,7 @@ async function main() {
   await verifyNoSlashCanonicalRedirects(failures, locs);
   await verifyGscVariantRedirectTargets(failures, locs);
   await verifyUnknownUrl404s(failures);
+  await verifyAdminSurface(failures);
   await verifyDirectMarkdownNoindexHeaders(failures, locs);
   await verifyLlmsSurface(failures, staleHits, locs);
 

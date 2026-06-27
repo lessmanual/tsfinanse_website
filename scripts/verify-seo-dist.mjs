@@ -14,6 +14,7 @@ const apiCatalogPath = join(root, 'dist', '.well-known', 'api-catalog');
 const agentSkillsIndexPath = join(root, 'dist', '.well-known', 'agent-skills', 'index.json');
 const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negotiation.js');
 const notFoundPath = join(root, 'dist', '404.html');
+const adminIndexPath = join(root, 'dist', 'admin', 'index.html');
 const indexNowKeyFilePattern = /^[A-Za-z0-9_-]{8,128}\.txt$/;
 
 const EXPECTED_LOC_COUNT = 73;
@@ -310,6 +311,37 @@ function verifyNotFoundArtifact(failures) {
 
   if (!/<a\b[^>]+href=["']\/["']/i.test(html)) {
     failures.push({ type: 'not-found-home-link', file: notFoundPath });
+  }
+}
+
+function verifyAdminSurface(failures) {
+  if (!existsSync(adminIndexPath)) {
+    failures.push({ type: 'missing-admin-artifact', file: adminIndexPath });
+    return;
+  }
+
+  const html = readFileSync(adminIndexPath, 'utf8');
+  const robots = extractMetaName(html, 'robots') || '';
+  if (!hasNoindexNofollow(robots)) {
+    failures.push({ type: 'admin-robots', file: adminIndexPath, robots });
+  }
+
+  const canonical = extractCanonical(html);
+  if (canonical) {
+    failures.push({ type: 'admin-canonical', file: adminIndexPath, canonical });
+  }
+
+  const headers = existsSync(headersPath) ? readFileSync(headersPath, 'utf8') : '';
+  const adminBlock = extractNetlifyHeaderBlock(headers, '/admin/*').toLowerCase();
+  const requiredAdminHeaders = [
+    'x-robots-tag: noindex, nofollow',
+    'cache-control: no-store',
+  ];
+
+  for (const requiredAdminHeader of requiredAdminHeaders) {
+    if (!adminBlock.includes(requiredAdminHeader)) {
+      failures.push({ type: 'admin-header-policy', expected: requiredAdminHeader });
+    }
   }
 }
 
@@ -1757,6 +1789,7 @@ verifyAgentSkills(failures, staleHits);
 verifyRobotsPolicy(failures);
 verifyCanonicalRedirectRules({ locs, failures });
 verifyNotFoundArtifact(failures);
+verifyAdminSurface(failures);
 
 const expectedMarkdownFiles = new Set(locs.map((loc) => markdownPathForUrl(loc)));
 for (const markdownFile of collectMarkdownFiles(join(root, 'dist', 'md'))) {
@@ -1768,7 +1801,7 @@ for (const markdownFile of collectMarkdownFiles(join(root, 'dist', 'md'))) {
 const expectedHtmlFiles = new Set([
   ...locs.map((loc) => htmlPathForUrl(loc)),
   notFoundPath,
-  join(root, 'dist', 'admin', 'index.html'),
+  adminIndexPath,
 ]);
 for (const htmlFile of collectHtmlFiles(join(root, 'dist'))) {
   if (!expectedHtmlFiles.has(htmlFile)) {
