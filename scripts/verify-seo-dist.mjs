@@ -16,6 +16,7 @@ const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negot
 const notFoundPath = join(root, 'dist', '404.html');
 const indexNowKeyFilePattern = /^[A-Za-z0-9_-]{8,128}\.txt$/;
 
+const EXPECTED_LOC_COUNT = 73;
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 const minimumLlmsUpdatedDate = '2026-06-01';
 const minMetaTitleLength = 20;
@@ -1714,6 +1715,10 @@ const failures = [];
 const staleHits = [];
 const titlesByValue = new Map();
 const descriptionsByValue = new Map();
+
+if (locs.length !== EXPECTED_LOC_COUNT) {
+  failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
+}
 
 if (!sitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"')) {
   failures.push({ type: 'sitemap-image-namespace' });
