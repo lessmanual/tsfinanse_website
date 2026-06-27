@@ -5,6 +5,7 @@ const SITE_URL = 'https://tsfinanse.com';
 const HOSTS = new Set(['tsfinanse.com', 'www.tsfinanse.com']);
 const DEFAULT_SITEMAP_PATH = resolve(process.cwd(), 'dist', 'sitemap.xml');
 const DEFAULT_QUERY_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-priority-query-targets.json');
+const DEFAULT_BRAND_QUERY_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-brand-query-targets.json');
 const COVERAGE_REASON_THRESHOLDS = {
   redirectError: 'Redirect error',
   discoveredNotIndexed: 'Discovered - currently not indexed',
@@ -16,6 +17,7 @@ function parseArgs(args) {
   const options = {
     sitemapPath: DEFAULT_SITEMAP_PATH,
     queryTargetsPath: DEFAULT_QUERY_TARGETS_PATH,
+    brandQueryTargetsPath: DEFAULT_BRAND_QUERY_TARGETS_PATH,
     coverageDir: process.env.GSC_COVERAGE_DIR,
     performanceDir: process.env.GSC_PERFORMANCE_DIR,
     coverageLimits: {},
@@ -34,6 +36,13 @@ function parseArgs(args) {
       const value = args[index + 1];
       if (!value) throw new Error('--query-targets requires a file path');
       options.queryTargetsPath = resolve(process.cwd(), value);
+      index += 1;
+      continue;
+    }
+    if (arg === '--brand-query-targets') {
+      const value = args[index + 1];
+      if (!value) throw new Error('--brand-query-targets requires a file path');
+      options.brandQueryTargetsPath = resolve(process.cwd(), value);
       index += 1;
       continue;
     }
@@ -379,12 +388,77 @@ function verifyPriorityQueryTargets({ queryRows, queryTargets, sitemapLocs, site
   return { checks, failures };
 }
 
-function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck) {
+function verifyBrandQueryTargets({ queryRows, brandQueryTargets, sitemapLocs, sitemapPath }) {
+  if (!Array.isArray(brandQueryTargets) || brandQueryTargets.length === 0) {
+    return {
+      checks: [],
+      failures: [{ type: 'brand-query-targets-empty' }],
+    };
+  }
+
+  const queryRowsByQuery = new Map(queryRows.map((row) => [normaliseText(row['Top queries']), row]));
+  const checks = [];
+  const failures = [];
+
+  for (const target of brandQueryTargets) {
+    const query = target.query;
+    const canonical = target.canonical;
+    const requiredTerms = target.requiredTerms;
+
+    if (!query || !canonical) {
+      failures.push({ type: 'brand-query-target-invalid-entry', target });
+      continue;
+    }
+    if (!Array.isArray(requiredTerms) || requiredTerms.length === 0) {
+      failures.push({ type: 'brand-query-target-required-terms-empty', query, canonical });
+      continue;
+    }
+
+    const queryRow = queryRowsByQuery.get(normaliseText(query));
+    if (!queryRow) {
+      failures.push({ type: 'brand-query-target-query-missing', query, canonical });
+      continue;
+    }
+    if (!sitemapLocs.has(canonical)) {
+      failures.push({ type: 'brand-query-target-canonical-missing-from-sitemap', query, canonical });
+      continue;
+    }
+
+    const markdownPath = markdownPathForLoc(canonical, sitemapPath);
+    if (!existsSync(markdownPath)) {
+      failures.push({ type: 'brand-query-target-markdown-missing', query, canonical, markdownPath });
+      continue;
+    }
+
+    const markdown = readFileSync(markdownPath, 'utf8');
+    const normalisedMarkdown = normaliseText(markdown);
+    const missingTerms = requiredTerms.filter((term) => !normalisedMarkdown.includes(normaliseText(term)));
+    if (missingTerms.length > 0) {
+      failures.push({ type: 'brand-query-target-required-terms-missing', query, canonical, missingTerms });
+    }
+
+    checks.push({
+      query,
+      canonical,
+      clicks: parseInteger(queryRow.Clicks),
+      impressions: parseInteger(queryRow.Impressions),
+      ctr: queryRow.CTR,
+      position: queryRow.Position,
+      requiredTerms,
+      missingTerms,
+    });
+  }
+
+  return { checks, failures };
+}
+
+function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck, brandQueryTargetCheck) {
   const totalImpressions = performanceCheck.mapped.reduce((sum, item) => sum + item.impressions, 0);
   const totalClicks = performanceCheck.mapped.reduce((sum, item) => sum + item.clicks, 0);
   const variantImpressions = performanceCheck.variants.reduce((sum, item) => sum + item.impressions, 0);
   const coverageIssuePages = coverageIssues.reduce((sum, issue) => sum + issue.pages, 0);
   const queryTargetImpressions = queryTargetCheck.checks.reduce((sum, item) => sum + item.impressions, 0);
+  const brandQueryTargetImpressions = brandQueryTargetCheck.checks.reduce((sum, item) => sum + item.impressions, 0);
 
   return {
     sitemapUrlCount: sitemapLocs.size,
@@ -404,6 +478,10 @@ function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFai
     priorityQueryTargetImpressions: queryTargetImpressions,
     priorityQueryTargetFailures: queryTargetCheck.failures,
     priorityQueryTargets: queryTargetCheck.checks.slice(0, 20),
+    brandQueryTargetCount: brandQueryTargetCheck.checks.length,
+    brandQueryTargetImpressions: brandQueryTargetImpressions,
+    brandQueryTargetFailures: brandQueryTargetCheck.failures,
+    brandQueryTargets: brandQueryTargetCheck.checks.slice(0, 20),
     variants: performanceCheck.variants.slice(0, 20),
     unmapped: performanceCheck.unmapped.slice(0, 20),
     unexpectedHosts: performanceCheck.unexpectedHosts.slice(0, 20),
@@ -420,13 +498,28 @@ function main() {
   const performanceCheck = verifyPerformancePages(performanceRows, sitemapLocs);
   const queryRows = readCsv(join(options.performanceDir, 'Queries.csv'));
   const queryTargets = readJson(options.queryTargetsPath);
+  const brandQueryTargets = readJson(options.brandQueryTargetsPath);
   const queryTargetCheck = verifyPriorityQueryTargets({
     queryRows,
     queryTargets,
     sitemapLocs,
     sitemapPath: options.sitemapPath,
   });
-  const summary = summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs, queryTargetCheck);
+  const brandQueryTargetCheck = verifyBrandQueryTargets({
+    queryRows,
+    brandQueryTargets,
+    sitemapLocs,
+    sitemapPath: options.sitemapPath,
+  });
+  const summary = summarise(
+    performanceCheck,
+    coverageIssues,
+    latestCoverage,
+    coverageFailures,
+    sitemapLocs,
+    queryTargetCheck,
+    brandQueryTargetCheck,
+  );
 
   console.log(JSON.stringify(summary, null, 2));
 
@@ -435,6 +528,7 @@ function main() {
     || summary.unexpectedHosts.length > 0
     || summary.coverageFailures.length > 0
     || summary.priorityQueryTargetFailures.length > 0
+    || summary.brandQueryTargetFailures.length > 0
     || summary.performanceUrlCount === 0
   ) {
     process.exit(1);

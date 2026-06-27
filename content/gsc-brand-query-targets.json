@@ -1,0 +1,38 @@
+[
+  {
+    "query": "ts finance",
+    "canonical": "https://tsfinanse.com/",
+    "intent": "Brand/entity navigational query for TS Finanse",
+    "requiredTerms": ["TS Finanse", "TRANSBUD", "NIP"]
+  },
+  {
+    "query": "transbud nowak spółka jawna",
+    "canonical": "https://tsfinanse.com/",
+    "intent": "Legal entity lookup",
+    "requiredTerms": ["TRANSBUD", "NOWAK", "SPÓŁKA JAWNA", "NIP"]
+  },
+  {
+    "query": "ts bud",
+    "canonical": "https://tsfinanse.com/",
+    "intent": "Brand variant navigational query",
+    "requiredTerms": ["TS Finanse", "TRANSBUD"]
+  },
+  {
+    "query": "ttfinans",
+    "canonical": "https://tsfinanse.com/",
+    "intent": "Brand typo navigational query",
+    "requiredTerms": ["TS Finanse", "TRANSBUD"]
+  },
+  {
+    "query": "tk finanse",
+    "canonical": "https://tsfinanse.com/",
+    "intent": "Brand variant navigational query",
+    "requiredTerms": ["TS Finanse", "TRANSBUD"]
+  },
+  {
+    "query": "ts finanzen",
+    "canonical": "https://tsfinanse.com/",
+    "intent": "Brand variant navigational query",
+    "requiredTerms": ["TS Finanse", "TRANSBUD"]
+  }
+]

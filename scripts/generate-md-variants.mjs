@@ -428,6 +428,15 @@ TS Finanse finansuje przedsiębiorców pod zabezpieczenie hipoteczne. Oferta obe
 - Okres: zwykle 12-36 miesięcy.
 - Warunki kosztowe: ustalane indywidualnie i przedstawiane w ofercie przed podpisaniem umowy.
 
+## Dane identyfikacyjne
+
+- Nazwa handlowa: TS Finanse.
+- Nazwa prawna: "TRANSBUD" NOWAK SPÓŁKA JAWNA.
+- NIP: 9581565078.
+- Adres: ul. Gdańska 60, 84-240 Reda, Polska.
+- Kontakt: kontakt@tsfinanse.com, +48 506 711 242.
+- Domena kanoniczna: https://tsfinanse.com/.
+
 Kontakt: kontakt@tsfinanse.com, +48 506 711 242.`,
     publishedSlugs,
   }));
