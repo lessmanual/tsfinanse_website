@@ -30,6 +30,9 @@ if (existsSync('.env')) {
 
 const DIST_DIR = resolve(process.cwd(), 'dist');
 const SITE_URL = 'https://tsfinanse.com';
+const TITLE_SUFFIX = ' | TS Finanse';
+const MAX_META_TITLE_LENGTH = 70;
+const MAX_META_DESCRIPTION_LENGTH = 180;
 
 function canonicalPath(path) {
   if (path === '/') return '/';
@@ -58,6 +61,63 @@ function latestDateValue(first, second) {
   if (!Number.isFinite(secondTime)) return firstValue;
 
   return firstTime >= secondTime ? firstValue : secondValue;
+}
+
+function normaliseWhitespace(value = '') {
+  return String(value).replace(/\s+/g, ' ').trim();
+}
+
+function stripTitleBrand(value = '') {
+  let title = normaliseWhitespace(value);
+  let previous = '';
+
+  while (title !== previous) {
+    previous = title;
+    title = title
+      .replace(/\s*\|\s*TS\s*Finanse\s*Blog\s*$/i, '')
+      .replace(/\s*\|\s*TSFinanse\s*$/i, '')
+      .replace(/\s*\|\s*TS\s*Finanse\s*$/i, '');
+  }
+
+  return title;
+}
+
+function truncateAtWord(value, maxLength) {
+  const text = normaliseWhitespace(value);
+  if (text.length <= maxLength) return text;
+
+  const slice = text.slice(0, maxLength + 1);
+  const lastSpace = slice.lastIndexOf(' ');
+  return (lastSpace > 30 ? slice.slice(0, lastSpace) : text.slice(0, maxLength)).trim();
+}
+
+function compactMetaTitle(rawTitle = '') {
+  const base = stripTitleBrand(rawTitle);
+  const shouldAppendBrand = !/\bTS\s*Finanse\b/i.test(base);
+  const suffix = shouldAppendBrand ? TITLE_SUFFIX : '';
+  const directTitle = `${base}${suffix}`;
+
+  if (directTitle.length <= MAX_META_TITLE_LENGTH) return directTitle;
+
+  const maxBaseLength = MAX_META_TITLE_LENGTH - suffix.length;
+  const [beforeDash] = base.split(/\s+-\s+/);
+  if (beforeDash && beforeDash !== base && `${beforeDash}${suffix}`.length >= 20 && `${beforeDash}${suffix}`.length <= MAX_META_TITLE_LENGTH) {
+    return `${beforeDash}${suffix}`;
+  }
+
+  return `${truncateAtWord(base, maxBaseLength)}${suffix}`;
+}
+
+function compactMetaDescription(rawDescription = '') {
+  const description = normaliseWhitespace(rawDescription);
+  if (description.length <= MAX_META_DESCRIPTION_LENGTH) return description;
+
+  const sentenceCut = description.slice(0, MAX_META_DESCRIPTION_LENGTH + 1).search(/[.!?]\s+[A-ZŁŚŻŹĆŃÓĘĄ]/);
+  if (sentenceCut >= 70) {
+    return description.slice(0, sentenceCut + 1).trim();
+  }
+
+  return truncateAtWord(description, MAX_META_DESCRIPTION_LENGTH);
 }
 
 // ---------------------------------------------------------------------------
@@ -103,7 +163,7 @@ const howToSchema = {
 const STATIC_ROUTES = [
   {
     path: '/',
-    title: 'TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców | Finansowanie B2B',
+    title: 'TS Finanse - Pożyczki Hipoteczne dla Firm',
     description: 'Pożyczki dla przedsiębiorców pod zabezpieczenie hipoteczne. 1-20 mln PLN, oprocentowanie ustalane indywidualnie, decyzja w 3 dni. Własny kapitał, bez zależności od banków.',
     schemas: ['organization', 'loanProduct', 'service', 'breadcrumbHome', faqSchema, howToSchema],
   },
@@ -116,7 +176,7 @@ const STATIC_ROUTES = [
   {
     path: '/programpartnerski/',
     title: 'Program Partnerski dla Pośredników | TS Finanse',
-    description: 'Dołącz do programu partnerskiego TS Finanse. Współpraca bez prowizji procentowej od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości.',
+    description: 'Program partnerski TS Finanse dla pośredników, doradców finansowych i agentów nieruchomości. Szybka analiza klientów biznesowych i indywidualne warunki współpracy.',
     schemas: ['breadcrumbPartner'],
   },
   {
@@ -504,18 +564,21 @@ function buildMetaTags(route) {
   const canonical = `${SITE_URL}${canonicalPath(route.path)}`;
   const ogType = route.ogType || 'website';
   const ogImage = absoluteImageUrl(route.ogImage) || `${SITE_URL}/og-image.webp`;
+  const metaTitle = compactMetaTitle(route.title);
+  const metaDescription = compactMetaDescription(route.description);
 
   let tags = '';
-  tags += `    <title>${esc(route.title)}</title>\n`;
-  tags += `    <meta name="description" content="${esc(route.description)}" />\n`;
+  tags += `    <title>${esc(metaTitle)}</title>\n`;
+  tags += `    <meta name="title" content="${esc(metaTitle)}" />\n`;
+  tags += `    <meta name="description" content="${esc(metaDescription)}" />\n`;
   tags += `    <link rel="canonical" href="${canonical}" />\n`;
   tags += `    <link rel="alternate" type="text/markdown" href="${canonical}" />\n`;
   tags += `    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />\n`;
   // Open Graph
   tags += `    <meta property="og:type" content="${ogType}" />\n`;
   tags += `    <meta property="og:url" content="${canonical}" />\n`;
-  tags += `    <meta property="og:title" content="${esc(route.title)}" />\n`;
-  tags += `    <meta property="og:description" content="${esc(route.description)}" />\n`;
+  tags += `    <meta property="og:title" content="${esc(metaTitle)}" />\n`;
+  tags += `    <meta property="og:description" content="${esc(metaDescription)}" />\n`;
   tags += `    <meta property="og:image" content="${ogImage}" />\n`;
   tags += `    <meta property="og:site_name" content="TS Finanse" />\n`;
   tags += `    <meta property="og:locale" content="pl_PL" />\n`;
@@ -527,8 +590,8 @@ function buildMetaTags(route) {
   }
   // Twitter
   tags += `    <meta name="twitter:card" content="summary_large_image" />\n`;
-  tags += `    <meta name="twitter:title" content="${esc(route.title)}" />\n`;
-  tags += `    <meta name="twitter:description" content="${esc(route.description)}" />\n`;
+  tags += `    <meta name="twitter:title" content="${esc(metaTitle)}" />\n`;
+  tags += `    <meta name="twitter:description" content="${esc(metaDescription)}" />\n`;
   tags += `    <meta name="twitter:image" content="${ogImage}" />\n`;
 
   // Schemas

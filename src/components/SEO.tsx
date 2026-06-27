@@ -11,11 +11,14 @@ interface SEOProps {
   schema?: object | object[];
 }
 
-const defaultTitle = 'TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców | Finansowanie B2B';
+const defaultTitle = 'TS Finanse - Pożyczki Hipoteczne dla Firm';
 const defaultDescription =
   'Profesjonalne pożyczki hipoteczne dla firm. Finansowanie projektów deweloperskich i inwestycyjnych od 1 do 20 mln PLN. Szybka decyzja, elastyczne warunki, obsługa w całej Polsce.';
 const siteUrl = 'https://tsfinanse.com';
 const defaultOgImage = `${siteUrl}/og-image.webp`;
+const titleSuffix = ' | TS Finanse';
+const maxMetaTitleLength = 70;
+const maxMetaDescriptionLength = 180;
 
 interface BlogIndexPost {
   slug: string;
@@ -47,6 +50,63 @@ function absoluteImageUrl(rawUrl?: string) {
   } catch {
     return undefined;
   }
+}
+
+function normaliseWhitespace(value = '') {
+  return String(value).replace(/\s+/g, ' ').trim();
+}
+
+function stripTitleBrand(value = '') {
+  let title = normaliseWhitespace(value);
+  let previous = '';
+
+  while (title !== previous) {
+    previous = title;
+    title = title
+      .replace(/\s*\|\s*TS\s*Finanse\s*Blog\s*$/i, '')
+      .replace(/\s*\|\s*TSFinanse\s*$/i, '')
+      .replace(/\s*\|\s*TS\s*Finanse\s*$/i, '');
+  }
+
+  return title;
+}
+
+function truncateAtWord(value: string, maxLength: number) {
+  const text = normaliseWhitespace(value);
+  if (text.length <= maxLength) return text;
+
+  const slice = text.slice(0, maxLength + 1);
+  const lastSpace = slice.lastIndexOf(' ');
+  return (lastSpace > 30 ? slice.slice(0, lastSpace) : text.slice(0, maxLength)).trim();
+}
+
+function compactMetaTitle(rawTitle = '') {
+  const base = stripTitleBrand(rawTitle);
+  const shouldAppendBrand = !/\bTS\s*Finanse\b/i.test(base);
+  const suffix = shouldAppendBrand ? titleSuffix : '';
+  const directTitle = `${base}${suffix}`;
+
+  if (directTitle.length <= maxMetaTitleLength) return directTitle;
+
+  const maxBaseLength = maxMetaTitleLength - suffix.length;
+  const [beforeDash] = base.split(/\s+-\s+/);
+  if (beforeDash && beforeDash !== base && `${beforeDash}${suffix}`.length >= 20 && `${beforeDash}${suffix}`.length <= maxMetaTitleLength) {
+    return `${beforeDash}${suffix}`;
+  }
+
+  return `${truncateAtWord(base, maxBaseLength)}${suffix}`;
+}
+
+function compactMetaDescription(rawDescription = '') {
+  const description = normaliseWhitespace(rawDescription);
+  if (description.length <= maxMetaDescriptionLength) return description;
+
+  const sentenceCut = description.slice(0, maxMetaDescriptionLength + 1).search(/[.!?]\s+[A-ZŁŚŻŹĆŃÓĘĄ]/);
+  if (sentenceCut >= 70) {
+    return description.slice(0, sentenceCut + 1).trim();
+  }
+
+  return truncateAtWord(description, maxMetaDescriptionLength);
 }
 
 function stripHtml(value = '') {
@@ -175,7 +235,8 @@ export function SEO({
   modifiedTime,
   schema,
 }: SEOProps) {
-  const fullTitle = title ? `${title} | TS Finanse` : defaultTitle;
+  const fullTitle = compactMetaTitle(title ? `${title} | TS Finanse` : defaultTitle);
+  const metaDescription = compactMetaDescription(description);
   const canonical = canonicalUrl ? `${siteUrl}${normalizeCanonicalPath(canonicalUrl)}` : `${siteUrl}/`;
   const normalisedModifiedTime = latestDateValue(modifiedTime, publishedTime);
   const resolvedOgImage = absoluteImageUrl(ogImage) || defaultOgImage;
@@ -185,7 +246,7 @@ export function SEO({
       {/* Primary Meta Tags */}
       <title>{fullTitle}</title>
       <meta name="title" content={fullTitle} />
-      <meta name="description" content={description} />
+      <meta name="description" content={metaDescription} />
       <link rel="canonical" href={canonical} />
       <link rel="alternate" type="text/markdown" href={canonical} />
 
@@ -193,7 +254,7 @@ export function SEO({
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={canonical} />
       <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
+      <meta property="og:description" content={metaDescription} />
       <meta property="og:image" content={resolvedOgImage} />
       <meta property="og:site_name" content="TS Finanse" />
       <meta property="og:locale" content="pl_PL" />
@@ -208,7 +269,7 @@ export function SEO({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={canonical} />
       <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:description" content={metaDescription} />
       <meta name="twitter:image" content={resolvedOgImage} />
 
       {/* Additional SEO Meta Tags */}

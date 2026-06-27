@@ -15,6 +15,10 @@ const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negot
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 const minimumLlmsUpdatedDate = '2026-06-01';
+const minMetaTitleLength = 20;
+const maxMetaTitleLength = 70;
+const minMetaDescriptionLength = 70;
+const maxMetaDescriptionLength = 180;
 
 const robotsPolicy = {
   allowed: [
@@ -107,6 +111,10 @@ function extractCanonical(html) {
     || html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1];
 }
 
+function extractTitle(html) {
+  return html.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim();
+}
+
 function hasAlternateMarkdown(html, loc) {
   const escaped = loc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const relFirst = new RegExp(`<link[^>]+rel=["']alternate["'][^>]+type=["']text/markdown["'][^>]+href=["']${escaped}["']`, 'i');
@@ -129,6 +137,45 @@ function extractMetaName(html, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return html.match(new RegExp(`<meta[^>]+name=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i'))?.[1]
     || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${escaped}["']`, 'i'))?.[1];
+}
+
+function rememberSnippetValue(map, value, loc) {
+  if (!value) return;
+  map.set(value, [...(map.get(value) || []), loc]);
+}
+
+function verifySnippetMetadata({ html, loc, failures, titlesByValue, descriptionsByValue }) {
+  const title = extractTitle(html) || '';
+  const metaTitle = extractMetaName(html, 'title') || '';
+  const description = extractMetaName(html, 'description') || '';
+  const ogTitle = extractMetaProperty(html, 'og:title') || '';
+  const ogDescription = extractMetaProperty(html, 'og:description') || '';
+  const twitterTitle = extractMetaName(html, 'twitter:title') || '';
+  const twitterDescription = extractMetaName(html, 'twitter:description') || '';
+
+  if (title.length < minMetaTitleLength || title.length > maxMetaTitleLength) {
+    failures.push({ type: 'snippet-title-length', loc, length: title.length, title });
+  }
+  if (description.length < minMetaDescriptionLength || description.length > maxMetaDescriptionLength) {
+    failures.push({ type: 'snippet-description-length', loc, length: description.length, description });
+  }
+  if (metaTitle !== title) failures.push({ type: 'snippet-meta-title-mismatch', loc, title, metaTitle });
+  if (ogTitle !== title) failures.push({ type: 'snippet-og-title-mismatch', loc, title, ogTitle });
+  if (ogDescription !== description) failures.push({ type: 'snippet-og-description-mismatch', loc });
+  if (twitterTitle !== title) failures.push({ type: 'snippet-twitter-title-mismatch', loc, title, twitterTitle });
+  if (twitterDescription !== description) failures.push({ type: 'snippet-twitter-description-mismatch', loc });
+
+  rememberSnippetValue(titlesByValue, title, loc);
+  rememberSnippetValue(descriptionsByValue, description, loc);
+}
+
+function verifyUniqueSnippetMetadata({ titlesByValue, descriptionsByValue, failures }) {
+  for (const [title, locs] of titlesByValue.entries()) {
+    if (locs.length > 1) failures.push({ type: 'snippet-title-duplicate', title, locs });
+  }
+  for (const [description, locs] of descriptionsByValue.entries()) {
+    if (locs.length > 1) failures.push({ type: 'snippet-description-duplicate', description, locs });
+  }
 }
 
 function parseSitemapLastmods(sitemap) {
@@ -1001,6 +1048,8 @@ const sitemapLastmods = parseSitemapLastmods(sitemap);
 const sitemapImages = parseSitemapImages(sitemap);
 const failures = [];
 const staleHits = [];
+const titlesByValue = new Map();
+const descriptionsByValue = new Map();
 
 if (!sitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"')) {
   failures.push({ type: 'sitemap-image-namespace' });
@@ -1053,6 +1102,7 @@ for (const loc of locs) {
   const html = readFileSync(htmlPath, 'utf8');
   const canonical = extractCanonical(html);
   if (canonical !== expectedCanonical) failures.push({ type: 'canonical', loc, canonical });
+  verifySnippetMetadata({ html, loc, failures, titlesByValue, descriptionsByValue });
   if (!hasAlternateMarkdown(html, expectedCanonical)) failures.push({ type: 'missing-markdown-alternate', loc });
   if (!hasAlternateRss(html)) failures.push({ type: 'missing-rss-alternate', loc });
   if (/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html)) failures.push({ type: 'noindex', loc });
@@ -1118,6 +1168,7 @@ for (const loc of locs) {
 
 await verifyMarkdownEdgeFunction(failures);
 verifyRssFeed({ rss, locs, failures });
+verifyUniqueSnippetMetadata({ titlesByValue, descriptionsByValue, failures });
 
 const result = {
   locCount: locs.length,

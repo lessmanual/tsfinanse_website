@@ -14,7 +14,7 @@ export default function ProgramPartnerski() {
     <div className="min-h-screen bg-gradient-to-b from-white via-[#D4AF7A]/5 to-white">
       <SEO
         title="Program Partnerski dla Pośredników"
-        description="Dołącz do programu partnerskiego TS Finanse. Współpraca bez prowizji procentowej od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości."
+        description="Program partnerski TS Finanse dla pośredników, doradców finansowych i agentów nieruchomości. Szybka analiza klientów biznesowych i indywidualne warunki współpracy."
         canonicalUrl="/programpartnerski/"
         schema={breadcrumbSchema([
           { name: 'Strona główna', url: '/' },
