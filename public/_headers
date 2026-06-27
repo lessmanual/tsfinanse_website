@@ -30,6 +30,10 @@
 /llms.txt
   Content-Type: text/plain; charset=utf-8
 
+/BF7B57E849D44AF48F0B5D95B0D5B154.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=300
+
 /md/*
   Content-Type: text/markdown; charset=utf-8
   Cache-Control: public, max-age=3600

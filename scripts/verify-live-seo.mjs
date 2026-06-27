@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 
 const SITE_URL = 'https://tsfinanse.com';
@@ -10,8 +10,10 @@ const LLMS_URL = `${SITE_URL}/llms.txt`;
 const API_CATALOG_URL = `${SITE_URL}/.well-known/api-catalog`;
 const AGENT_SKILLS_INDEX_URL = `${SITE_URL}/.well-known/agent-skills/index.json`;
 const VARIANT_REDIRECT_TARGETS_PATH = resolve(process.cwd(), 'content', 'gsc-variant-redirect-targets.json');
+const PUBLIC_DIR = resolve(process.cwd(), 'public');
 const REQUEST_TIMEOUT_MS = 15000;
 const EXPECTED_LOC_COUNT = 73;
+const indexNowKeyFilePattern = /^[A-Za-z0-9_-]{8,128}\.txt$/;
 const minimumLlmsUpdatedDate = '2026-06-01';
 const minMetaTitleLength = 20;
 const maxMetaTitleLength = 70;
@@ -86,6 +88,18 @@ function markdownUrlForLoc(loc) {
   if (pathname === '/') return `${SITE_URL}/md/index.md`;
   const normalised = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   return `${SITE_URL}/md${normalised}.md`;
+}
+
+function readIndexNowKeyCandidates(dir) {
+  if (!existsSync(dir)) return [];
+
+  return readdirSync(dir)
+    .filter((fileName) => indexNowKeyFilePattern.test(fileName))
+    .map((fileName) => ({
+      fileName,
+      key: fileName.replace(/\.txt$/, ''),
+      content: readFileSync(resolve(dir, fileName), 'utf8').trim(),
+    }));
 }
 
 function indexHtmlRedirectUrlForLoc(loc) {
@@ -1207,6 +1221,49 @@ function verifyDiscoveryHeaders(headers, failures) {
   }
 }
 
+async function verifyIndexNowKeyFile(failures) {
+  const candidates = readIndexNowKeyCandidates(PUBLIC_DIR);
+  if (candidates.length !== 1) {
+    failures.push({
+      type: 'indexnow-key-source-count',
+      expected: 1,
+      actual: candidates.length,
+      files: candidates.map((candidate) => candidate.fileName),
+    });
+    return;
+  }
+
+  const [candidate] = candidates;
+  if (candidate.key !== candidate.content) {
+    failures.push({ type: 'indexnow-key-source-content', file: candidate.fileName });
+    return;
+  }
+
+  const keyUrl = `${SITE_URL}/${candidate.fileName}`;
+  const { response, text } = await fetchText(keyUrl, {
+    headers: { accept: 'text/plain,*/*' },
+  });
+
+  if (!response.ok) {
+    failures.push({ type: 'indexnow-key-status', url: keyUrl, status: response.status });
+    return;
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('text/plain')) {
+    failures.push({ type: 'indexnow-key-content-type', url: keyUrl, contentType });
+  }
+
+  const cacheControl = response.headers.get('cache-control') || '';
+  if (!cacheControl.toLowerCase().includes('max-age=300')) {
+    failures.push({ type: 'indexnow-key-cache-control', url: keyUrl, cacheControl });
+  }
+
+  if (text.trim() !== candidate.key) {
+    failures.push({ type: 'indexnow-key-content', url: keyUrl });
+  }
+}
+
 async function verifyDirectMarkdownNoindexHeaders(failures, locs) {
   const sampleLocs = [
     `${SITE_URL}/`,
@@ -1650,6 +1707,7 @@ async function main() {
     verifyDiscoveryHeaders(homepageResponse.headers, failures);
   }
 
+  await verifyIndexNowKeyFile(failures);
   await verifyApiCatalog(failures);
   await verifyAgentSkills(failures, staleHits);
 

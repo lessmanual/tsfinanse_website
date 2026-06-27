@@ -13,6 +13,7 @@ const apiCatalogPath = join(root, 'dist', '.well-known', 'api-catalog');
 const agentSkillsIndexPath = join(root, 'dist', '.well-known', 'agent-skills', 'index.json');
 const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negotiation.js');
 const notFoundPath = join(root, 'dist', '404.html');
+const indexNowKeyFilePattern = /^[A-Za-z0-9_-]{8,128}\.txt$/;
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 const minimumLlmsUpdatedDate = '2026-06-01';
@@ -144,6 +145,22 @@ function collectDistPaths(dir) {
       const stats = statSync(path);
       if (stats.isDirectory()) return [path, ...collectDistPaths(path)];
       return [path];
+    });
+}
+
+function readIndexNowKeyCandidates(dir) {
+  if (!existsSync(dir)) return [];
+
+  return readdirSync(dir)
+    .filter((fileName) => indexNowKeyFilePattern.test(fileName))
+    .map((fileName) => {
+      const path = join(dir, fileName);
+      return {
+        fileName,
+        key: fileName.replace(/\.txt$/, ''),
+        content: readFileSync(path, 'utf8').trim(),
+        path,
+      };
     });
 }
 
@@ -1353,6 +1370,44 @@ function verifyDiscoveryHeaders(failures) {
   }
 }
 
+function verifyIndexNowKeyFile(failures) {
+  const candidates = readIndexNowKeyCandidates(join(root, 'dist'));
+  if (candidates.length !== 1) {
+    failures.push({
+      type: 'indexnow-key-file-count',
+      expected: 1,
+      actual: candidates.length,
+      files: candidates.map((candidate) => candidate.fileName),
+    });
+    return;
+  }
+
+  const [candidate] = candidates;
+  if (candidate.key !== candidate.content) {
+    failures.push({ type: 'indexnow-key-file-content', file: candidate.path });
+    return;
+  }
+
+  if (!existsSync(headersPath)) return;
+
+  const headers = readFileSync(headersPath, 'utf8');
+  const headerBlock = extractNetlifyHeaderBlock(headers, `/${candidate.fileName}`).toLowerCase();
+  const requiredHeaders = [
+    'content-type: text/plain; charset=utf-8',
+    'cache-control: public, max-age=300',
+  ];
+
+  for (const requiredHeader of requiredHeaders) {
+    if (!headerBlock.includes(requiredHeader)) {
+      failures.push({
+        type: 'indexnow-key-header-policy',
+        file: candidate.fileName,
+        expected: requiredHeader,
+      });
+    }
+  }
+}
+
 function verifyLlmsSurface(failures, staleHits, locs) {
   if (!existsSync(llmsPath)) {
     failures.push({ type: 'missing-llms', file: llmsPath });
@@ -1632,6 +1687,7 @@ if (!sitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/
 verifySitemapHrefLangs({ sitemap, locs, failures });
 
 verifyDiscoveryHeaders(failures);
+verifyIndexNowKeyFile(failures);
 verifyLlmsSurface(failures, staleHits, locs);
 verifyApiCatalog(failures);
 verifyAgentSkills(failures, staleHits);
