@@ -136,6 +136,61 @@ function normalizeSlug(slug = '') {
     .replace(/^-|-$/g, '');
 }
 
+const relatedStopWords = new Set([
+  'dla',
+  'czy',
+  'jak',
+  'kiedy',
+  'oraz',
+  'firm',
+  'firmy',
+  '2026',
+  'poradnik',
+  'kompletny',
+  'przewodnik',
+]);
+
+function relatedTerms(post = {}) {
+  const raw = [
+    post.title,
+    post.category,
+    ...(Array.isArray(post.tags) ? post.tags : []),
+  ].join(' ');
+
+  return new Set(raw
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .split(/[^a-z0-9]+/)
+    .filter((term) => term.length >= 4 && !relatedStopWords.has(term)));
+}
+
+function postTime(post = {}) {
+  const value = Date.parse(post.updatedAt || post.date || '');
+  return Number.isFinite(value) ? value : 0;
+}
+
+function selectRelatedPosts(currentPost, posts, limit = 4) {
+  const currentTerms = relatedTerms(currentPost);
+  const currentTags = new Set((currentPost.tags || []).map((tag) => String(tag).toLowerCase()));
+
+  return posts
+    .filter((candidate) => candidate.slug !== currentPost.slug)
+    .map((candidate) => {
+      const candidateTerms = relatedTerms(candidate);
+      const candidateTags = new Set((candidate.tags || []).map((tag) => String(tag).toLowerCase()));
+      const sharedTerms = [...candidateTerms].filter((term) => currentTerms.has(term)).length;
+      const sharedTags = [...candidateTags].filter((tag) => currentTags.has(tag)).length;
+      const categoryScore = candidate.category && candidate.category === currentPost.category ? 20 : 0;
+      const score = categoryScore + sharedTags * 8 + sharedTerms * 2;
+
+      return { candidate, score };
+    })
+    .sort((a, b) => b.score - a.score || postTime(b.candidate) - postTime(a.candidate))
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
+}
+
 function canonicalizeInternalUrl(rawUrl, publishedSlugs = new Set()) {
   if (!rawUrl) return rawUrl;
   const value = String(rawUrl).trim();
@@ -290,6 +345,10 @@ function writeBlogPosts(posts) {
   for (const post of posts) {
     const path = canonicalPath(`/blog/${post.slug}`);
     const markdownContent = contentToMarkdown(normalizeArticleContent(post.content, publishedSlugs));
+    const relatedPosts = selectRelatedPosts(post, posts, 4);
+    const relatedMarkdown = relatedPosts.length
+      ? `\n\n## Powiązane artykuły\n\n${relatedPosts.map((item) => `- [${item.title}](${canonicalPath(`/blog/${item.slug}`)})`).join('\n')}`
+      : '';
     const tags = Array.isArray(post.tags) && post.tags.length ? post.tags.join(', ') : '';
     const body = `${frontmatter({
       title: post.title,
@@ -311,7 +370,7 @@ Autor: ${post.author}
 
 Data publikacji: ${post.date ? post.date.slice(0, 10) : ''}
 
-${markdownContent}`;
+${markdownContent}${relatedMarkdown}`;
 
     writeMarkdown(path, body);
   }

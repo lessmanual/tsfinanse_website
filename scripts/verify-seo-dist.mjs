@@ -86,6 +86,30 @@ function datePart(value) {
   return String(value || '').slice(0, 10);
 }
 
+function normaliseBlogPostUrl(rawUrl, validBlogLocs) {
+  try {
+    const url = new URL(rawUrl, SITE_URL);
+    if (url.origin !== SITE_URL) return undefined;
+    if (!url.pathname.startsWith('/blog/') || url.pathname === '/blog/') return undefined;
+    const candidate = `${SITE_URL}${canonicalPath(url.pathname)}`;
+    return validBlogLocs.has(candidate) ? candidate : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function extractHtmlBlogPostLinks(html, validBlogLocs, currentLoc) {
+  return new Set([...html.matchAll(/href=["']([^"']+)["']/gi)]
+    .map((match) => normaliseBlogPostUrl(match[1], validBlogLocs))
+    .filter((target) => target && target !== currentLoc));
+}
+
+function extractMarkdownBlogPostLinks(markdown, validBlogLocs, currentLoc) {
+  return new Set([...markdown.matchAll(/\]\(([^)]+)\)/g)]
+    .map((match) => normaliseBlogPostUrl(match[1], validBlogLocs))
+    .filter((target) => target && target !== currentLoc));
+}
+
 function collectJsonLd(html, failures, loc) {
   const objects = [];
   const scripts = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
@@ -132,6 +156,22 @@ function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
   if (!markdownModified) failures.push({ type: 'markdown-date-modified', loc });
   if (lastmod && datePart(markdownModified) !== lastmod) {
     failures.push({ type: 'markdown-date-modified-lastmod', loc, markdownModified, lastmod });
+  }
+}
+
+function verifyBlogCrawlLinks({ html, markdown, loc, locs, failures }) {
+  const validBlogLocs = new Set(locs.filter((item) => {
+    const pathname = new URL(item).pathname;
+    return pathname.startsWith('/blog/') && pathname !== '/blog/';
+  }));
+  const htmlLinks = extractHtmlBlogPostLinks(html, validBlogLocs, loc);
+  const markdownLinks = extractMarkdownBlogPostLinks(markdown, validBlogLocs, loc);
+
+  if (htmlLinks.size < 4) {
+    failures.push({ type: 'blog-html-outgoing-links', loc, expectedMin: 4, actual: htmlLinks.size });
+  }
+  if (markdownLinks.size < 4) {
+    failures.push({ type: 'blog-markdown-outgoing-links', loc, expectedMin: 4, actual: markdownLinks.size });
   }
 }
 
@@ -353,6 +393,13 @@ for (const loc of locs) {
       markdown,
       loc,
       lastmod: sitemapLastmods.get(loc),
+      failures,
+    });
+    verifyBlogCrawlLinks({
+      html,
+      markdown,
+      loc,
+      locs,
       failures,
     });
   }

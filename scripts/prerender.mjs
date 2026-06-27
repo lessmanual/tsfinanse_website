@@ -359,6 +359,61 @@ function normalizeSlug(slug = '') {
     .replace(/^-|-$/g, '');
 }
 
+const relatedStopWords = new Set([
+  'dla',
+  'czy',
+  'jak',
+  'kiedy',
+  'oraz',
+  'firm',
+  'firmy',
+  '2026',
+  'poradnik',
+  'kompletny',
+  'przewodnik',
+]);
+
+function relatedTerms(post = {}) {
+  const raw = [
+    post.title,
+    post.category,
+    ...(Array.isArray(post.tags) ? post.tags : []),
+  ].join(' ');
+
+  return new Set(raw
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .split(/[^a-z0-9]+/)
+    .filter((term) => term.length >= 4 && !relatedStopWords.has(term)));
+}
+
+function postTime(post = {}) {
+  const value = Date.parse(post.updatedAt || post.date || '');
+  return Number.isFinite(value) ? value : 0;
+}
+
+function selectRelatedPosts(currentPost, posts, limit = 4) {
+  const currentTerms = relatedTerms(currentPost);
+  const currentTags = new Set((currentPost.tags || []).map((tag) => String(tag).toLowerCase()));
+
+  return posts
+    .filter((candidate) => candidate.slug !== currentPost.slug)
+    .map((candidate) => {
+      const candidateTerms = relatedTerms(candidate);
+      const candidateTags = new Set((candidate.tags || []).map((tag) => String(tag).toLowerCase()));
+      const sharedTerms = [...candidateTerms].filter((term) => currentTerms.has(term)).length;
+      const sharedTags = [...candidateTags].filter((tag) => currentTags.has(tag)).length;
+      const categoryScore = candidate.category && candidate.category === currentPost.category ? 20 : 0;
+      const score = categoryScore + sharedTags * 8 + sharedTerms * 2;
+
+      return { candidate, score };
+    })
+    .sort((a, b) => b.score - a.score || postTime(b.candidate) - postTime(a.candidate))
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
+}
+
 function canonicalizeInternalUrl(rawUrl, publishedSlugs = new Set()) {
   if (!rawUrl || rawUrl.startsWith('#') || rawUrl.startsWith('mailto:') || rawUrl.startsWith('tel:')) {
     return rawUrl;
@@ -508,6 +563,18 @@ function renderStaticPostContent(post, publishedSlugs = new Set()) {
     : markdownToStaticHtml(content);
 }
 
+function renderRelatedPosts(post, allPosts = []) {
+  const related = selectRelatedPosts(post, allPosts, 4);
+  if (related.length === 0) return '';
+
+  return `<section>
+<h2>Powiązane artykuły</h2>
+<ul>
+${related.map((item) => `<li><a href="${esc(canonicalPath(`/blog/${item.slug}`))}">${esc(item.title)}</a></li>`).join('\n')}
+</ul>
+</section>`;
+}
+
 // ---------------------------------------------------------------------------
 // Noscript fallback content per route (for non-JS crawlers)
 // ---------------------------------------------------------------------------
@@ -575,6 +642,7 @@ function buildNoscript(route, post, allPosts = []) {
 <p>${esc(post.category || 'Finansowanie')} | Opublikowano: ${esc(date)} | Aktualizacja: ${esc(updated)} | ${esc(post.author || 'TS Finanse')}</p>
 ${post.image ? `<p><img src="${esc(post.image)}" alt="${esc(post.title)}" loading="lazy" style="max-width:100%;height:auto" /></p>` : ''}
 ${renderStaticPostContent(post, publishedSlugs)}
+${renderRelatedPosts(post, allPosts)}
 ${tags}
 <p><a href="/blog/">Wszystkie wpisy na blogu TS Finanse</a> | <a href="/">Strona główna</a></p>
 </article>

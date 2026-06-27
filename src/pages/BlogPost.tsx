@@ -5,19 +5,24 @@ import remarkGfm from 'remark-gfm';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { SEO, blogPostingSchema, breadcrumbSchema } from '../components/SEO';
-import { getPostBySlug, Post } from '../lib/posts';
+import { getAllPosts, getPostBySlug, Post, selectRelatedPosts } from '../lib/posts';
 import { ArrowLeft, Calendar, User, Tag, Clock } from 'lucide-react';
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<Post | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadPost() {
       if (!slug) return;
-      const foundPost = await getPostBySlug(slug);
+      const [foundPost, allPosts] = await Promise.all([
+        getPostBySlug(slug),
+        getAllPosts(),
+      ]);
       setPost(foundPost || null);
+      setRelatedPosts(foundPost ? selectRelatedPosts(foundPost, allPosts, 4) : []);
       setLoading(false);
     }
     loadPost();
@@ -211,6 +216,30 @@ export default function BlogPost() {
                 ))}
               </div>
             </div>
+          )}
+
+          {relatedPosts.length > 0 && (
+            <section className="mt-12 pt-8 border-t border-gray-100" aria-labelledby="related-posts-heading">
+              <h2 id="related-posts-heading" className="text-2xl font-bold text-[#3D1F1F] mb-6">
+                Powiązane artykuły
+              </h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                {relatedPosts.map((relatedPost) => (
+                  <Link
+                    key={relatedPost.slug}
+                    to={`/blog/${relatedPost.slug}/`}
+                    className="group block rounded-lg border border-[#3D1F1F]/10 p-5 transition-colors hover:border-[#C5A572]/70"
+                  >
+                    <span className="block text-sm text-[#3D1F1F]/50 mb-2">
+                      {relatedPost.category || 'Finansowanie'}
+                    </span>
+                    <span className="block font-semibold text-[#3D1F1F] group-hover:text-[#C5A572] transition-colors">
+                      {relatedPost.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
           )}
         </article>
       </main>
