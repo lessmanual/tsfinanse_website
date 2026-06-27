@@ -4,12 +4,19 @@ import { join, resolve } from 'path';
 const SITE_URL = 'https://tsfinanse.com';
 const HOSTS = new Set(['tsfinanse.com', 'www.tsfinanse.com']);
 const DEFAULT_SITEMAP_PATH = resolve(process.cwd(), 'dist', 'sitemap.xml');
+const COVERAGE_REASON_THRESHOLDS = {
+  redirectError: 'Redirect error',
+  discoveredNotIndexed: 'Discovered - currently not indexed',
+  crawledNotIndexed: 'Crawled - currently not indexed',
+  googleDifferentCanonical: 'Duplicate, Google chose different canonical than user',
+};
 
 function parseArgs(args) {
   const options = {
     sitemapPath: DEFAULT_SITEMAP_PATH,
     coverageDir: process.env.GSC_COVERAGE_DIR,
     performanceDir: process.env.GSC_PERFORMANCE_DIR,
+    coverageLimits: {},
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -35,6 +42,33 @@ function parseArgs(args) {
       index += 1;
       continue;
     }
+    if (arg === '--strict-coverage') {
+      options.coverageLimits.redirectError = 0;
+      options.coverageLimits.discoveredNotIndexed = 0;
+      options.coverageLimits.crawledNotIndexed = 0;
+      options.coverageLimits.googleDifferentCanonical = 0;
+      continue;
+    }
+    if (arg === '--max-redirect-error-pages') {
+      options.coverageLimits.redirectError = parseLimit(args[index + 1], arg);
+      index += 1;
+      continue;
+    }
+    if (arg === '--max-discovered-not-indexed-pages') {
+      options.coverageLimits.discoveredNotIndexed = parseLimit(args[index + 1], arg);
+      index += 1;
+      continue;
+    }
+    if (arg === '--max-crawled-not-indexed-pages') {
+      options.coverageLimits.crawledNotIndexed = parseLimit(args[index + 1], arg);
+      index += 1;
+      continue;
+    }
+    if (arg === '--max-google-different-canonical-pages') {
+      options.coverageLimits.googleDifferentCanonical = parseLimit(args[index + 1], arg);
+      index += 1;
+      continue;
+    }
     throw new Error(`Unknown argument: ${arg}`);
   }
 
@@ -42,6 +76,15 @@ function parseArgs(args) {
   if (!options.performanceDir) throw new Error('Missing --performance-dir or GSC_PERFORMANCE_DIR');
 
   return options;
+}
+
+function parseLimit(value, flag) {
+  if (value === undefined) throw new Error(`${flag} requires a non-negative integer`);
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(`${flag} requires a non-negative integer, got: ${value}`);
+  }
+  return parsed;
 }
 
 function parseCsv(text) {
@@ -147,6 +190,45 @@ function groupCoverageIssues(coverageRows) {
   }));
 }
 
+function latestCoverageSnapshot(chartRows) {
+  const snapshots = chartRows
+    .map((row) => ({
+      date: row.Date,
+      notIndexed: parseInteger(row['Not indexed']),
+      indexed: parseInteger(row.Indexed),
+      impressions: parseInteger(row.Impressions),
+    }))
+    .filter((row) => row.date && (row.notIndexed > 0 || row.indexed > 0 || row.impressions > 0));
+
+  return snapshots[snapshots.length - 1] || null;
+}
+
+function coverageIssuePageCountByReason(coverageIssues) {
+  return Object.fromEntries(coverageIssues.map((issue) => [issue.reason, issue.pages]));
+}
+
+function verifyCoverageIssues(coverageIssues, coverageLimits) {
+  const byReason = coverageIssuePageCountByReason(coverageIssues);
+  const failures = [];
+
+  for (const [key, reason] of Object.entries(COVERAGE_REASON_THRESHOLDS)) {
+    const limit = coverageLimits[key];
+    if (limit === undefined) continue;
+
+    const pages = byReason[reason] || 0;
+    if (pages > limit) {
+      failures.push({
+        type: 'coverage-limit',
+        reason,
+        pages,
+        limit,
+      });
+    }
+  }
+
+  return failures;
+}
+
 function verifyPerformancePages(performanceRows, sitemapLocs) {
   const mapped = [];
   const variants = [];
@@ -185,14 +267,19 @@ function verifyPerformancePages(performanceRows, sitemapLocs) {
   };
 }
 
-function summarise(performanceCheck, coverageIssues, sitemapLocs) {
+function summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs) {
   const totalImpressions = performanceCheck.mapped.reduce((sum, item) => sum + item.impressions, 0);
   const totalClicks = performanceCheck.mapped.reduce((sum, item) => sum + item.clicks, 0);
   const variantImpressions = performanceCheck.variants.reduce((sum, item) => sum + item.impressions, 0);
+  const coverageIssuePages = coverageIssues.reduce((sum, issue) => sum + issue.pages, 0);
 
   return {
     sitemapUrlCount: sitemapLocs.size,
+    latestCoverage,
     coverageIssues,
+    coverageIssuePages,
+    coverageIssuePageCountByReason: coverageIssuePageCountByReason(coverageIssues),
+    coverageFailures,
     performanceUrlCount: performanceCheck.mapped.length + performanceCheck.unmapped.length,
     mappedPerformanceUrlCount: performanceCheck.mapped.length,
     unmappedPerformanceUrlCount: performanceCheck.unmapped.length,
@@ -210,15 +297,18 @@ function main() {
   const options = parseArgs(process.argv.slice(2));
   const sitemapLocs = readSitemapLocs(options.sitemapPath);
   const coverageIssues = groupCoverageIssues(readCsv(join(options.coverageDir, 'Critical issues.csv')));
+  const latestCoverage = latestCoverageSnapshot(readCsv(join(options.coverageDir, 'Chart.csv')));
+  const coverageFailures = verifyCoverageIssues(coverageIssues, options.coverageLimits);
   const performanceRows = readCsv(join(options.performanceDir, 'Pages.csv'));
   const performanceCheck = verifyPerformancePages(performanceRows, sitemapLocs);
-  const summary = summarise(performanceCheck, coverageIssues, sitemapLocs);
+  const summary = summarise(performanceCheck, coverageIssues, latestCoverage, coverageFailures, sitemapLocs);
 
   console.log(JSON.stringify(summary, null, 2));
 
   if (
     summary.unmappedPerformanceUrlCount > 0
     || summary.unexpectedHosts.length > 0
+    || summary.coverageFailures.length > 0
     || summary.performanceUrlCount === 0
   ) {
     process.exit(1);

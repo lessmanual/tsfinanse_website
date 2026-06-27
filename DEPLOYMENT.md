@@ -38,6 +38,9 @@ Przed deployem produkcyjnym uruchom:
 ```bash
 npm run build
 npm run verify:seo
+npm run verify:gsc -- \
+  --coverage-dir "/Users/bartlomiejchudzik/Downloads/tsfinanse.com-Coverage-2026-06-27" \
+  --performance-dir "/Users/bartlomiejchudzik/Downloads/tsfinanse.com-Performance-on-Search-2026-06-27"
 ```
 
 Oczekiwany wynik `verify:seo`:
@@ -50,6 +53,29 @@ Oczekiwany wynik `verify:seo`:
 - każdy URL ma wariant markdown w `dist/md`,
 - każdy URL ma jeden `noscript` i jeden `h1`,
 - renderowany HTML i markdown nie zawierają starych claimów o stałej prowizji TS Finanse.
+
+`verify:gsc` przed deployem może raportować stare problemy Coverage, bo eksport pochodzi
+z aktualnej produkcji. Ważne, żeby:
+
+- `unmappedPerformanceUrlCount: 0`,
+- `unexpectedHosts: []`,
+- `latestCoverage` i `coverageIssuePageCountByReason` były zapisane jako baseline.
+
+Po deployu, IndexNow i GSC Validate Fix, na nowym eksporcie Coverage uruchom strict gate:
+
+```bash
+npm run verify:gsc -- \
+  --coverage-dir "/path/to/new-Coverage-export" \
+  --performance-dir "/path/to/new-Performance-export" \
+  --strict-coverage
+```
+
+Strict gate ma zejść do zera dla:
+
+- `Redirect error`,
+- `Discovered - currently not indexed`,
+- `Crawled - currently not indexed`,
+- `Duplicate, Google chose different canonical than user`.
 
 ## Markdown Negotiation
 
