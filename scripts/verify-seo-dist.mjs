@@ -182,6 +182,23 @@ function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
 
   if (!blogPosting.datePublished) failures.push({ type: 'blogposting-date-published', loc });
   if (!blogPosting.dateModified) failures.push({ type: 'blogposting-date-modified', loc });
+  if (blogPosting.inLanguage !== 'pl-PL') failures.push({ type: 'blogposting-language', loc, inLanguage: blogPosting.inLanguage });
+  if (!blogPosting.articleSection) failures.push({ type: 'blogposting-article-section', loc });
+  if (!Array.isArray(blogPosting.keywords) || blogPosting.keywords.length === 0) {
+    failures.push({ type: 'blogposting-keywords', loc, keywords: blogPosting.keywords });
+  }
+  if (blogPosting.isAccessibleForFree !== true) {
+    failures.push({ type: 'blogposting-accessible-free', loc, isAccessibleForFree: blogPosting.isAccessibleForFree });
+  }
+  if (!Number.isInteger(blogPosting.wordCount) || blogPosting.wordCount <= 0) {
+    failures.push({ type: 'blogposting-word-count', loc, wordCount: blogPosting.wordCount });
+  }
+  if (blogPosting.mainEntityOfPage?.['@id'] !== loc) {
+    failures.push({ type: 'blogposting-main-entity', loc, mainEntityOfPage: blogPosting.mainEntityOfPage });
+  }
+  if (blogPosting.author?.name !== 'TS Finanse' || blogPosting.publisher?.name !== 'TS Finanse') {
+    failures.push({ type: 'blogposting-attribution', loc, author: blogPosting.author, publisher: blogPosting.publisher });
+  }
   if (isChronologicallyBefore(blogPosting.dateModified, blogPosting.datePublished)) {
     failures.push({
       type: 'blogposting-date-modified-before-published',

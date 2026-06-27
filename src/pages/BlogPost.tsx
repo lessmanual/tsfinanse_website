@@ -86,6 +86,9 @@ export default function BlogPost() {
             author: post.author,
             image: post.featuredImage,
             slug: post.slug,
+            category: post.category,
+            tags: post.tags,
+            content: post.content,
           }),
           breadcrumbSchema([
             { name: 'Strona główna', url: '/' },

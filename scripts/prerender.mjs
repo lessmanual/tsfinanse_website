@@ -192,6 +192,14 @@ const SCHEMAS = {
 
 function blogPostingSchema(post) {
   const normalizedContent = normalizeArticleContent(post.content || '', new Set());
+  const articleText = stripHtml(normalizedContent);
+  const keywords = Array.from(new Set([
+    post.category || 'Finansowanie',
+    ...(Array.isArray(post.tags) ? post.tags : []),
+  ]
+    .filter((item) => typeof item === 'string' && item.trim())
+    .map((item) => item.trim())));
+
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -199,11 +207,16 @@ function blogPostingSchema(post) {
     description: post.description,
     datePublished: post.date,
     dateModified: post.updatedAt || post.date,
+    inLanguage: 'pl-PL',
+    articleSection: post.category || 'Finansowanie',
+    keywords,
+    isAccessibleForFree: true,
+    ...(articleText ? { wordCount: articleText.split(/\s+/).filter(Boolean).length } : {}),
     author: { '@type': 'Organization', name: 'TS Finanse', url: 'https://tsfinanse.com' },
     publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' } },
     image: post.image || 'https://tsfinanse.com/og-image.webp',
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
-    ...(normalizedContent ? { articleBody: stripHtml(normalizedContent).slice(0, 5000) } : {}),
+    ...(articleText ? { articleBody: articleText.slice(0, 5000) } : {}),
   };
 }
 

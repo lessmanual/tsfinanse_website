@@ -37,6 +37,21 @@ function latestDateValue(first?: string, second?: string): string {
   return firstTime >= secondTime ? firstValue : secondValue;
 }
 
+function stripHtml(value = '') {
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function countWords(value = '') {
+  const plainText = stripHtml(value);
+  if (!plainText) return 0;
+  return plainText.split(/\s+/).filter(Boolean).length;
+}
+
 function normalizeCanonicalPath(path: string) {
   const pathWithoutFragment = path.split('#')[0] || '/';
   const [pathname, search] = pathWithoutFragment.split('?');
@@ -301,32 +316,50 @@ export const blogPostingSchema = (post: {
   author?: string;
   image?: string;
   slug: string;
-}) => ({
-  '@context': 'https://schema.org',
-  '@type': 'BlogPosting',
-  headline: post.title,
-  description: post.description,
-  datePublished: post.date,
-  dateModified: latestDateValue(post.updatedAt, post.date),
-  author: {
-    '@type': 'Organization',
-    name: post.author || 'TS Finanse',
-    url: 'https://tsfinanse.com',
-  },
-  publisher: {
-    '@type': 'Organization',
-    name: 'TS Finanse',
-    logo: {
-      '@type': 'ImageObject',
-      url: 'https://tsfinanse.com/logo.webp',
+  category?: string;
+  tags?: string[];
+  content?: string;
+}) => {
+  const keywords = Array.from(new Set([
+    post.category || 'Finansowanie',
+    ...(post.tags || []),
+  ]
+    .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    .map((item) => item.trim())));
+  const wordCount = countWords(post.content);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    dateModified: latestDateValue(post.updatedAt, post.date),
+    inLanguage: 'pl-PL',
+    articleSection: post.category || 'Finansowanie',
+    keywords,
+    isAccessibleForFree: true,
+    ...(wordCount > 0 ? { wordCount } : {}),
+    author: {
+      '@type': 'Organization',
+      name: post.author || 'TS Finanse',
+      url: 'https://tsfinanse.com',
     },
-  },
-  image: post.image || 'https://tsfinanse.com/og-image.webp',
-  mainEntityOfPage: {
-    '@type': 'WebPage',
-    '@id': `https://tsfinanse.com/blog/${post.slug}/`,
-  },
-});
+    publisher: {
+      '@type': 'Organization',
+      name: 'TS Finanse',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://tsfinanse.com/logo.webp',
+      },
+    },
+    image: post.image || 'https://tsfinanse.com/og-image.webp',
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://tsfinanse.com/blog/${post.slug}/`,
+    },
+  };
+};
 
 export const faqPageSchema = {
   '@context': 'https://schema.org',
