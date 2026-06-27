@@ -77,6 +77,12 @@ function markdownUrlForLoc(loc) {
   return `${SITE_URL}/md${normalised}.md`;
 }
 
+function indexHtmlRedirectUrlForLoc(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return `${SITE_URL}/index.html`;
+  return `${SITE_URL}${canonicalPath(pathname)}index.html`;
+}
+
 async function fetchText(url, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -1417,6 +1423,39 @@ async function verifyCanonicalRedirects(failures) {
   }
 }
 
+async function verifyIndexHtmlCanonicalRedirects(failures, locs) {
+  for (const loc of locs) {
+    const url = indexHtmlRedirectUrlForLoc(loc);
+    const result = await fetchRedirectTrace(url);
+    if (result.finalStatus !== 200) {
+      failures.push({ type: 'index-html-canonical-redirect-status', url, finalStatus: result.finalStatus, trace: result.trace });
+    }
+    if (result.finalUrl !== loc) {
+      failures.push({ type: 'index-html-canonical-redirect-final-url', url, expectedFinalUrl: loc, finalUrl: result.finalUrl, trace: result.trace });
+    }
+    if (result.redirectCount < 1) {
+      failures.push({ type: 'index-html-canonical-redirect-count', url, redirectCount: result.redirectCount, trace: result.trace });
+    }
+  }
+
+  for (const testCase of [
+    { url: `${SITE_URL}/kontakt`, expectedFinalUrl: `${SITE_URL}/#contact` },
+    { url: `${SITE_URL}/kontakt/`, expectedFinalUrl: `${SITE_URL}/#contact` },
+  ]) {
+    const result = await fetchRedirectTrace(testCase.url);
+    const firstLocation = result.trace[0]?.location;
+    if (result.finalStatus !== 200) {
+      failures.push({ type: 'contact-alias-redirect-status', url: testCase.url, finalStatus: result.finalStatus, trace: result.trace });
+    }
+    if (firstLocation !== '/#contact') {
+      failures.push({ type: 'contact-alias-redirect-location', url: testCase.url, expectedLocation: '/#contact', firstLocation, trace: result.trace });
+    }
+    if (result.redirectCount < 1) {
+      failures.push({ type: 'contact-alias-redirect-count', url: testCase.url, redirectCount: result.redirectCount, trace: result.trace });
+    }
+  }
+}
+
 async function main() {
   const failures = [];
   const staleHits = [];
@@ -1461,6 +1500,7 @@ async function main() {
   if (locs.length !== EXPECTED_LOC_COUNT) {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
   }
+  await verifyIndexHtmlCanonicalRedirects(failures, locs);
   await verifyDirectMarkdownNoindexHeaders(failures, locs);
   await verifyLlmsSurface(failures, staleHits, locs);
 

@@ -92,6 +92,16 @@ function markdownUrlForLoc(loc) {
   return `${SITE_URL}/md${normalised}.md`;
 }
 
+function indexHtmlRedirectPathForLoc(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return '/index.html';
+  return `${canonicalPath(pathname)}index.html`;
+}
+
+function redirectTargetForLoc(loc) {
+  return new URL(loc).pathname;
+}
+
 function collectMarkdownFiles(dir) {
   if (!existsSync(dir)) return [];
 
@@ -126,6 +136,54 @@ function collectDistPaths(dir) {
       if (stats.isDirectory()) return [path, ...collectDistPaths(path)];
       return [path];
     });
+}
+
+function parseRedirectRules(source) {
+  return source
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => {
+      const [from, to, status] = line.split(/\s+/);
+      return { from, to, status };
+    });
+}
+
+function hasRedirectRule(rules, { from, to, status = '301' }) {
+  return rules.some((rule) => rule.from === from && rule.to === to && rule.status === status);
+}
+
+function verifyCanonicalRedirectRules({ locs, failures }) {
+  if (!existsSync(headersPath)) {
+    failures.push({ type: 'missing-headers', file: headersPath });
+  }
+
+  const redirectsPath = join(root, 'dist', '_redirects');
+  if (!existsSync(redirectsPath)) {
+    failures.push({ type: 'missing-redirects', file: redirectsPath });
+    return;
+  }
+
+  const rules = parseRedirectRules(readFileSync(redirectsPath, 'utf8'));
+  for (const loc of locs) {
+    const expected = {
+      from: indexHtmlRedirectPathForLoc(loc),
+      to: redirectTargetForLoc(loc),
+      status: '301',
+    };
+    if (!hasRedirectRule(rules, expected)) {
+      failures.push({ type: 'index-html-canonical-redirect-rule', ...expected });
+    }
+  }
+
+  for (const expected of [
+    { from: '/kontakt', to: '/#contact', status: '301' },
+    { from: '/kontakt/', to: '/#contact', status: '301' },
+  ]) {
+    if (!hasRedirectRule(rules, expected)) {
+      failures.push({ type: 'contact-alias-redirect-rule', ...expected });
+    }
+  }
 }
 
 function extractCanonical(html) {
@@ -1460,6 +1518,7 @@ verifyLlmsSurface(failures, staleHits, locs);
 verifyApiCatalog(failures);
 verifyAgentSkills(failures, staleHits);
 verifyRobotsPolicy(failures);
+verifyCanonicalRedirectRules({ locs, failures });
 
 const expectedMarkdownFiles = new Set(locs.map((loc) => markdownPathForUrl(loc)));
 for (const markdownFile of collectMarkdownFiles(join(root, 'dist', 'md'))) {
