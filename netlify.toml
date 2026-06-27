@@ -15,6 +15,30 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
+# Serve prerendered markdown variants to AI agents that explicitly request
+# text/markdown. Netlify Edge Functions need an explicit route declaration.
+[[edge_functions]]
+  path = "/*"
+  excludedPath = [
+    "/assets/*",
+    "/md/*",
+    "/.well-known/*",
+    "/admin/*",
+    "/*.avif",
+    "/*.css",
+    "/*.ico",
+    "/*.js",
+    "/*.json",
+    "/*.png",
+    "/*.svg",
+    "/*.txt",
+    "/*.webp",
+    "/*.xml"
+  ]
+  function = "markdown-negotiation"
+  [edge_functions.header]
+    accept = ".*text/markdown.*"
+
 # Static .well-known/* files MUST be served directly.
 # No SPA wildcard fallback: all indexable routes are prerendered at build time,
 # and unknown URLs should return the static 404.html with noindex.

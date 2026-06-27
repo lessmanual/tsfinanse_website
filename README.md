@@ -4,7 +4,7 @@ Profesjonalna strona internetowa dla TS Finanse - pożyczki biznesowe pod zabezp
 
 ## 🌐 Wersja Live
 
-**URL:** https://lessmanual.github.io/tsfinanse_website/
+**URL:** https://tsfinanse.com/
 
 ## ✨ Funkcjonalności
 
@@ -20,7 +20,7 @@ Profesjonalna strona internetowa dla TS Finanse - pożyczki biznesowe pod zabezp
 
 ## 🚀 Deployment
 
-Strona automatycznie deployuje się na GitHub Pages po każdym commicie do `main`.
+Produkcja `tsfinanse.com` działa na Netlify. Push na `main` uruchamia deploy Netlify z `npm run build` i publikuje katalog `dist`.
 
 **Szczegóły:** Zobacz [DEPLOYMENT.md](./DEPLOYMENT.md)
 
@@ -47,8 +47,11 @@ npm run dev
 # Build production
 npm run build
 
+# SEO/GEO verification for generated dist
+npm run verify:seo
+
 # Preview production build
-npx serve build
+npm run preview
 ```
 
 ## 📂 Struktura projektu
@@ -92,5 +95,5 @@ Original Figma design: https://www.figma.com/design/HQqESqCBIcLOVLwCPHiotY/TS-Fi
 
 ---
 
-**Last updated:** 2025-11-09
-**Version:** 1.0.0
+**Last updated:** 2026-06-27
+**Version:** 1.1.0

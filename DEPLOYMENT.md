@@ -1,129 +1,123 @@
-# 🚀 Deployment na GitHub Pages
+# Deployment
 
-## Adres strony
-**https://lessmanual.github.io/tsfinanse_website/**
+## Produkcja
 
-## Konfiguracja wykonana
+Aktywna produkcja działa pod:
 
-### 1. Vite Configuration
-- Dodano `base: '/tsfinanse_website/'` w `vite.config.ts`
-- Zapewnia poprawne ścieżki zasobów na GitHub Pages
-
-### 2. GitHub Actions Workflow
-- Plik: `.github/workflows/deploy.yml`
-- Automatyczny deploy po push na branch `main`
-- Możliwość ręcznego uruchomienia z zakładki Actions
-
-### 3. Build Output
-- Katalog: `build/`
-- Dodany do `.gitignore` (nie commitujemy buildu)
-
-## Kroki do opublikowania
-
-### Pierwsza publikacja:
-
-1. **Utwórz repozytorium GitHub:**
-   ```bash
-   # W katalogu projektu
-   git init
-   git add .
-   git commit -m "Initial commit: TS Finanse Landing Page"
-
-   # Utwórz repo na GitHub (https://github.com/lessmanual/tsfinanse_website)
-   git remote add origin https://github.com/lessmanual/tsfinanse_website.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-2. **Włącz GitHub Pages:**
-   - Przejdź do: `https://github.com/lessmanual/tsfinanse_website/settings/pages`
-   - **Source**: wybierz "GitHub Actions"
-   - Zapisz
-
-3. **Workflow uruchomi się automatycznie:**
-   - Po pushu workflow zbuduje i wdroży stronę
-   - Sprawdź status w: `https://github.com/lessmanual/tsfinanse_website/actions`
-
-4. **Strona dostępna po ~2-3 minutach:**
-   - URL: `https://lessmanual.github.io/tsfinanse_website/`
-
-### Aktualizacje strony:
-
-```bash
-# Wprowadź zmiany w kodzie
-git add .
-git commit -m "Opis zmian"
-git push origin main
+```text
+https://tsfinanse.com/
 ```
 
-- GitHub Actions automatycznie:
-  - Zbuduje projekt (`npm run build`)
-  - Wdroży na GitHub Pages
-  - Strona zaktualizuje się po ~2-3 minutach
+Live response 2026-06-27 zwraca `server: Netlify` oraz `cache-status: Netlify Edge`, więc production source dla tej domeny to Netlify, nie GitHub Pages.
 
-## Ręczne wdrożenie (opcjonalne)
+## Build
 
-Jeśli chcesz zbudować lokalnie:
+Netlify używa `netlify.toml`:
 
 ```bash
-# Build production
 npm run build
-
-# Testuj build lokalnie
-npx serve build
 ```
 
-## Troubleshooting
+Build publikuje katalog:
 
-### Strona pokazuje 404
-- Sprawdź czy GitHub Pages jest włączone w ustawieniach repo
-- Sprawdź czy workflow zakończył się sukcesem w zakładce Actions
+```text
+dist
+```
 
-### Zasoby się nie ładują (obrazy, CSS)
-- Upewnij się że `base: '/tsfinanse_website/'` jest w `vite.config.ts`
-- Sprawdź czy używasz relatywnych ścieżek w kodzie
+`npm run build` wykonuje:
 
-### Workflow nie uruchamia się
-- Sprawdź czy plik `.github/workflows/deploy.yml` istnieje
-- Sprawdź czy masz uprawnienia do Actions w repo
+1. Vite production build.
+2. `scripts/generate-sitemap.mjs`.
+3. `scripts/prerender.mjs`.
+4. `scripts/generate-md-variants.mjs`.
 
-## Monitoring
+## SEO/GEO Gate
 
-- **Build logs**: https://github.com/lessmanual/tsfinanse_website/actions
-- **Status strony**: https://lessmanual.github.io/tsfinanse_website/
-- **Last deploy**: Widoczne w zakładce Environments → github-pages
+Przed deployem produkcyjnym uruchom:
+
+```bash
+npm run build
+npm run verify:seo
+```
+
+Oczekiwany wynik `verify:seo`:
+
+- `failureCount: 0`,
+- `staleHitCount: 0`,
+- wszystkie URL-e z `dist/sitemap.xml` mają HTML,
+- każdy URL ma self canonical,
+- każdy URL ma `link rel="alternate" type="text/markdown"` do canonical URL,
+- każdy URL ma wariant markdown w `dist/md`,
+- każdy URL ma jeden `noscript` i jeden `h1`,
+- renderowany HTML i markdown nie zawierają starych claimów o stałej prowizji TS Finanse.
+
+## Markdown Negotiation
+
+Netlify Edge Function `netlify/edge-functions/markdown-negotiation.js` obsługuje requesty z:
+
+```text
+Accept: text/markdown
+```
+
+Dla URL-a:
+
+```text
+https://tsfinanse.com/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/
+```
+
+edge rewrite kieruje do:
+
+```text
+/md/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca.md
+```
+
+Normalne requesty HTML oraz assety, sitemap, robots, `llms.txt`, `.well-known` i `/md/*` są pomijane.
+
+## Deploy
+
+Deploy produkcyjny jest publikacją całego serwisu, więc w pracy agentowej wymaga jawnej zgody Bartka.
+
+Po akceptacji:
+
+```bash
+git push origin temp-main:main
+```
+
+Netlify powinno automatycznie zbudować i opublikować `dist`.
+
+## Live Smoke Po Deployu
+
+Po deployu sprawdź:
+
+```bash
+curl -sI https://tsfinanse.com/ | sed -n '1,30p'
+curl -s https://tsfinanse.com/sitemap.xml | rg -c '<loc>'
+curl -s https://tsfinanse.com/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/ | rg -n '<noscript>|TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców'
+curl -sH 'Accept: text/markdown' https://tsfinanse.com/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/ | sed -n '1,30p'
+```
+
+Oczekiwane:
+
+- `server: Netlify`,
+- sitemap ma `73` URL-e,
+- blog post nie zawiera globalnego homepage fallback,
+- markdown response zaczyna się od frontmatter i `#` tytułu wpisu.
+
+## GitHub Pages
+
+`.github/workflows/deploy.yml` oraz stare wzmianki o `lessmanual.github.io/tsfinanse_website` są legacy. Nie traktuj GitHub Pages jako aktywnej produkcji dla `tsfinanse.com`.
 
 ## Rollback
 
-Jeśli coś pójdzie nie tak:
-
-1. Przejdź do: https://github.com/lessmanual/tsfinanse_website/actions
-2. Znajdź ostatni działający deploy
-3. Kliknij "Re-run jobs"
-
-Lub:
+Najprostszy rollback po złym deployu:
 
 ```bash
 git revert HEAD
 git push origin main
 ```
 
-## Performance
+Jeśli Netlify deployment UI jest dostępne, można też przywrócić poprzedni successful deploy z panelu Netlify.
 
-- Wszystkie assety są zoptymalizowane (AVIF, WebP, PNG fallbacks)
-- Lazy loading dla komponentów
-- Code splitting dla vendorów
-- Lighthouse score: 95+ (wszystkie kategorie)
+## Ostatnia aktualizacja
 
-## SEO
-
-- Wszystkie strony mają poprawne meta tagi
-- Canonical URLs skonfigurowane
-- Open Graph i Twitter Cards włączone
-- Sitemap generowany automatycznie
-- robots.txt skonfigurowany
-
----
-
-**Ostatnia aktualizacja:** 2025-11-09
-**Maintainer:** Claude Code
+2026-06-27

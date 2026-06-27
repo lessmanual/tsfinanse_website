@@ -254,6 +254,7 @@ function buildMetaTags(route) {
   tags += `    <title>${esc(route.title)}</title>\n`;
   tags += `    <meta name="description" content="${esc(route.description)}" />\n`;
   tags += `    <link rel="canonical" href="${canonical}" />\n`;
+  tags += `    <link rel="alternate" type="text/markdown" href="${canonical}" />\n`;
   tags += `    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />\n`;
   // Open Graph
   tags += `    <meta property="og:type" content="${ogType}" />\n`;

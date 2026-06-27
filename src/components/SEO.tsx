@@ -45,6 +45,7 @@ export function SEO({
       <meta name="title" content={fullTitle} />
       <meta name="description" content={description} />
       <link rel="canonical" href={canonical} />
+      <link rel="alternate" type="text/markdown" href={canonical} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />
