@@ -59,7 +59,8 @@ Używaj DOKŁADNIE jednej z poniższych:
 3. Sprawdź OG tags: https://www.opengraph.xyz/
 4. Sprawdź schema: https://search.google.com/test/rich-results
 5. Sprawdź w Google Search Console: Request indexing
-6. Uruchom IndexNow: `node scripts/indexnow.mjs`
+6. Po deployu sprawdź IndexNow: `npm run indexnow:dry-run -- --live-sitemap`
+7. Po poprawnym dry-run wyślij URL-e: `npm run indexnow -- --live-sitemap`
 
 ## Konwencje nazewnictwa tagów
 
