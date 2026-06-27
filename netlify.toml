@@ -26,6 +26,7 @@
     "/admin/*",
     "/*.avif",
     "/*.css",
+    "/*.html",
     "/*.ico",
     "/*.js",
     "/*.json",

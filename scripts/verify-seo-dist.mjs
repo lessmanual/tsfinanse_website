@@ -9,6 +9,7 @@ const rssPath = join(root, 'dist', 'rss.xml');
 const robotsPath = join(root, 'dist', 'robots.txt');
 const headersPath = join(root, 'dist', '_headers');
 const llmsPath = join(root, 'dist', 'llms.txt');
+const netlifyTomlPath = join(root, 'netlify.toml');
 const apiCatalogPath = join(root, 'dist', '.well-known', 'api-catalog');
 const agentSkillsIndexPath = join(root, 'dist', '.well-known', 'agent-skills', 'index.json');
 const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negotiation.js');
@@ -1408,6 +1409,29 @@ function verifyIndexNowKeyFile(failures) {
   }
 }
 
+function verifyNetlifyMarkdownEdgeConfig(failures) {
+  if (!existsSync(netlifyTomlPath)) {
+    failures.push({ type: 'missing-netlify-toml', file: netlifyTomlPath });
+    return;
+  }
+
+  const config = readFileSync(netlifyTomlPath, 'utf8');
+  const requiredFragments = [
+    'function = "markdown-negotiation"',
+    '[edge_functions.header]',
+    'accept = ".*text/markdown.*"',
+    '"/*.html"',
+    '"/md/*"',
+    '"/.well-known/*"',
+  ];
+
+  for (const fragment of requiredFragments) {
+    if (!config.includes(fragment)) {
+      failures.push({ type: 'netlify-markdown-edge-config', expected: fragment });
+    }
+  }
+}
+
 function verifyLlmsSurface(failures, staleHits, locs) {
   if (!existsSync(llmsPath)) {
     failures.push({ type: 'missing-llms', file: llmsPath });
@@ -1640,6 +1664,16 @@ async function verifyMarkdownEdgeFunction(failures) {
       expectedPath: undefined,
     },
     {
+      url: 'https://tsfinanse.com/index.html',
+      accept: 'text/markdown',
+      expectedPath: undefined,
+    },
+    {
+      url: 'https://tsfinanse.com/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/index.html',
+      accept: 'text/markdown',
+      expectedPath: undefined,
+    },
+    {
       url: 'https://tsfinanse.com/blog/',
       accept: 'text/html',
       expectedPath: undefined,
@@ -1688,6 +1722,7 @@ verifySitemapHrefLangs({ sitemap, locs, failures });
 
 verifyDiscoveryHeaders(failures);
 verifyIndexNowKeyFile(failures);
+verifyNetlifyMarkdownEdgeConfig(failures);
 verifyLlmsSurface(failures, staleHits, locs);
 verifyApiCatalog(failures);
 verifyAgentSkills(failures, staleHits);

@@ -1,6 +1,7 @@
 const SKIPPED_EXTENSIONS = new Set([
   '.avif',
   '.css',
+  '.html',
   '.ico',
   '.js',
   '.json',

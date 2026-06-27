@@ -131,9 +131,10 @@ async function fetchText(url, options = {}) {
   }
 }
 
-async function fetchRedirectTrace(rawUrl, limit = 8) {
+async function fetchRedirectTrace(rawUrl, limit = 8, options = {}) {
   const trace = [];
   let currentUrl = rawUrl;
+  const headers = options.headers || { accept: 'text/html' };
 
   for (let count = 0; count < limit; count += 1) {
     const controller = new AbortController();
@@ -142,7 +143,7 @@ async function fetchRedirectTrace(rawUrl, limit = 8) {
     try {
       const response = await fetch(currentUrl, {
         redirect: 'manual',
-        headers: { accept: 'text/html' },
+        headers,
         signal: controller.signal,
       });
       const location = response.headers.get('location');
@@ -1566,6 +1567,32 @@ async function verifyIndexHtmlCanonicalRedirects(failures, locs) {
     }
     if (result.redirectCount < 1) {
       failures.push({ type: 'index-html-canonical-redirect-count', url, redirectCount: result.redirectCount, trace: result.trace });
+    }
+  }
+
+  const markdownAcceptCases = [
+    {
+      url: `${SITE_URL}/index.html`,
+      expectedFinalUrl: `${SITE_URL}/`,
+    },
+    {
+      url: `${SITE_URL}/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/index.html`,
+      expectedFinalUrl: `${SITE_URL}/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/`,
+    },
+  ];
+
+  for (const testCase of markdownAcceptCases) {
+    const result = await fetchRedirectTrace(testCase.url, 8, {
+      headers: { accept: 'text/markdown, text/html;q=0.8' },
+    });
+    if (result.finalStatus !== 200) {
+      failures.push({ type: 'index-html-markdown-accept-redirect-status', url: testCase.url, finalStatus: result.finalStatus, trace: result.trace });
+    }
+    if (result.finalUrl !== testCase.expectedFinalUrl) {
+      failures.push({ type: 'index-html-markdown-accept-redirect-final-url', url: testCase.url, expectedFinalUrl: testCase.expectedFinalUrl, finalUrl: result.finalUrl, trace: result.trace });
+    }
+    if (result.redirectCount < 1) {
+      failures.push({ type: 'index-html-markdown-accept-redirect-count', url: testCase.url, redirectCount: result.redirectCount, trace: result.trace });
     }
   }
 
