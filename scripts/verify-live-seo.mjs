@@ -73,6 +73,70 @@ function hasAlternateMarkdown(html, loc) {
   return relFirst.test(html) || hrefFirst.test(html);
 }
 
+function extractMetaProperty(html, property) {
+  const escaped = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return html.match(new RegExp(`<meta[^>]+property=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i'))?.[1]
+    || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${escaped}["']`, 'i'))?.[1];
+}
+
+function parseSitemapLastmods(sitemap) {
+  return new Map([...sitemap.matchAll(/<url>\s*<loc>([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)]
+    .map((match) => [match[1], match[2]]));
+}
+
+function datePart(value) {
+  return String(value || '').slice(0, 10);
+}
+
+function collectJsonLd(html, failures, loc) {
+  const objects = [];
+  const scripts = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+
+  for (const script of scripts) {
+    try {
+      const parsed = JSON.parse(script[1].trim());
+      const entries = Array.isArray(parsed) ? parsed : [parsed];
+      for (const entry of entries) {
+        objects.push(entry);
+        if (entry && Array.isArray(entry['@graph'])) objects.push(...entry['@graph']);
+      }
+    } catch (error) {
+      failures.push({ type: 'json-ld-parse', loc, message: error.message });
+    }
+  }
+
+  return objects;
+}
+
+function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
+  const objects = collectJsonLd(html, failures, loc);
+  const blogPosting = objects.find((entry) => entry && entry['@type'] === 'BlogPosting');
+  if (!blogPosting) {
+    failures.push({ type: 'blogposting-schema', loc });
+    return;
+  }
+
+  if (!blogPosting.datePublished) failures.push({ type: 'blogposting-date-published', loc });
+  if (!blogPosting.dateModified) failures.push({ type: 'blogposting-date-modified', loc });
+  if (lastmod && datePart(blogPosting.dateModified) !== lastmod) {
+    failures.push({ type: 'blogposting-date-modified-lastmod', loc, dateModified: blogPosting.dateModified, lastmod });
+  }
+
+  const publishedMeta = extractMetaProperty(html, 'article:published_time');
+  const modifiedMeta = extractMetaProperty(html, 'article:modified_time');
+  if (!publishedMeta) failures.push({ type: 'article-published-meta', loc });
+  if (!modifiedMeta) failures.push({ type: 'article-modified-meta', loc });
+  if (lastmod && datePart(modifiedMeta) !== lastmod) {
+    failures.push({ type: 'article-modified-meta-lastmod', loc, modifiedMeta, lastmod });
+  }
+
+  const markdownModified = markdown.match(/^date_modified:\s+"([^"]+)"/m)?.[1];
+  if (!markdownModified) failures.push({ type: 'markdown-date-modified', loc });
+  if (lastmod && datePart(markdownModified) !== lastmod) {
+    failures.push({ type: 'markdown-date-modified-lastmod', loc, markdownModified, lastmod });
+  }
+}
+
 function scanStale(content, loc, surface, hits) {
   for (const pattern of stalePatterns) {
     const match = content.match(pattern);
@@ -165,6 +229,7 @@ async function main() {
   }
 
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+  const sitemapLastmods = parseSitemapLastmods(sitemap);
   if (locs.length !== EXPECTED_LOC_COUNT) {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
   }
@@ -172,6 +237,7 @@ async function main() {
   for (const loc of locs) {
     const url = new URL(loc);
     const expectedCanonical = `${SITE_URL}${canonicalPath(url.pathname)}`;
+    const isBlogPost = url.pathname.startsWith('/blog/') && url.pathname !== '/blog/';
 
     const { response, text: html } = await fetchText(loc, { headers: { accept: 'text/html' } });
     if (!response.ok) {
@@ -202,6 +268,16 @@ async function main() {
     if (!markdown.includes(`canonical: "${expectedCanonical}"`)) failures.push({ type: 'markdown-canonical', loc });
     if (!/^#\s+.+/m.test(markdown)) failures.push({ type: 'markdown-h1', loc });
     scanStale(markdown, loc, 'markdown', staleHits);
+
+    if (isBlogPost) {
+      verifyBlogFreshness({
+        html,
+        markdown,
+        loc,
+        lastmod: sitemapLastmods.get(loc),
+        failures,
+      });
+    }
   }
 
   const result = {

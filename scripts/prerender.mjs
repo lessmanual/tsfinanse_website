@@ -186,7 +186,7 @@ function blogPostingSchema(post) {
     headline: post.title,
     description: post.description,
     datePublished: post.date,
-    dateModified: post.date,
+    dateModified: post.updatedAt || post.date,
     author: { '@type': 'Organization', name: 'TS Finanse', url: 'https://tsfinanse.com' },
     publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' } },
     image: post.image || 'https://tsfinanse.com/og-image.webp',
@@ -264,6 +264,12 @@ function buildMetaTags(route) {
   tags += `    <meta property="og:image" content="${ogImage}" />\n`;
   tags += `    <meta property="og:site_name" content="TS Finanse" />\n`;
   tags += `    <meta property="og:locale" content="pl_PL" />\n`;
+  if (ogType === 'article' && route.publishedTime) {
+    tags += `    <meta property="article:published_time" content="${esc(route.publishedTime)}" />\n`;
+  }
+  if (ogType === 'article' && route.modifiedTime) {
+    tags += `    <meta property="article:modified_time" content="${esc(route.modifiedTime)}" />\n`;
+  }
   // Twitter
   tags += `    <meta name="twitter:card" content="summary_large_image" />\n`;
   tags += `    <meta name="twitter:title" content="${esc(route.title)}" />\n`;
@@ -520,6 +526,7 @@ function buildNoscript(route, post, allPosts = []) {
   // Blog post routes (dynamic)
   if (path.startsWith('/blog/') && post) {
     const date = post.date ? new Date(post.date).toISOString().slice(0, 10) : '';
+    const updated = (post.updatedAt || post.date) ? new Date(post.updatedAt || post.date).toISOString().slice(0, 10) : '';
     const tags = Array.isArray(post.tags) && post.tags.length > 0
       ? `<p>Tagi: ${post.tags.map(esc).join(', ')}</p>`
       : '';
@@ -528,7 +535,7 @@ function buildNoscript(route, post, allPosts = []) {
 <article>
 <h1>${esc(post.title)}</h1>
 <p>${esc(post.description)}</p>
-<p>${esc(post.category || 'Finansowanie')} | ${esc(date)} | ${esc(post.author || 'TS Finanse')}</p>
+<p>${esc(post.category || 'Finansowanie')} | Opublikowano: ${esc(date)} | Aktualizacja: ${esc(updated)} | ${esc(post.author || 'TS Finanse')}</p>
 ${post.image ? `<p><img src="${esc(post.image)}" alt="${esc(post.title)}" loading="lazy" style="max-width:100%;height:auto" /></p>` : ''}
 ${renderStaticPostContent(post, publishedSlugs)}
 ${tags}
@@ -612,6 +619,8 @@ async function main() {
       description: post.description,
       ogType: 'article',
       ogImage: post.image || `${SITE_URL}/og-image.webp`,
+      publishedTime: post.date,
+      modifiedTime: post.updatedAt || post.date,
       schemas: [
         blogPostingSchema(post),
         {

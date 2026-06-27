@@ -6,6 +6,8 @@ interface SEOProps {
   canonicalUrl?: string;
   ogImage?: string;
   ogType?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
   schema?: object | object[];
 }
 
@@ -33,6 +35,8 @@ export function SEO({
   canonicalUrl,
   ogImage = defaultOgImage,
   ogType = 'website',
+  publishedTime,
+  modifiedTime,
   schema,
 }: SEOProps) {
   const fullTitle = title ? `${title} | TS Finanse` : defaultTitle;
@@ -55,6 +59,12 @@ export function SEO({
       <meta property="og:image" content={ogImage} />
       <meta property="og:site_name" content="TS Finanse" />
       <meta property="og:locale" content="pl_PL" />
+      {ogType === 'article' && publishedTime && (
+        <meta property="article:published_time" content={publishedTime} />
+      )}
+      {ogType === 'article' && modifiedTime && (
+        <meta property="article:modified_time" content={modifiedTime} />
+      )}
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -225,6 +235,7 @@ export const blogPostingSchema = (post: {
   title: string;
   description: string;
   date: string;
+  updatedAt?: string;
   author?: string;
   image?: string;
   slug: string;
@@ -234,7 +245,7 @@ export const blogPostingSchema = (post: {
   headline: post.title,
   description: post.description,
   datePublished: post.date,
-  dateModified: post.date,
+  dateModified: post.updatedAt || post.date,
   author: {
     '@type': 'Organization',
     name: post.author || 'TS Finanse',

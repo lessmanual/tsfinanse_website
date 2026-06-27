@@ -4,6 +4,7 @@ export interface Post {
   slug: string;
   title: string;
   date: string;
+  updatedAt?: string;
   description: string;
   content: string;
   tags?: string[];
@@ -164,6 +165,7 @@ export async function getAllPosts(): Promise<Post[]> {
     slug: post.slug,
     title: post.title,
     date: post.published_at || post.created_at,
+    updatedAt: post.updated_at || post.published_at || post.created_at,
     description: post.description || '',
     content: normalizeArticleContent(post.content || '', publishedSlugs),
     tags: post.tags || [],
@@ -197,6 +199,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
     slug: data.slug,
     title: data.title,
     date: data.published_at || data.created_at,
+    updatedAt: data.updated_at || data.published_at || data.created_at,
     description: data.description || '',
     content: normalizeArticleContent(data.content || '', publishedSlugs),
     tags: data.tags || [],

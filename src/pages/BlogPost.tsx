@@ -51,6 +51,12 @@ export default function BlogPost() {
     month: 'long',
     day: 'numeric',
   });
+  const updatedAt = post.updatedAt || post.date;
+  const formattedUpdatedAt = new Date(updatedAt).toLocaleDateString('pl-PL', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   // Calculate reading time (rough estimate: 200 words per minute)
   const wordCount = post.content.split(/\s+/).length;
@@ -64,11 +70,14 @@ export default function BlogPost() {
         canonicalUrl={`/blog/${post.slug}/`}
         ogType="article"
         ogImage={post.featuredImage || undefined}
+        publishedTime={post.date}
+        modifiedTime={updatedAt}
         schema={[
           blogPostingSchema({
             title: post.title,
             description: post.description,
             date: post.date,
+            updatedAt,
             author: post.author,
             image: post.featuredImage,
             slug: post.slug,
@@ -109,7 +118,15 @@ export default function BlogPost() {
             <div className="flex flex-wrap items-center gap-6 text-[#3D1F1F]/60 text-sm">
               <div className="flex items-center gap-2">
                 <Calendar size={16} />
-                <time dateTime={post.date}>{formattedDate}</time>
+                <span>
+                  Opublikowano: <time dateTime={post.date}>{formattedDate}</time>
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar size={16} />
+                <span>
+                  Aktualizacja: <time dateTime={updatedAt}>{formattedUpdatedAt}</time>
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <User size={16} />
