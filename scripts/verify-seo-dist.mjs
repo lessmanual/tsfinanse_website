@@ -4,7 +4,31 @@ import { join } from 'path';
 const SITE_URL = 'https://tsfinanse.com';
 const root = process.cwd();
 const sitemapPath = join(root, 'dist', 'sitemap.xml');
+const robotsPath = join(root, 'dist', 'robots.txt');
 const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negotiation.js');
+
+const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
+
+const robotsPolicy = {
+  allowed: [
+    'Googlebot',
+    'Bingbot',
+    'Applebot',
+    'OAI-SearchBot',
+    'ChatGPT-User',
+    'Claude-User',
+    'Claude-SearchBot',
+    'PerplexityBot',
+    'Google-Extended',
+  ],
+  disallowed: [
+    'GPTBot',
+    'ClaudeBot',
+    'anthropic-ai',
+    'CCBot',
+    'Applebot-Extended',
+  ],
+};
 
 const stalePatterns = [
   /Prowizja TS Finanse:?\s*1%/i,
@@ -51,6 +75,78 @@ function scanStale(content, loc, surface, hits) {
   for (const pattern of stalePatterns) {
     const match = content.match(pattern);
     if (match) hits.push({ loc, surface, pattern: pattern.toString(), sample: match[0] });
+  }
+}
+
+function parseRobotsGroups(robots) {
+  const groups = [];
+  let currentGroup;
+
+  for (const rawLine of robots.split(/\r?\n/)) {
+    const line = rawLine.replace(/\s+#.*$/, '').trim();
+    if (!line) continue;
+
+    const directive = line.match(/^([^:]+):\s*(.*)$/);
+    if (!directive) continue;
+
+    const name = directive[1].toLowerCase();
+    const value = directive[2].trim();
+
+    if (name === 'user-agent') {
+      if (!currentGroup || currentGroup.directives.length > 0) {
+        currentGroup = { agents: [], directives: [] };
+        groups.push(currentGroup);
+      }
+      currentGroup.agents.push(value);
+      continue;
+    }
+
+    if (currentGroup && currentGroup.agents.length > 0) {
+      currentGroup.directives.push({ name, value });
+    }
+  }
+
+  return groups;
+}
+
+function hasRobotsDirective(groups, agent, directiveName, directiveValue) {
+  const normalisedAgent = agent.toLowerCase();
+  const normalisedDirective = directiveName.toLowerCase();
+
+  return groups.some((group) => (
+    group.agents.some((groupAgent) => groupAgent.toLowerCase() === normalisedAgent)
+    && group.directives.some((directive) => (
+      directive.name === normalisedDirective
+      && directive.value === directiveValue
+    ))
+  ));
+}
+
+function verifyRobotsPolicy(failures) {
+  if (!existsSync(robotsPath)) {
+    failures.push({ type: 'missing-robots', file: robotsPath });
+    return;
+  }
+
+  const robots = readFileSync(robotsPath, 'utf8');
+  if (!robots.includes(expectedContentSignal)) {
+    failures.push({ type: 'robots-content-signal', expected: expectedContentSignal });
+  }
+
+  const groups = parseRobotsGroups(robots);
+  for (const userAgent of robotsPolicy.allowed) {
+    if (!hasRobotsDirective(groups, userAgent, 'allow', '/')) {
+      failures.push({ type: 'robots-allow', userAgent });
+    }
+  }
+
+  for (const userAgent of robotsPolicy.disallowed) {
+    if (!hasRobotsDirective(groups, userAgent, 'disallow', '/')) {
+      failures.push({ type: 'robots-disallow', userAgent });
+    }
+    if (hasRobotsDirective(groups, userAgent, 'allow', '/')) {
+      failures.push({ type: 'robots-conflicting-allow', userAgent });
+    }
   }
 }
 
@@ -111,6 +207,8 @@ const sitemap = readFileSync(sitemapPath, 'utf8');
 const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 const failures = [];
 const staleHits = [];
+
+verifyRobotsPolicy(failures);
 
 for (const loc of locs) {
   const url = new URL(loc);

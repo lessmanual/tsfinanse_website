@@ -1,5 +1,5 @@
 # robots.txt for tsfinanse.com
-# Updated: 2025-11-09
+# Updated: 2026-06-27
 # Purpose: Optimized for traditional search engines AND AI/LLM crawlers
 
 # ============================================================
@@ -65,23 +65,25 @@ User-agent: SeznamBot
 Allow: /
 
 # ============================================================
-# AI/LLM CRAWLERS - MEGA IMPORTANT - ALL EXPLICITLY ALLOWED
+# AI/LLM SEARCH AND USER-REQUEST CRAWLERS - EXPLICITLY ALLOWED
+# Policy: search=yes, ai-input=yes, ai-train=no.
+# OpenAI, Anthropic and Apple expose separate search/user-request vs training controls.
 # ============================================================
 
-# OpenAI (ChatGPT, GPT-4, SearchGPT)
-User-agent: GPTBot
+# OpenAI search and user-request agents. GPTBot is training-only and blocked below.
 User-agent: ChatGPT-User
 User-agent: OAI-SearchBot
 Allow: /
 
-# Anthropic (Claude)
-User-agent: anthropic-ai
-User-agent: Claude-Web
-User-agent: ClaudeBot
+# Anthropic search and user-request agents. ClaudeBot is training-only and blocked below.
+User-agent: Claude-User
+User-agent: Claude-SearchBot
 Allow: /
 
-# Google AI (Gemini)
+# Google AI / Gemini. Google-Extended is a product token, not a separate crawler.
+# Keeping it allowed favours Gemini grounding and AI answer visibility.
 User-agent: GoogleOther
+User-agent: Google-Extended
 Allow: /
 
 # Perplexity AI
@@ -97,13 +99,8 @@ Allow: /
 User-agent: cohere-ai
 Allow: /
 
-# Common Crawl (used by many AI training datasets)
-User-agent: CCBot
-Allow: /
-
-# Applebot (Apple Intelligence, Siri)
+# Apple search ecosystem. Applebot-Extended is training-only and blocked below.
 User-agent: Applebot
-User-agent: Applebot-Extended
 Allow: /
 
 # Amazon (Alexa)
@@ -125,6 +122,27 @@ Allow: /
 # Kankaanpääbot (AI research)
 User-agent: Kankaanpääbot
 Allow: /
+
+# ============================================================
+# AI TRAINING CRAWLERS - DISALLOWED TO MATCH ai-train=no
+# ============================================================
+
+# OpenAI training crawler. OAI-SearchBot and ChatGPT-User remain allowed above.
+User-agent: GPTBot
+Disallow: /
+
+# Anthropic training crawler. Claude-User and Claude-SearchBot remain allowed above.
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+Disallow: /
+
+# Common Crawl corpus crawler, widely used for model training datasets.
+User-agent: CCBot
+Disallow: /
+
+# Apple training control token. Applebot search remains allowed above.
+User-agent: Applebot-Extended
+Disallow: /
 
 # ============================================================
 # PROFESSIONAL SEO TOOLS - Controlled access
