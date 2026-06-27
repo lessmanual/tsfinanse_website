@@ -23,6 +23,8 @@ const officialReferenceUrls = [
   'https://www.biznes.gov.pl/pl/portal/00120',
   'https://prs.ms.gov.pl/krs',
 ];
+const websiteSchemaId = `${SITE_URL}/#website`;
+const websiteSearchUrlTemplate = `${SITE_URL}/blog/?q={search_term_string}`;
 const editorialTrustFragments = [
   'TS Finanse',
   '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
@@ -747,6 +749,57 @@ function verifyWebPageSchema({ html, loc, failures }) {
   }
   if (webPage.breadcrumb?.['@id'] !== `${loc}#breadcrumb`) {
     failures.push({ type: 'webpage-schema-breadcrumb', loc, breadcrumb: webPage.breadcrumb });
+  }
+}
+
+function verifyWebSiteSearchSchema({ html, loc, failures }) {
+  const objects = collectJsonLd(html, failures, loc);
+  const webSite = objects.find((entry) => entry && entry['@type'] === 'WebSite' && entry.url === SITE_URL);
+  if (!webSite) {
+    failures.push({ type: 'website-schema-missing', loc });
+    return;
+  }
+
+  if (webSite['@id'] !== websiteSchemaId) {
+    failures.push({ type: 'website-schema-id', loc, actual: webSite['@id'], expected: websiteSchemaId });
+  }
+  if (webSite.name !== 'TS Finanse') {
+    failures.push({ type: 'website-schema-name', loc, actual: webSite.name });
+  }
+  if (webSite.inLanguage !== 'pl-PL') {
+    failures.push({ type: 'website-schema-language', loc, actual: webSite.inLanguage });
+  }
+
+  const action = webSite.potentialAction || {};
+  const target = action.target || {};
+  if (action['@type'] !== 'SearchAction') {
+    failures.push({ type: 'website-search-action-type', loc, actual: action['@type'] });
+  }
+  if (target['@type'] !== 'EntryPoint' || target.urlTemplate !== websiteSearchUrlTemplate) {
+    failures.push({ type: 'website-search-action-target', loc, target, expected: websiteSearchUrlTemplate });
+  }
+  if (action['query-input'] !== 'required name=search_term_string') {
+    failures.push({ type: 'website-search-action-query-input', loc, actual: action['query-input'] });
+  }
+}
+
+function verifyBlogSearchForm({ html, loc, failures }) {
+  if (new URL(loc).pathname !== '/blog/') return;
+
+  const form = html.match(/<form\b[^>]*role=["']search["'][^>]*>[\s\S]*?<\/form>/i)?.[0] || '';
+  if (!form) {
+    failures.push({ type: 'blog-search-form-missing', loc });
+    return;
+  }
+  if (!/\bmethod=["']get["']/i.test(form)) {
+    failures.push({ type: 'blog-search-form-method', loc });
+  }
+  if (!/\baction=["']\/blog\/["']/i.test(form)) {
+    failures.push({ type: 'blog-search-form-action', loc });
+  }
+  if (!/<input\b[^>]*type=["']search["'][^>]*name=["']q["'][^>]*>/i.test(form)
+    && !/<input\b[^>]*name=["']q["'][^>]*type=["']search["'][^>]*>/i.test(form)) {
+    failures.push({ type: 'blog-search-input', loc });
   }
 }
 
@@ -1576,6 +1629,8 @@ async function main() {
 
     verifyBreadcrumbSchema({ html, loc, failures });
     verifyWebPageSchema({ html, loc, failures });
+    verifyWebSiteSearchSchema({ html, loc, failures });
+    verifyBlogSearchForm({ html, loc, failures });
     verifyHtmlInternalLinks({ html, loc, locs, failures });
     scanStale(html, loc, 'html', staleHits);
 

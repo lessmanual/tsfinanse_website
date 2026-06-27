@@ -1119,6 +1119,11 @@ function buildNoscript(route, post, allPosts = []) {
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>Blog TS Finanse - Porady Finansowe dla Przedsiębiorców</h1>
 <p>Aktualności ze świata finansów, porady dotyczące pożyczek hipotecznych i finansowania biznesu.</p>
+<form role="search" action="/blog/" method="get">
+<label for="blog-search-noscript">Szukaj w blogu TS Finanse</label>
+<input id="blog-search-noscript" type="search" name="q" placeholder="np. restrukturyzacja długu">
+<button type="submit">Szukaj</button>
+</form>
 <h2>Najnowsze wpisy</h2>
 <ul>${postLinks}</ul>
 <p><a href="${canonicalUrl('/')}">Strona główna TS Finanse</a> | <a href="${canonicalUrl('/programpartnerski/')}">Program Partnerski</a></p>

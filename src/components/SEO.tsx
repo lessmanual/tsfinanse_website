@@ -504,6 +504,7 @@ export const websiteSchema = {
   '@id': 'https://tsfinanse.com/#website',
   name: 'TS Finanse',
   url: 'https://tsfinanse.com',
+  inLanguage: 'pl-PL',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
