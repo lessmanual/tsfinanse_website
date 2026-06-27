@@ -542,6 +542,38 @@ function verifyBreadcrumbSchema({ html, loc, failures }) {
   });
 }
 
+function verifyWebPageSchema({ html, loc, failures }) {
+  const objects = collectJsonLd(html, failures, loc);
+  const webPage = objects.find((entry) => entry && entry['@type'] === 'WebPage' && entry.url === loc);
+
+  if (!webPage) {
+    failures.push({ type: 'webpage-schema-missing', loc });
+    return;
+  }
+
+  if (webPage['@id'] !== `${loc}#webpage`) {
+    failures.push({ type: 'webpage-schema-id', loc, actual: webPage['@id'] });
+  }
+  if (webPage.inLanguage !== 'pl-PL') {
+    failures.push({ type: 'webpage-schema-language', loc, inLanguage: webPage.inLanguage });
+  }
+  if (typeof webPage.name !== 'string' || webPage.name.length < minMetaTitleLength || webPage.name.length > maxMetaTitleLength) {
+    failures.push({ type: 'webpage-schema-name', loc, name: webPage.name });
+  }
+  if (typeof webPage.description !== 'string' || webPage.description.length < minMetaDescriptionLength || webPage.description.length > maxMetaDescriptionLength) {
+    failures.push({ type: 'webpage-schema-description', loc, description: webPage.description });
+  }
+  if (webPage.isPartOf?.['@id'] !== `${SITE_URL}/#website`) {
+    failures.push({ type: 'webpage-schema-is-part-of', loc, isPartOf: webPage.isPartOf });
+  }
+  if (webPage.publisher?.name !== 'TS Finanse') {
+    failures.push({ type: 'webpage-schema-publisher', loc, publisher: webPage.publisher });
+  }
+  if (webPage.breadcrumb?.['@id'] !== `${loc}#breadcrumb`) {
+    failures.push({ type: 'webpage-schema-breadcrumb', loc, breadcrumb: webPage.breadcrumb });
+  }
+}
+
 function verifyBlogImageSignals({ html, loc, sitemapImages, failures }) {
   const objects = collectJsonLd(html, failures, loc);
   const blogPosting = objects.find((entry) => entry && entry['@type'] === 'BlogPosting');
@@ -1262,6 +1294,7 @@ async function main() {
     if (h1s !== 1) failures.push({ type: 'h1-count', loc, h1s });
 
     verifyBreadcrumbSchema({ html, loc, failures });
+    verifyWebPageSchema({ html, loc, failures });
     scanStale(html, loc, 'html', staleHits);
 
     const { response: markdownResponse, text: markdown } = await fetchText(loc, {

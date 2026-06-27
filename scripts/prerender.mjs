@@ -637,6 +637,40 @@ function blogIndexSchemas(posts) {
   ];
 }
 
+function webPageSchema({ canonical, metaTitle, metaDescription, ogImage }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${canonical}#webpage`,
+    url: canonical,
+    name: metaTitle,
+    description: metaDescription,
+    inLanguage: 'pl-PL',
+    isPartOf: {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      name: 'TS Finanse',
+      url: SITE_URL,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'TS Finanse',
+      url: SITE_URL,
+    },
+    breadcrumb: {
+      '@id': `${canonical}#breadcrumb`,
+    },
+    ...(ogImage
+      ? {
+          primaryImageOfPage: {
+            '@type': 'ImageObject',
+            url: ogImage,
+          },
+        }
+      : {}),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Fetch blog posts from Supabase
 // ---------------------------------------------------------------------------
@@ -722,14 +756,13 @@ function buildMetaTags(route) {
   tags += `    <meta name="twitter:image" content="${ogImage}" />\n`;
 
   // Schemas
-  if (route.schemas && route.schemas.length > 0) {
-    const schemaObjects = route.schemas
+  const schemaObjects = [
+    webPageSchema({ canonical, metaTitle, metaDescription, ogImage }),
+    ...(route.schemas || [])
       .map((key) => (typeof key === 'string' ? SCHEMAS[key] : key))
-      .filter(Boolean);
-    if (schemaObjects.length > 0) {
-      tags += `    <script type="application/ld+json">${JSON.stringify(schemaObjects)}</script>\n`;
-    }
-  }
+      .filter(Boolean),
+  ];
+  tags += `    <script type="application/ld+json">${JSON.stringify(schemaObjects)}</script>\n`;
 
   return tags;
 }

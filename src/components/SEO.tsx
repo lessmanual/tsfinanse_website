@@ -244,6 +244,50 @@ function normalizeCanonicalPath(path: string) {
   return search ? `${normalizedPath}?${search}` : normalizedPath;
 }
 
+function webPageSchema({
+  canonical,
+  name,
+  description,
+  image,
+}: {
+  canonical: string;
+  name: string;
+  description: string;
+  image?: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${canonical}#webpage`,
+    url: canonical,
+    name,
+    description,
+    inLanguage: 'pl-PL',
+    isPartOf: {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
+      name: 'TS Finanse',
+      url: siteUrl,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'TS Finanse',
+      url: siteUrl,
+    },
+    breadcrumb: {
+      '@id': `${canonical}#breadcrumb`,
+    },
+    ...(image
+      ? {
+          primaryImageOfPage: {
+            '@type': 'ImageObject',
+            url: image,
+          },
+        }
+      : {}),
+  };
+}
+
 export function SEO({
   title,
   description = defaultDescription,
@@ -259,6 +303,16 @@ export function SEO({
   const canonical = canonicalUrl ? `${siteUrl}${normalizeCanonicalPath(canonicalUrl)}` : `${siteUrl}/`;
   const normalisedModifiedTime = latestDateValue(modifiedTime, publishedTime);
   const resolvedOgImage = absoluteImageUrl(ogImage) || defaultOgImage;
+  const customSchemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
+  const structuredData = [
+    webPageSchema({
+      canonical,
+      name: fullTitle,
+      description: metaDescription,
+      image: resolvedOgImage,
+    }),
+    ...customSchemas.filter(Boolean),
+  ];
 
   return (
     <Helmet>
@@ -305,11 +359,9 @@ export function SEO({
       <meta name="publisher" content="TS Finanse" />
 
       {/* Schema.org Structured Data */}
-      {schema && (
-        <script type="application/ld+json">
-          {JSON.stringify(Array.isArray(schema) ? schema : [schema], null, 2)}
-        </script>
-      )}
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData, null, 2)}
+      </script>
     </Helmet>
   );
 }
@@ -416,6 +468,7 @@ export const breadcrumbSchema = (items: { name: string; url: string }[]) => ({
 export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
+  '@id': 'https://tsfinanse.com/#website',
   name: 'TS Finanse',
   url: 'https://tsfinanse.com',
   potentialAction: {
