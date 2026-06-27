@@ -47,6 +47,11 @@ function latestDateValue(first, second) {
   return firstTime >= secondTime ? firstValue : secondValue;
 }
 
+function sitemapHrefLangLinks(loc) {
+  return `    <xhtml:link rel="alternate" hreflang="pl-PL" href="${loc}" />\n`
+    + `    <xhtml:link rel="alternate" hreflang="x-default" href="${loc}" />\n`;
+}
+
 // Static routes with priorities
 const staticRoutes = [
   { path: '/', priority: '1.0', changefreq: 'weekly', lastmod: null },
@@ -87,12 +92,14 @@ function generateSitemap(posts) {
   const today = new Date().toISOString().split('T')[0];
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
+  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n';
 
   for (const route of staticRoutes) {
     const mod = route.lastmod || today;
+    const loc = `${SITE_URL}${canonicalPath(route.path)}`;
     xml += `  <url>\n`;
-    xml += `    <loc>${SITE_URL}${canonicalPath(route.path)}</loc>\n`;
+    xml += `    <loc>${loc}</loc>\n`;
+    xml += sitemapHrefLangLinks(loc);
     xml += `    <lastmod>${mod}</lastmod>\n`;
     xml += `    <changefreq>${route.changefreq}</changefreq>\n`;
     xml += `    <priority>${route.priority}</priority>\n`;
@@ -102,9 +109,11 @@ function generateSitemap(posts) {
   for (const post of posts) {
     const lastmod = (latestDateValue(post.updated_at, post.published_at) || today).split('T')[0];
     const postPath = canonicalPath(`/blog/${post.slug}`);
+    const loc = `${SITE_URL}${postPath}`;
     const imageUrl = absoluteImageUrl(post.featured_image);
     xml += `  <url>\n`;
-    xml += `    <loc>${SITE_URL}${postPath}</loc>\n`;
+    xml += `    <loc>${loc}</loc>\n`;
+    xml += sitemapHrefLangLinks(loc);
     xml += `    <lastmod>${lastmod}</lastmod>\n`;
     xml += `    <changefreq>monthly</changefreq>\n`;
     xml += `    <priority>0.6</priority>\n`;

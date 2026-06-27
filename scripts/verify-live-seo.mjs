@@ -425,6 +425,27 @@ function parseSitemapImages(sitemap) {
   return images;
 }
 
+function extractXmlAttribute(tag, attribute) {
+  return tag.match(new RegExp(`${attribute}="([^"]+)"`))?.[1];
+}
+
+function parseSitemapHrefLangs(sitemap) {
+  const links = new Map();
+  const urlBlocks = [...sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((match) => match[1]);
+
+  for (const block of urlBlocks) {
+    const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    if (!loc) continue;
+    links.set(loc, [...block.matchAll(/<xhtml:link\b[^>]*\/?>/g)].map((match) => ({
+      rel: extractXmlAttribute(match[0], 'rel'),
+      hreflang: extractXmlAttribute(match[0], 'hreflang'),
+      href: extractXmlAttribute(match[0], 'href'),
+    })));
+  }
+
+  return links;
+}
+
 function datePart(value) {
   return String(value || '').slice(0, 10);
 }
@@ -683,6 +704,21 @@ function verifyBlogImageSignals({ html, loc, sitemapImages, failures }) {
   }
   if (sitemapImage && blogPostingImage && sitemapImage !== blogPostingImage) {
     failures.push({ type: 'blog-image-schema-sitemap', loc, sitemapImage, blogPostingImage });
+  }
+}
+
+function verifySitemapHrefLangs({ sitemap, locs, failures }) {
+  if (!sitemap.includes('xmlns:xhtml="http://www.w3.org/1999/xhtml"')) {
+    failures.push({ type: 'sitemap-xhtml-namespace' });
+  }
+
+  const hreflangByLoc = parseSitemapHrefLangs(sitemap);
+  for (const loc of locs) {
+    const links = hreflangByLoc.get(loc) || [];
+    const hasPl = links.some((link) => link.rel === 'alternate' && link.hreflang === 'pl-PL' && link.href === loc);
+    const hasDefault = links.some((link) => link.rel === 'alternate' && link.hreflang === 'x-default' && link.href === loc);
+    if (!hasPl) failures.push({ type: 'sitemap-hreflang-pl', loc });
+    if (!hasDefault) failures.push({ type: 'sitemap-hreflang-default', loc });
   }
 }
 
@@ -1355,6 +1391,7 @@ async function main() {
   if (!sitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"')) {
     failures.push({ type: 'sitemap-image-namespace' });
   }
+  verifySitemapHrefLangs({ sitemap, locs, failures });
   if (locs.length !== EXPECTED_LOC_COUNT) {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
   }
