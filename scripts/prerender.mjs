@@ -1092,6 +1092,12 @@ function renderEditorialTrust() {
 // ---------------------------------------------------------------------------
 
 const NOSCRIPT_STYLE = 'style="max-width:800px;margin:0 auto;padding:40px 20px;font-family:system-ui,sans-serif"';
+const LEGAL_SOURCE_FILES = new Map([
+  ['/polityka-prywatnosci/', 'polityka-prywatnosci.md'],
+  ['/polityka-cookies/', 'polityka-cookies.md'],
+  ['/regulamin/', 'regulamin.md'],
+  ['/rodo/', 'klauzula-rodo.md'],
+]);
 
 function renderNoscriptCanonicalLinks() {
   return `<nav aria-label="Główne linki TS Finanse">
@@ -1105,6 +1111,15 @@ function renderNoscriptCanonicalLinks() {
 <a href="${canonicalUrl('/rodo/')}">RODO</a>
 </p>
 </nav>`;
+}
+
+function renderLegalStaticContent(path) {
+  const sourceFile = LEGAL_SOURCE_FILES.get(path);
+  if (!sourceFile) return '';
+  const sourcePath = resolve(process.cwd(), sourceFile);
+  if (!existsSync(sourcePath)) return '';
+  const source = normalizeContentLinks(readFileSync(sourcePath, 'utf8'));
+  return markdownToStaticHtml(source);
 }
 
 function buildNoscript(route, post, allPosts = []) {
@@ -1194,9 +1209,10 @@ ${renderNoscriptCanonicalLinks()}
   };
 
   if (legalTitles[path]) {
+    const legalContent = renderLegalStaticContent(path);
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>${legalTitles[path]}</h1>
-<p>Aby wyświetlić pełną treść, włącz JavaScript w przeglądarce.</p>
+${legalContent || '<p>Treść dokumentu prawnego TS Finanse.</p>'}
 ${renderNoscriptCanonicalLinks()}
 </div></noscript>`;
   }

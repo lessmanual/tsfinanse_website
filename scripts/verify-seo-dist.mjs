@@ -30,6 +30,13 @@ const minAnswerBlockLength = 70;
 const maxAnswerBlockLength = 360;
 const minArticleTocLinks = 2;
 const expectedIndexingMetaDirective = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+const minLegalStaticTextLength = 1500;
+const legalStaticContentPaths = new Set([
+  '/polityka-prywatnosci/',
+  '/polityka-cookies/',
+  '/regulamin/',
+  '/rodo/',
+]);
 const officialReferenceUrls = [
   'https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne',
   'https://uokik.gov.pl/',
@@ -853,6 +860,19 @@ function stripHtml(value = '') {
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function verifyLegalStaticContent({ html, loc, failures }) {
+  const pathname = new URL(loc).pathname;
+  if (!legalStaticContentPaths.has(pathname)) return;
+
+  const text = stripHtml(html);
+  if (/włącz JavaScript/i.test(text)) {
+    failures.push({ type: 'legal-static-js-placeholder', loc });
+  }
+  if (text.length < minLegalStaticTextLength) {
+    failures.push({ type: 'legal-static-content-length', loc, expectedMin: minLegalStaticTextLength, actual: text.length });
+  }
 }
 
 function stripMarkdown(value = '') {
@@ -2032,6 +2052,7 @@ for (const loc of locs) {
   verifyWebSiteSearchSchema({ html, loc, failures });
   verifyBlogSearchForm({ html, loc, failures });
   verifyHtmlInternalLinks({ html, loc, locs, failures });
+  verifyLegalStaticContent({ html, loc, failures });
   scanStale(html, loc, 'html', staleHits);
 
   if (!existsSync(mdPath)) {
