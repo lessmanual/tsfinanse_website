@@ -90,6 +90,7 @@ Netlify powinno automatycznie zbudować i opublikować `dist`.
 Po deployu sprawdź:
 
 ```bash
+npm run verify:live
 curl -sI https://tsfinanse.com/ | sed -n '1,30p'
 curl -s https://tsfinanse.com/sitemap.xml | rg -c '<loc>'
 curl -s https://tsfinanse.com/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/ | rg -n '<noscript>|TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców'
@@ -102,6 +103,7 @@ Oczekiwane:
 - sitemap ma `73` URL-e,
 - blog post nie zawiera globalnego homepage fallback,
 - markdown response zaczyna się od frontmatter i `#` tytułu wpisu.
+- `npm run verify:live` zwraca `failureCount: 0` i `staleHitCount: 0`.
 
 ## GitHub Pages
 

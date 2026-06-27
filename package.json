@@ -32,6 +32,7 @@
             "dev": "vite",
             "build": "vite build && node scripts/generate-sitemap.mjs && node scripts/prerender.mjs && node scripts/generate-md-variants.mjs",
             "verify:seo": "node scripts/verify-seo-dist.mjs",
+            "verify:live": "node scripts/verify-live-seo.mjs",
             "preview": "vite preview"
       }
 }
