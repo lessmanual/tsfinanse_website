@@ -13,6 +13,11 @@ interface BlogAnswerBlock {
   sections: string[];
 }
 
+interface ArticleTocItem {
+  id: string;
+  title: string;
+}
+
 const maxAnswerBlockLength = 340;
 
 function normaliseAnswerText(value = '') {
@@ -50,6 +55,53 @@ function extractAnswerSections(content = '') {
       return true;
     })
     .slice(0, 3);
+}
+
+function slugifyHeading(value = '') {
+  return stripInlineMarkup(value)
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'sekcja';
+}
+
+function buildArticleToc(content = ''): ArticleTocItem[] {
+  const htmlHeadings = [...content.matchAll(/<h[2-3][^>]*>([\s\S]*?)<\/h[2-3]>/gi)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const markdownHeadings = [...content.matchAll(/^#{2,3}\s+(.+)$/gm)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const slugs = new Map<string, number>();
+
+  return [...htmlHeadings, ...markdownHeadings]
+    .filter((heading) => heading.length >= 4 && heading.length <= 120)
+    .filter((heading) => !/^(powiązane artykuły|spis treści|w skrócie)$/i.test(heading))
+    .map((title) => {
+      const baseId = slugifyHeading(title);
+      const count = slugs.get(baseId) || 0;
+      slugs.set(baseId, count + 1);
+
+      return {
+        id: count === 0 ? baseId : `${baseId}-${count + 1}`,
+        title,
+      };
+    });
+}
+
+function withHeadingAnchors(content = '', toc: ArticleTocItem[]) {
+  let index = 0;
+
+  return content.replace(/<h([2-3])([^>]*)>([\s\S]*?)<\/h\1>/gi, (match, level, attrs, inner) => {
+    const item = toc[index];
+    index += 1;
+    if (!item) return match;
+
+    const cleanAttrs = String(attrs || '').replace(/\s+id=(["'])[^"']+\1/gi, '');
+    return `<h${level}${cleanAttrs} id="${item.id}">${inner}</h${level}>`;
+  });
 }
 
 function buildBlogAnswerBlock(post: Post): BlogAnswerBlock | undefined {
@@ -127,6 +179,16 @@ export default function BlogPost() {
     content: post.content,
   });
   const answerBlock = buildBlogAnswerBlock(post);
+  const articleToc = buildArticleToc(post.content);
+  const htmlContent = post.content.trim().startsWith('<')
+    ? withHeadingAnchors(post.content, articleToc)
+    : post.content;
+  let markdownHeadingIndex = 0;
+  const nextMarkdownHeadingId = () => {
+    const item = articleToc[markdownHeadingIndex];
+    markdownHeadingIndex += 1;
+    return item?.id;
+  };
 
   return (
     <>
@@ -231,6 +293,27 @@ export default function BlogPost() {
             </section>
           )}
 
+          {articleToc.length >= 2 && (
+            <nav
+              data-ai-toc="article"
+              aria-labelledby="article-toc-heading"
+              className="mb-10 rounded-lg border border-[#3D1F1F]/10 bg-white p-5"
+            >
+              <h2 id="article-toc-heading" className="text-lg font-bold text-[#3D1F1F] mb-3">
+                Spis treści
+              </h2>
+              <ol className="list-decimal pl-5 space-y-2 text-sm text-[#3D1F1F]/75">
+                {articleToc.map((item) => (
+                  <li key={item.id}>
+                    <a href={`#${item.id}`} className="hover:text-[#C5A572] hover:underline">
+                      {item.title}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )}
+
           {/* Featured Image */}
           {post.featuredImage && (
             <div className="mb-12 rounded-2xl overflow-hidden shadow-lg border border-[#3D1F1F]/10 aspect-video">
@@ -251,16 +334,16 @@ export default function BlogPost() {
             {post.content.trim().startsWith('<') ? (
               // Nowe wpisy - renderuj HTML bezpośrednio
               <div
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
             ) : (
               // Stare wpisy - renderuj Markdown
               <Markdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  h1: ({...props}) => <h2 className="text-3xl md:text-4xl font-bold text-[#3D1F1F] mt-12 mb-6" {...props} />,
-                  h2: ({...props}) => <h2 className="text-2xl md:text-3xl font-bold text-[#3D1F1F] mt-12 mb-6 border-l-4 border-[#C5A572] pl-4" {...props} />,
-                  h3: ({...props}) => <h3 className="text-xl md:text-2xl font-extrabold text-[#3D1F1F] mt-10 mb-4" {...props} />,
+                  h1: ({...props}) => <h2 id={nextMarkdownHeadingId()} className="text-3xl md:text-4xl font-bold text-[#3D1F1F] mt-12 mb-6" {...props} />,
+                  h2: ({...props}) => <h2 id={nextMarkdownHeadingId()} className="text-2xl md:text-3xl font-bold text-[#3D1F1F] mt-12 mb-6 border-l-4 border-[#C5A572] pl-4" {...props} />,
+                  h3: ({...props}) => <h3 id={nextMarkdownHeadingId()} className="text-xl md:text-2xl font-extrabold text-[#3D1F1F] mt-10 mb-4" {...props} />,
                   p: ({...props}) => <p className="text-lg text-gray-700 leading-relaxed mb-6" {...props} />,
                   ul: ({...props}) => <ul className="list-disc pl-6 mb-6 space-y-2 text-lg text-gray-700" {...props} />,
                   ol: ({...props}) => <ol className="list-decimal pl-6 mb-6 space-y-2 text-lg text-gray-700" {...props} />,

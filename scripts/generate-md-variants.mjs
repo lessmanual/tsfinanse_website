@@ -322,6 +322,47 @@ function renderAnswerBlockMarkdown(post = {}) {
   return `## W skrócie\n\n**Krótka odpowiedź:** ${directAnswer}${sectionList}`;
 }
 
+function slugifyHeading(value = '') {
+  return stripInlineMarkup(value)
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'sekcja';
+}
+
+function buildArticleToc(content = '') {
+  const htmlHeadings = [...String(content).matchAll(/<h[2-3][^>]*>([\s\S]*?)<\/h[2-3]>/gi)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const markdownHeadings = [...String(content).matchAll(/^#{2,3}\s+(.+)$/gm)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const slugs = new Map();
+
+  return [...htmlHeadings, ...markdownHeadings]
+    .filter((heading) => heading.length >= 4 && heading.length <= 120)
+    .filter((heading) => !/^(powiązane artykuły|spis treści|w skrócie)$/i.test(heading))
+    .map((title) => {
+      const baseId = slugifyHeading(title);
+      const count = slugs.get(baseId) || 0;
+      slugs.set(baseId, count + 1);
+
+      return {
+        id: count === 0 ? baseId : `${baseId}-${count + 1}`,
+        title,
+      };
+    });
+}
+
+function renderArticleTocMarkdown(content = '') {
+  const toc = buildArticleToc(content);
+  if (toc.length < 2) return '';
+
+  return `## Spis treści\n\n${toc.map((item) => `- [${item.title}](#${item.id})`).join('\n')}`;
+}
+
 function staticPageMarkdown({ title, description, path, content, publishedSlugs = new Set() }) {
   return `${frontmatter({
     title,
@@ -418,7 +459,9 @@ function writeBlogPosts(posts) {
 
   for (const post of posts) {
     const path = canonicalPath(`/blog/${post.slug}`);
-    const markdownContent = contentToMarkdown(normalizeArticleContent(post.content, publishedSlugs));
+    const normalizedContent = normalizeArticleContent(post.content, publishedSlugs);
+    const markdownContent = contentToMarkdown(normalizedContent);
+    const articleTocMarkdown = renderArticleTocMarkdown(normalizedContent);
     const relatedPosts = selectRelatedPosts(post, posts, 4);
     const relatedMarkdown = relatedPosts.length
       ? `\n\n## Powiązane artykuły\n\n${relatedPosts.map((item) => `- [${item.title}](${canonicalUrl(`/blog/${item.slug}`)})`).join('\n')}`
@@ -439,6 +482,8 @@ function writeBlogPosts(posts) {
 ${post.description}
 
 ${renderAnswerBlockMarkdown(post)}
+
+${articleTocMarkdown}
 
 Źródło kanoniczne: ${canonicalUrl(path)}
 

@@ -432,6 +432,66 @@ ${sections}
 </section>`;
 }
 
+function slugifyHeading(value = '') {
+  return stripInlineMarkup(value)
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'sekcja';
+}
+
+function buildArticleToc(content = '') {
+  const htmlHeadings = [...String(content).matchAll(/<h[2-3][^>]*>([\s\S]*?)<\/h[2-3]>/gi)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const markdownHeadings = [...String(content).matchAll(/^#{2,3}\s+(.+)$/gm)]
+    .map((match) => stripInlineMarkup(match[1]));
+  const slugs = new Map();
+
+  return [...htmlHeadings, ...markdownHeadings]
+    .filter((heading) => heading.length >= 4 && heading.length <= 120)
+    .filter((heading) => !/^(powiązane artykuły|spis treści|w skrócie)$/i.test(heading))
+    .map((title) => {
+      const baseId = slugifyHeading(title);
+      const count = slugs.get(baseId) || 0;
+      slugs.set(baseId, count + 1);
+
+      return {
+        id: count === 0 ? baseId : `${baseId}-${count + 1}`,
+        title,
+      };
+    });
+}
+
+function withHeadingAnchors(content = '', toc = []) {
+  let index = 0;
+
+  return String(content).replace(/<h([2-3])([^>]*)>([\s\S]*?)<\/h\1>/gi, (match, level, attrs, inner) => {
+    const item = toc[index];
+    index += 1;
+    if (!item) return match;
+
+    const cleanAttrs = String(attrs || '').replace(/\s+id=(["'])[^"']+\1/gi, '');
+    return `<h${level}${cleanAttrs} id="${esc(item.id)}">${inner}</h${level}>`;
+  });
+}
+
+function renderArticleToc(post = {}, publishedSlugs = new Set()) {
+  const content = normalizeArticleContent(post.content || '', publishedSlugs);
+  const toc = buildArticleToc(content);
+  if (toc.length < 2) return '';
+
+  return `<nav data-ai-toc="article" aria-labelledby="article-toc-heading">
+<h2 id="article-toc-heading">Spis treści</h2>
+<ol>
+${toc.map((item) => `<li><a href="#${esc(item.id)}">${esc(item.title)}</a></li>`).join('\n')}
+</ol>
+</nav>`;
+}
+
 function cleanQuestion(value = '') {
   return stripHtml(value)
     .replace(/^Q:\s*/i, '')
@@ -848,10 +908,11 @@ function inlineMarkdown(text = '') {
     .replace(/\*([^*]+)\*/g, '<em>$1</em>');
 }
 
-function markdownToStaticHtml(markdown = '') {
+function markdownToStaticHtml(markdown = '', toc = []) {
   const lines = String(markdown).split(/\r?\n/);
   const out = [];
   let listOpen = false;
+  let headingIndex = 0;
 
   function closeList() {
     if (listOpen) {
@@ -879,11 +940,17 @@ function markdownToStaticHtml(markdown = '') {
     closeList();
 
     if (line.startsWith('### ')) {
-      out.push(`<h3>${inlineMarkdown(line.slice(4))}</h3>`);
+      const id = toc[headingIndex]?.id;
+      headingIndex += 1;
+      out.push(`<h3${id ? ` id="${esc(id)}"` : ''}>${inlineMarkdown(line.slice(4))}</h3>`);
     } else if (line.startsWith('## ')) {
-      out.push(`<h2>${inlineMarkdown(line.slice(3))}</h2>`);
+      const id = toc[headingIndex]?.id;
+      headingIndex += 1;
+      out.push(`<h2${id ? ` id="${esc(id)}"` : ''}>${inlineMarkdown(line.slice(3))}</h2>`);
     } else if (line.startsWith('# ')) {
-      out.push(`<h2>${inlineMarkdown(line.slice(2))}</h2>`);
+      const id = toc[headingIndex]?.id;
+      headingIndex += 1;
+      out.push(`<h2${id ? ` id="${esc(id)}"` : ''}>${inlineMarkdown(line.slice(2))}</h2>`);
     } else {
       out.push(`<p>${inlineMarkdown(line)}</p>`);
     }
@@ -895,13 +962,14 @@ function markdownToStaticHtml(markdown = '') {
 
 function renderStaticPostContent(post, publishedSlugs = new Set()) {
   const content = normalizeArticleContent(post?.content || '', publishedSlugs);
+  const toc = buildArticleToc(content);
   if (!content.trim()) {
     return `<p>${esc(post?.description || '')}</p>`;
   }
 
   return content.trim().startsWith('<')
-    ? sanitizeStaticHtml(content)
-    : markdownToStaticHtml(content);
+    ? withHeadingAnchors(sanitizeStaticHtml(content), toc)
+    : markdownToStaticHtml(content, toc);
 }
 
 function renderRelatedPosts(post, allPosts = []) {
@@ -983,6 +1051,7 @@ function buildNoscript(route, post, allPosts = []) {
 <p>${esc(post.category || 'Finansowanie')} | Opublikowano: ${esc(date)} | Aktualizacja: ${esc(updated)} | ${esc(post.author || 'TS Finanse')}</p>
 ${post.image ? `<p><img src="${esc(absoluteImageUrl(post.image) || post.image)}" alt="${esc(post.title)}" loading="lazy" style="max-width:100%;height:auto" /></p>` : ''}
 ${renderAnswerBlock(post)}
+${renderArticleToc(post, publishedSlugs)}
 ${renderStaticPostContent(post, publishedSlugs)}
 ${renderRelatedPosts(post, allPosts)}
 ${tags}

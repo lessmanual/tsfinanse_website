@@ -16,6 +16,7 @@ const minMetaDescriptionLength = 70;
 const maxMetaDescriptionLength = 180;
 const minAnswerBlockLength = 70;
 const maxAnswerBlockLength = 360;
+const minArticleTocLinks = 2;
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 
@@ -212,6 +213,68 @@ function verifyAnswerBlock({ html, markdown, loc, failures }) {
   }
   if (answer && !markdown.includes(answer)) {
     failures.push({ type: 'answer-block-markdown-mismatch', loc });
+  }
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function extractArticleTocLinks(html) {
+  const block = html.match(/<nav[^>]+data-ai-toc=["']article["'][^>]*>([\s\S]*?)<\/nav>/i)?.[1] || '';
+  return [...block.matchAll(/<a[^>]+href=["'](#[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)]
+    .map((match) => ({
+      href: match[1].trim(),
+      title: stripHtml(match[2]),
+    }));
+}
+
+function extractMarkdownArticleTocLinks(markdown) {
+  const start = markdown.indexOf('## Spis treści');
+  if (start === -1) return [];
+
+  const afterHeading = markdown.slice(start).replace(/^## Spis treści[^\n]*\n+/, '');
+  const stops = ['\nŹródło kanoniczne:', '\nAutor:']
+    .map((marker) => afterHeading.indexOf(marker))
+    .filter((index) => index >= 0);
+  const block = stops.length > 0 ? afterHeading.slice(0, Math.min(...stops)) : afterHeading;
+
+  return [...block.matchAll(/\]\((#[^)]+)\)/g)].map((match) => match[1].trim());
+}
+
+function htmlHasId(html, id) {
+  const escaped = escapeRegExp(id);
+  return new RegExp(`<h[2-3][^>]+id=["']${escaped}["']`, 'i').test(html);
+}
+
+function verifyArticleToc({ html, markdown, loc, failures }) {
+  const url = new URL(loc);
+  const isBlogPost = url.pathname.startsWith('/blog/') && url.pathname !== '/blog/';
+  if (!isBlogPost) return;
+
+  const tocLinks = extractArticleTocLinks(html);
+  if (tocLinks.length < minArticleTocLinks) {
+    failures.push({ type: 'article-toc-links', loc, expectedMin: minArticleTocLinks, actual: tocLinks.length });
+  }
+
+  for (const link of tocLinks) {
+    if (!/^#[a-z0-9-]+$/.test(link.href)) {
+      failures.push({ type: 'article-toc-invalid-anchor', loc, href: link.href });
+      continue;
+    }
+    if (!htmlHasId(html, link.href.slice(1))) {
+      failures.push({ type: 'article-toc-missing-heading-id', loc, href: link.href, title: link.title });
+    }
+  }
+
+  const markdownLinks = extractMarkdownArticleTocLinks(markdown);
+  if (markdownLinks.length < minArticleTocLinks) {
+    failures.push({ type: 'article-toc-markdown-links', loc, expectedMin: minArticleTocLinks, actual: markdownLinks.length });
+  }
+  for (const link of tocLinks) {
+    if (!markdownLinks.includes(link.href)) {
+      failures.push({ type: 'article-toc-markdown-mismatch', loc, href: link.href });
+    }
   }
 }
 
@@ -1148,6 +1211,7 @@ async function main() {
     if (!markdown.includes(`canonical: "${expectedCanonical}"`)) failures.push({ type: 'markdown-canonical', loc });
     if (!/^#\s+.+/m.test(markdown)) failures.push({ type: 'markdown-h1', loc });
     verifyAnswerBlock({ html, markdown, loc, failures });
+    verifyArticleToc({ html, markdown, loc, failures });
     verifyMarkdownCanonicalLinks({ markdown, loc, failures });
     scanStale(markdown, loc, 'markdown', staleHits);
 

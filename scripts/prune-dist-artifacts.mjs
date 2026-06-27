@@ -20,4 +20,11 @@ function pruneGeneratedArtifacts(dir) {
   }
 }
 
-pruneGeneratedArtifacts(distDir);
+for (const delayMs of [0, 100, 300]) {
+  if (delayMs > 0) {
+    await new Promise((resolveDelay) => {
+      setTimeout(resolveDelay, delayMs);
+    });
+  }
+  pruneGeneratedArtifacts(distDir);
+}
