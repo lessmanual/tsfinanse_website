@@ -1312,6 +1312,7 @@ function verifyDiscoveryHeaders(failures) {
   const requiredLinks = [
     '</llms.txt>; rel="alternate"; type="text/plain"',
     '</sitemap.xml>; rel="sitemap"; type="application/xml"',
+    '</rss.xml>; rel="alternate"; type="application/rss+xml"',
     '</.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json"',
   ];
 
