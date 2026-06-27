@@ -144,6 +144,14 @@ function hasAlternateMarkdown(html, markdownUrl) {
   return relFirst.test(html) || hrefFirst.test(html);
 }
 
+function hasAlternateHrefLang(html, hrefLang, href) {
+  const escapedHrefLang = hrefLang.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedHref = href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const relFirst = new RegExp(`<link[^>]+rel=["']alternate["'][^>]+hreflang=["']${escapedHrefLang}["'][^>]+href=["']${escapedHref}["']`, 'i');
+  const hrefFirst = new RegExp(`<link[^>]+href=["']${escapedHref}["'][^>]+rel=["']alternate["'][^>]+hreflang=["']${escapedHrefLang}["']`, 'i');
+  return relFirst.test(html) || hrefFirst.test(html);
+}
+
 function hasAlternateRss(html) {
   return /<link[^>]+rel=["']alternate["'][^>]+type=["']application\/rss\+xml["'][^>]+href=["']https:\/\/tsfinanse\.com\/rss\.xml["']/i.test(html)
     || /<link[^>]+href=["']https:\/\/tsfinanse\.com\/rss\.xml["'][^>]+rel=["']alternate["'][^>]+type=["']application\/rss\+xml["']/i.test(html);
@@ -1393,6 +1401,8 @@ for (const loc of locs) {
   if (canonical !== expectedCanonical) failures.push({ type: 'canonical', loc, canonical });
   verifySnippetMetadata({ html, loc, failures, titlesByValue, descriptionsByValue });
   if (!hasAlternateMarkdown(html, markdownUrlForLoc(expectedCanonical))) failures.push({ type: 'missing-markdown-alternate', loc });
+  if (!hasAlternateHrefLang(html, 'pl-PL', expectedCanonical)) failures.push({ type: 'missing-hreflang-pl', loc });
+  if (!hasAlternateHrefLang(html, 'x-default', expectedCanonical)) failures.push({ type: 'missing-hreflang-default', loc });
   if (!hasAlternateRss(html)) failures.push({ type: 'missing-rss-alternate', loc });
   if (/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html)) failures.push({ type: 'noindex', loc });
 

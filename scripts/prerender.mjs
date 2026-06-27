@@ -767,6 +767,8 @@ function buildMetaTags(route) {
   tags += `    <meta name="title" content="${esc(metaTitle)}" />\n`;
   tags += `    <meta name="description" content="${esc(metaDescription)}" />\n`;
   tags += `    <link rel="canonical" href="${canonical}" />\n`;
+  tags += `    <link rel="alternate" hreflang="pl-PL" href="${canonical}" />\n`;
+  tags += `    <link rel="alternate" hreflang="x-default" href="${canonical}" />\n`;
   tags += `    <link rel="alternate" type="text/markdown" href="${markdownAlternate}" />\n`;
   tags += `    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />\n`;
   // Open Graph

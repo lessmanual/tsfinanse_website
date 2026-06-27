@@ -352,6 +352,8 @@ export function SEO({
       <meta name="title" content={fullTitle} />
       <meta name="description" content={metaDescription} />
       <link rel="canonical" href={canonical} />
+      <link rel="alternate" hrefLang="pl-PL" href={canonical} />
+      <link rel="alternate" hrefLang="x-default" href={canonical} />
       <link rel="alternate" type="text/markdown" href={markdownAlternate} />
 
       {/* Open Graph / Facebook */}
