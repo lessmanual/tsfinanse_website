@@ -484,6 +484,99 @@ function verifyBlogIndexSchema({ html, locs, failures }) {
   }
 }
 
+function verifyHomepageEntitySchema({ html, failures }) {
+  const loc = `${SITE_URL}/`;
+  const objects = collectJsonLd(html, failures, loc);
+  const financialService = objects.find((entry) => (
+    entry
+    && entry['@type'] === 'FinancialService'
+    && entry.alternateName === 'TS Finanse'
+  ));
+
+  if (!financialService) {
+    failures.push({ type: 'homepage-financial-service-schema', loc });
+    return;
+  }
+
+  for (const [field, expected] of [
+    ['name', '"TRANSBUD" NOWAK SPÓŁKA JAWNA'],
+    ['url', SITE_URL],
+    ['logo', `${SITE_URL}/logo.webp`],
+    ['email', 'kontakt@tsfinanse.com'],
+    ['telephone', '+48506711242'],
+    ['taxID', '9581565078'],
+    ['vatID', 'PL9581565078'],
+    ['legalName', '"TRANSBUD" NOWAK SPÓŁKA JAWNA'],
+  ]) {
+    if (financialService[field] !== expected) {
+      failures.push({ type: 'homepage-financial-service-field', loc, field, actual: financialService[field], expected });
+    }
+  }
+
+  const address = financialService.address || {};
+  for (const [field, expected] of [
+    ['@type', 'PostalAddress'],
+    ['streetAddress', 'ul. Gdańska 60'],
+    ['addressLocality', 'Reda'],
+    ['postalCode', '84-240'],
+    ['addressCountry', 'PL'],
+  ]) {
+    if (address[field] !== expected) {
+      failures.push({ type: 'homepage-financial-service-address', loc, field, actual: address[field], expected });
+    }
+  }
+
+  if (financialService.areaServed?.['@type'] !== 'Country' || financialService.areaServed?.name !== 'Polska') {
+    failures.push({ type: 'homepage-financial-service-area', loc, areaServed: financialService.areaServed });
+  }
+  if (financialService.geo?.['@type'] !== 'GeoCoordinates' || financialService.geo?.latitude !== 54.6025 || financialService.geo?.longitude !== 18.3464) {
+    failures.push({ type: 'homepage-financial-service-geo', loc, geo: financialService.geo });
+  }
+
+  const contactPoint = financialService.contactPoint || {};
+  if (
+    contactPoint['@type'] !== 'ContactPoint'
+    || contactPoint.telephone !== '+48506711242'
+    || contactPoint.email !== 'kontakt@tsfinanse.com'
+    || contactPoint.areaServed !== 'PL'
+    || !Array.isArray(contactPoint.availableLanguage)
+    || !contactPoint.availableLanguage.includes('pl')
+  ) {
+    failures.push({ type: 'homepage-financial-service-contact', loc, contactPoint });
+  }
+
+  const hours = Array.isArray(financialService.openingHoursSpecification)
+    ? financialService.openingHoursSpecification[0]
+    : undefined;
+  if (!hours || hours.opens !== '08:00' || hours.closes !== '16:00' || !Array.isArray(hours.dayOfWeek) || hours.dayOfWeek.length !== 5) {
+    failures.push({ type: 'homepage-financial-service-hours', loc, openingHoursSpecification: financialService.openingHoursSpecification });
+  }
+
+  const loan = objects.find((entry) => entry && entry['@type'] === 'LoanOrCredit');
+  if (
+    !loan
+    || loan.provider?.name !== 'TS Finanse'
+    || loan.currency !== 'PLN'
+    || loan.loanType !== 'Business Loan'
+    || loan.amount?.minValue !== 1000000
+    || loan.amount?.maxValue !== 20000000
+    || loan.offers?.availability !== 'https://schema.org/InStock'
+  ) {
+    failures.push({ type: 'homepage-loan-schema', loc, loan });
+  }
+
+  const service = objects.find((entry) => entry && entry['@type'] === 'Service' && entry.serviceType === 'Pożyczki hipoteczne dla przedsiębiorców');
+  if (
+    !service
+    || service.provider?.name !== 'TS Finanse'
+    || service.provider?.url !== SITE_URL
+    || service.areaServed?.name !== 'Polska'
+    || service.offers?.availability !== 'https://schema.org/InStock'
+  ) {
+    failures.push({ type: 'homepage-service-schema', loc, service });
+  }
+}
+
 function verifyRssFeed({ rss, locs, failures }) {
   const blogPostLocs = new Set(locs.filter((item) => {
     const pathname = new URL(item).pathname;
@@ -918,6 +1011,10 @@ async function main() {
 
     if (isBlogIndex) {
       verifyBlogIndexSchema({ html, locs, failures });
+    }
+
+    if (url.pathname === '/') {
+      verifyHomepageEntitySchema({ html, failures });
     }
   }
 
