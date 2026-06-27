@@ -23,6 +23,12 @@ function redirectTargetForLoc(loc) {
   return new URL(loc).pathname;
 }
 
+function noSlashPathForLoc(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return undefined;
+  return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+}
+
 function stripPreviousGeneratedBlock(source) {
   const start = source.indexOf(GENERATED_START);
   if (start === -1) return source.trimEnd();
@@ -45,9 +51,18 @@ function parseSitemapLocs() {
 }
 
 function buildRedirectBlock(locs) {
+  const noSlashRules = locs
+    .map((loc) => {
+      const from = noSlashPathForLoc(loc);
+      return from ? `${from}  ${redirectTargetForLoc(loc)}  301` : undefined;
+    })
+    .filter(Boolean);
+
   const rules = [
     '# Collapse static index.html artefact URLs into canonical sitemap URLs.',
     ...locs.map((loc) => `${indexHtmlPathForLoc(loc)}  ${redirectTargetForLoc(loc)}  301`),
+    '# Collapse no-slash variants into canonical trailing-slash sitemap URLs.',
+    ...noSlashRules,
     '# Collapse contact alias variants into the homepage contact section.',
     '/kontakt/  /#contact  301',
   ];
@@ -57,11 +72,12 @@ function buildRedirectBlock(locs) {
 
 const locs = parseSitemapLocs();
 const existing = existsSync(REDIRECTS_PATH) ? readFileSync(REDIRECTS_PATH, 'utf8') : '';
+const noSlashRedirectCount = locs.filter((loc) => noSlashPathForLoc(loc)).length;
 const base = stripPreviousGeneratedBlock(existing);
 const next = `${base}\n\n${buildRedirectBlock(locs)}\n`;
 
 writeFileSync(REDIRECTS_PATH, next);
-console.log(`Generated canonical redirects: ${locs.length} index.html redirects + 1 contact alias`);
+console.log(`Generated canonical redirects: ${locs.length} index.html redirects + ${noSlashRedirectCount} no-slash redirects + 1 contact alias`);
 
 if (!locs.every((loc) => loc.startsWith(`${SITE_URL}/`))) {
   throw new Error('Sitemap contains non-canonical loc outside SITE_URL');

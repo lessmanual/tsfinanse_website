@@ -102,6 +102,12 @@ function redirectTargetForLoc(loc) {
   return new URL(loc).pathname;
 }
 
+function noSlashRedirectPathForLoc(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return undefined;
+  return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+}
+
 function collectMarkdownFiles(dir) {
   if (!existsSync(dir)) return [];
 
@@ -173,6 +179,20 @@ function verifyCanonicalRedirectRules({ locs, failures }) {
     };
     if (!hasRedirectRule(rules, expected)) {
       failures.push({ type: 'index-html-canonical-redirect-rule', ...expected });
+    }
+  }
+
+  for (const loc of locs) {
+    const from = noSlashRedirectPathForLoc(loc);
+    if (!from) continue;
+
+    const expected = {
+      from,
+      to: redirectTargetForLoc(loc),
+      status: '301',
+    };
+    if (!hasRedirectRule(rules, expected)) {
+      failures.push({ type: 'no-slash-canonical-redirect-rule', ...expected });
     }
   }
 

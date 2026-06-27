@@ -83,6 +83,12 @@ function indexHtmlRedirectUrlForLoc(loc) {
   return `${SITE_URL}${canonicalPath(pathname)}index.html`;
 }
 
+function noSlashRedirectUrlForLoc(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return undefined;
+  return `${SITE_URL}${pathname.endsWith('/') ? pathname.slice(0, -1) : pathname}`;
+}
+
 async function fetchText(url, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -1456,6 +1462,24 @@ async function verifyIndexHtmlCanonicalRedirects(failures, locs) {
   }
 }
 
+async function verifyNoSlashCanonicalRedirects(failures, locs) {
+  for (const loc of locs) {
+    const url = noSlashRedirectUrlForLoc(loc);
+    if (!url) continue;
+
+    const result = await fetchRedirectTrace(url);
+    if (result.finalStatus !== 200) {
+      failures.push({ type: 'no-slash-canonical-redirect-status', url, finalStatus: result.finalStatus, trace: result.trace });
+    }
+    if (result.finalUrl !== loc) {
+      failures.push({ type: 'no-slash-canonical-redirect-final-url', url, expectedFinalUrl: loc, finalUrl: result.finalUrl, trace: result.trace });
+    }
+    if (result.redirectCount < 1) {
+      failures.push({ type: 'no-slash-canonical-redirect-count', url, redirectCount: result.redirectCount, trace: result.trace });
+    }
+  }
+}
+
 async function main() {
   const failures = [];
   const staleHits = [];
@@ -1501,6 +1525,7 @@ async function main() {
     failures.push({ type: 'sitemap-count', expected: EXPECTED_LOC_COUNT, actual: locs.length });
   }
   await verifyIndexHtmlCanonicalRedirects(failures, locs);
+  await verifyNoSlashCanonicalRedirects(failures, locs);
   await verifyDirectMarkdownNoindexHeaders(failures, locs);
   await verifyLlmsSurface(failures, staleHits, locs);
 
