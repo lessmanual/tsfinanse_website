@@ -14,7 +14,7 @@ export default function ProgramPartnerski() {
     <div className="min-h-screen bg-gradient-to-b from-white via-[#D4AF7A]/5 to-white">
       <SEO
         title="Program Partnerski dla Pośredników"
-        description="Dołącz do programu partnerskiego TS Finanse. 1% prowizji od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości."
+        description="Dołącz do programu partnerskiego TS Finanse. Współpraca bez prowizji procentowej od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości."
         canonicalUrl="/programpartnerski/"
         schema={breadcrumbSchema([
           { name: 'Strona główna', url: '/' },
@@ -50,10 +50,10 @@ export default function ProgramPartnerski() {
             <div className="bg-white border border-[#3D1F1F]/10 rounded-xl p-6 hover:border-[#D4AF7A]/40 transition-colors">
               <TrendingUp className="w-12 h-12 text-[#D4AF7A] mb-4" />
               <h3 className="text-xl font-medium text-[#3D1F1F] mb-2">
-                1% prowizji
+                Bez prowizji procentowej
               </h3>
               <p className="text-[#3D1F1F]/70">
-                Od wartości udzielonej pożyczki
+                Warunki współpracy ustalane indywidualnie
               </p>
             </div>
 
@@ -205,7 +205,7 @@ export default function ProgramPartnerski() {
               <div>
                 <h3 className="text-xl font-medium text-[#3D1F1F] mb-2">Wypłata prowizji</h3>
                 <p className="text-[#3D1F1F]/70">
-                  Otrzymujesz 1% wartości pożyczki
+                  Rozliczamy współpracę na warunkach ustalonych przed rozpoczęciem obsługi klienta
                 </p>
               </div>
             </div>

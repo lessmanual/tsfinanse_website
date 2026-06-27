@@ -185,16 +185,12 @@ Key factor: Speed depends primarily on how quickly complete documentation is pro
 # ============================================================
 
 ## Overview
-TS Finanse runs a partner program for professionals who refer business clients seeking mortgage-backed financing. Partners earn commission on every successfully disbursed loan they refer.
+TS Finanse runs a partner program for professionals who refer business clients seeking mortgage-backed financing. Cooperation terms are agreed individually before client handling starts. The program does not use a percentage commission calculated from the final loan value.
 
 ## Commission Structure
-Commission Rate: 1% of total loan value
-Payment Terms: Paid after loan disbursement to the borrower
-Example calculations:
-- 1,000,000 PLN loan = 10,000 PLN commission
-- 5,000,000 PLN loan = 50,000 PLN commission
-- 10,000,000 PLN loan = 100,000 PLN commission
-- 20,000,000 PLN loan = 200,000 PLN commission
+Commission Rate: No percentage commission from total loan value
+Payment Terms: Defined individually in the cooperation agreement before referral handling
+Example calculations: Not published, because TS Finanse does not quote a fixed percentage commission
 
 ## Target Partner Profiles
 1. Credit brokers (brokerzy kredytowi) - existing client base seeking financing
@@ -205,7 +201,7 @@ Example calculations:
 6. Lawyers specializing in business law - clients involved in transactions requiring capital
 
 ## Partner Benefits
-- Attractive 1% commission on every disbursed loan
+- Individually agreed cooperation terms without percentage commission from loan value
 - Professional support in client acquisition and deal structuring
 - Marketing materials provided (presentations, brochures, landing page)
 - Dedicated partner support team and direct contact line

@@ -92,7 +92,7 @@ const STATIC_ROUTES = [
   {
     path: '/programpartnerski/',
     title: 'Program Partnerski dla Pośredników | TS Finanse',
-    description: 'Dołącz do programu partnerskiego TS Finanse. 1% prowizji od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości.',
+    description: 'Dołącz do programu partnerskiego TS Finanse. Współpraca bez prowizji procentowej od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności. Dla pośredników kredytowych, doradców finansowych i agentów nieruchomości.',
     schemas: ['breadcrumbPartner'],
   },
   {
@@ -475,7 +475,7 @@ function buildNoscript(route, post, allPosts = []) {
   if (path === '/programpartnerski/') {
     return `<noscript><div ${NOSCRIPT_STYLE}>
 <h1>Program Partnerski TS Finanse</h1>
-<p>Dołącz do programu partnerskiego. 1% prowizji od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności.</p>
+<p>Dołącz do programu partnerskiego. Współpraca bez prowizji procentowej od wartości pożyczki, szybkie decyzje w 3 dni, minimum formalności.</p>
 <h2>Dla kogo?</h2>
 <ul><li>Pośrednicy kredytowi</li><li>Doradcy finansowi</li><li>Agenci nieruchomości</li><li>Kancelarie prawne</li></ul>
 <p>Kontakt: <a href="mailto:kontakt@tsfinanse.com">kontakt@tsfinanse.com</a> | +48 506 711 242</p>
