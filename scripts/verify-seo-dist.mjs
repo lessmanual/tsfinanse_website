@@ -307,6 +307,43 @@ function collectJsonLd(html, failures, loc) {
   return objects;
 }
 
+function verifyBreadcrumbSchema({ html, loc, failures }) {
+  const objects = collectJsonLd(html, failures, loc);
+  const breadcrumb = objects.find((entry) => entry && entry['@type'] === 'BreadcrumbList');
+  if (!breadcrumb) {
+    failures.push({ type: 'breadcrumb-schema-missing', loc });
+    return;
+  }
+
+  const items = Array.isArray(breadcrumb.itemListElement) ? breadcrumb.itemListElement : [];
+  if (!items.length) {
+    failures.push({ type: 'breadcrumb-schema-empty', loc });
+    return;
+  }
+
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (first?.item !== `${SITE_URL}/`) {
+    failures.push({ type: 'breadcrumb-schema-first-item', loc, actual: first?.item });
+  }
+  if (last?.item !== loc) {
+    failures.push({ type: 'breadcrumb-schema-last-item', loc, expected: loc, actual: last?.item });
+  }
+
+  items.forEach((item, index) => {
+    const expectedPosition = index + 1;
+    if (item?.['@type'] !== 'ListItem') {
+      failures.push({ type: 'breadcrumb-schema-item-type', loc, position: expectedPosition, actual: item?.['@type'] });
+    }
+    if (item?.position !== expectedPosition) {
+      failures.push({ type: 'breadcrumb-schema-position', loc, expected: expectedPosition, actual: item?.position });
+    }
+    if (typeof item?.name !== 'string' || !item.name.trim()) {
+      failures.push({ type: 'breadcrumb-schema-name', loc, position: expectedPosition });
+    }
+  });
+}
+
 function verifyBlogImageSignals({ html, loc, sitemapImages, failures }) {
   const objects = collectJsonLd(html, failures, loc);
   const blogPosting = objects.find((entry) => entry && entry['@type'] === 'BlogPosting');
@@ -1026,6 +1063,7 @@ for (const loc of locs) {
   const h1s = (html.match(/<h1\b/gi) || []).length;
   if (h1s !== 1) failures.push({ type: 'h1-count', loc, h1s });
 
+  verifyBreadcrumbSchema({ html, loc, failures });
   scanStale(html, loc, 'html', staleHits);
 
   if (!existsSync(mdPath)) {

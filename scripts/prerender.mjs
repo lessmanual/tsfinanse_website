@@ -123,21 +123,25 @@ const STATIC_ROUTES = [
     path: '/polityka-prywatnosci/',
     title: 'Polityka Prywatności | TS Finanse',
     description: 'Polityka prywatności TS Finanse. Informacje o przetwarzaniu danych osobowych, prawach użytkowników i zasadach ochrony prywatności.',
+    schemas: ['breadcrumbPrivacy'],
   },
   {
     path: '/polityka-cookies/',
     title: 'Polityka Cookies | TS Finanse',
     description: 'Polityka cookies TS Finanse. Informacje o wykorzystywaniu plików cookie na stronie tsfinanse.com.',
+    schemas: ['breadcrumbCookies'],
   },
   {
     path: '/regulamin/',
     title: 'Regulamin | TS Finanse',
     description: 'Regulamin świadczenia usług TS Finanse. Warunki korzystania z serwisu i usług finansowych.',
+    schemas: ['breadcrumbTerms'],
   },
   {
     path: '/rodo/',
     title: 'Klauzula Informacyjna RODO | TS Finanse',
     description: 'Klauzula informacyjna RODO TS Finanse. Informacje o administratorze danych, celach przetwarzania i prawach osób.',
+    schemas: ['breadcrumbRodo'],
   },
 ];
 
@@ -230,6 +234,38 @@ const SCHEMAS = {
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
       { '@type': 'ListItem', position: 2, name: 'Program Partnerski', item: 'https://tsfinanse.com/programpartnerski/' },
+    ],
+  },
+  breadcrumbPrivacy: {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Polityka Prywatności', item: 'https://tsfinanse.com/polityka-prywatnosci/' },
+    ],
+  },
+  breadcrumbCookies: {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Polityka Cookies', item: 'https://tsfinanse.com/polityka-cookies/' },
+    ],
+  },
+  breadcrumbTerms: {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Regulamin', item: 'https://tsfinanse.com/regulamin/' },
+    ],
+  },
+  breadcrumbRodo: {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Klauzula Informacyjna RODO', item: 'https://tsfinanse.com/rodo/' },
     ],
   },
 };
