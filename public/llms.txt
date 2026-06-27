@@ -1,5 +1,5 @@
 # TS Finanse - Structured Information for AI Systems
-# Last Updated: 2026-04-14
+# Last Updated: 2026-06-27
 # Purpose: Optimized for LLM understanding, citations, and accurate answers
 
 # ============================================================
@@ -185,7 +185,7 @@ Key factor: Speed depends primarily on how quickly complete documentation is pro
 # ============================================================
 
 ## Overview
-TS Finanse runs a partner program for professionals who refer business clients seeking mortgage-backed financing. Cooperation terms are agreed individually before client handling starts. The program does not use a percentage commission calculated from the final loan value.
+Program Partnerski TS Finanse is for professionals who refer business clients seeking mortgage-backed financing. Cooperation terms are agreed individually before client handling starts. The program does not use a percentage commission calculated from the final loan value.
 
 ## Commission Structure
 Commission Rate: No percentage commission from total loan value

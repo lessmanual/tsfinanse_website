@@ -1,9 +1,15 @@
+import { createHash } from 'crypto';
+
 const SITE_URL = 'https://tsfinanse.com';
 const SITEMAP_URL = `${SITE_URL}/sitemap.xml`;
 const RSS_URL = `${SITE_URL}/rss.xml`;
 const ROBOTS_URL = `${SITE_URL}/robots.txt`;
+const LLMS_URL = `${SITE_URL}/llms.txt`;
+const API_CATALOG_URL = `${SITE_URL}/.well-known/api-catalog`;
+const AGENT_SKILLS_INDEX_URL = `${SITE_URL}/.well-known/agent-skills/index.json`;
 const REQUEST_TIMEOUT_MS = 15000;
 const EXPECTED_LOC_COUNT = 73;
+const minimumLlmsUpdatedDate = '2026-06-01';
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 
@@ -272,6 +278,188 @@ function scanStale(content, loc, surface, hits) {
   }
 }
 
+function parseJson(raw, failures, type, url) {
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    failures.push({ type, url, message: error.message });
+    return undefined;
+  }
+}
+
+function sha256(content) {
+  return createHash('sha256').update(content).digest('hex');
+}
+
+function verifyDiscoveryHeaders(headers, failures) {
+  const linkHeader = headers.get('link') || '';
+  const requiredLinks = [
+    '</llms.txt>; rel="alternate"; type="text/plain"',
+    '</sitemap.xml>; rel="sitemap"; type="application/xml"',
+    '</.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json"',
+  ];
+
+  for (const requiredLink of requiredLinks) {
+    if (!linkHeader.includes(requiredLink)) {
+      failures.push({ type: 'discovery-link-header', expected: requiredLink, actual: linkHeader });
+    }
+  }
+}
+
+async function verifyLlmsSurface(failures, staleHits) {
+  const { response, text } = await fetchText(LLMS_URL, {
+    headers: { accept: 'text/plain' },
+  });
+
+  if (!response.ok) {
+    failures.push({ type: 'llms-status', status: response.status });
+    return;
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('text/plain')) {
+    failures.push({ type: 'llms-content-type', contentType });
+  }
+
+  const lastUpdated = text.match(/^# Last Updated:\s*(\d{4}-\d{2}-\d{2})$/m)?.[1];
+  if (!lastUpdated) {
+    failures.push({ type: 'llms-last-updated' });
+  } else if (lastUpdated < minimumLlmsUpdatedDate) {
+    failures.push({ type: 'llms-last-updated-stale', lastUpdated, minimum: minimumLlmsUpdatedDate });
+  }
+
+  const requiredFragments = [
+    'TS Finanse',
+    'mortgage-backed business loans',
+    'Loan Amount Range',
+    'Loan-to-Value',
+    'Program Partnerski',
+    'No percentage commission from total loan value',
+  ];
+
+  for (const fragment of requiredFragments) {
+    if (!text.includes(fragment)) {
+      failures.push({ type: 'llms-required-fragment', fragment });
+    }
+  }
+
+  scanStale(text, LLMS_URL, 'llms', staleHits);
+}
+
+async function verifyApiCatalog(failures) {
+  const { response, text } = await fetchText(API_CATALOG_URL, {
+    headers: { accept: 'application/linkset+json,application/json' },
+  });
+
+  if (!response.ok) {
+    failures.push({ type: 'api-catalog-status', status: response.status });
+    return;
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('application/linkset+json')) {
+    failures.push({ type: 'api-catalog-content-type', contentType });
+  }
+
+  const catalog = parseJson(text, failures, 'api-catalog-json', API_CATALOG_URL);
+  if (!catalog) return;
+
+  const linksets = Array.isArray(catalog.linkset) ? catalog.linkset : [];
+  const rootLinkset = linksets.find((entry) => entry && entry.anchor === `${SITE_URL}/`);
+  if (!rootLinkset) {
+    failures.push({ type: 'api-catalog-root-anchor' });
+    return;
+  }
+
+  const serviceDocs = Array.isArray(rootLinkset['service-doc']) ? rootLinkset['service-doc'] : [];
+  const serviceMeta = Array.isArray(rootLinkset['service-meta']) ? rootLinkset['service-meta'] : [];
+  if (!serviceDocs.some((entry) => entry.href === LLMS_URL && entry.type === 'text/plain')) {
+    failures.push({ type: 'api-catalog-llms-link' });
+  }
+  if (!serviceMeta.some((entry) => entry.href === AGENT_SKILLS_INDEX_URL && entry.type === 'application/json')) {
+    failures.push({ type: 'api-catalog-agent-skills-link' });
+  }
+}
+
+async function verifyAgentSkills(failures, staleHits) {
+  const { response, text } = await fetchText(AGENT_SKILLS_INDEX_URL, {
+    headers: { accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    failures.push({ type: 'agent-skills-index-status', status: response.status });
+    return;
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) {
+    failures.push({ type: 'agent-skills-index-content-type', contentType });
+  }
+
+  const index = parseJson(text, failures, 'agent-skills-index-json', AGENT_SKILLS_INDEX_URL);
+  if (!index) return;
+
+  if (!Array.isArray(index.skills) || index.skills.length === 0) {
+    failures.push({ type: 'agent-skills-empty' });
+    return;
+  }
+
+  const names = new Set();
+  for (const skill of index.skills) {
+    if (!skill || typeof skill !== 'object') {
+      failures.push({ type: 'agent-skill-entry' });
+      continue;
+    }
+
+    if (!skill.name || names.has(skill.name)) {
+      failures.push({ type: 'agent-skill-name', name: skill.name });
+    }
+    names.add(skill.name);
+
+    if (skill.type !== 'markdown') {
+      failures.push({ type: 'agent-skill-type', name: skill.name, skillType: skill.type });
+    }
+    if (!skill.description) {
+      failures.push({ type: 'agent-skill-description', name: skill.name });
+    }
+
+    let skillUrl;
+    try {
+      skillUrl = new URL(skill.url);
+    } catch {
+      failures.push({ type: 'agent-skill-url', name: skill.name, url: skill.url });
+      continue;
+    }
+
+    if (skillUrl.origin !== SITE_URL || !skillUrl.pathname.startsWith('/.well-known/agent-skills/') || !skillUrl.pathname.endsWith('/SKILL.md')) {
+      failures.push({ type: 'agent-skill-url-scope', name: skill.name, url: skill.url });
+      continue;
+    }
+
+    const { response: skillResponse, text: skillText } = await fetchText(skill.url, {
+      headers: { accept: 'text/markdown,text/plain' },
+    });
+    if (!skillResponse.ok) {
+      failures.push({ type: 'agent-skill-status', name: skill.name, status: skillResponse.status });
+      continue;
+    }
+
+    const skillContentType = skillResponse.headers.get('content-type') || '';
+    if (!skillContentType.toLowerCase().includes('markdown') && !skillContentType.toLowerCase().includes('text/plain')) {
+      failures.push({ type: 'agent-skill-content-type', name: skill.name, contentType: skillContentType });
+    }
+
+    const actualSha256 = sha256(skillText);
+    if (skill.sha256 !== actualSha256) {
+      failures.push({ type: 'agent-skill-sha256', name: skill.name, expected: skill.sha256, actual: actualSha256 });
+    }
+    if (!skillText.includes('TS Finanse')) {
+      failures.push({ type: 'agent-skill-brand', name: skill.name });
+    }
+    scanStale(skillText, skill.url, 'agent-skill', staleHits);
+  }
+}
+
 function parseRobotsGroups(robots) {
   const groups = [];
   let currentGroup;
@@ -341,6 +529,19 @@ function verifyRobotsPolicy(robots, failures) {
 async function main() {
   const failures = [];
   const staleHits = [];
+
+  const { response: homepageResponse } = await fetchText(`${SITE_URL}/`, {
+    headers: { accept: 'text/html' },
+  });
+  if (!homepageResponse.ok) {
+    failures.push({ type: 'homepage-status', status: homepageResponse.status });
+  } else {
+    verifyDiscoveryHeaders(homepageResponse.headers, failures);
+  }
+
+  await verifyLlmsSurface(failures, staleHits);
+  await verifyApiCatalog(failures);
+  await verifyAgentSkills(failures, staleHits);
 
   const { response: robotsResponse, text: robots } = await fetchText(ROBOTS_URL, {
     headers: { accept: 'text/plain' },

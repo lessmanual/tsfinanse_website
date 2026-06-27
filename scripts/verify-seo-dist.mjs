@@ -1,14 +1,20 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { createHash } from 'crypto';
 
 const SITE_URL = 'https://tsfinanse.com';
 const root = process.cwd();
 const sitemapPath = join(root, 'dist', 'sitemap.xml');
 const rssPath = join(root, 'dist', 'rss.xml');
 const robotsPath = join(root, 'dist', 'robots.txt');
+const headersPath = join(root, 'dist', '_headers');
+const llmsPath = join(root, 'dist', 'llms.txt');
+const apiCatalogPath = join(root, 'dist', '.well-known', 'api-catalog');
+const agentSkillsIndexPath = join(root, 'dist', '.well-known', 'agent-skills', 'index.json');
 const edgeFunctionPath = join(root, 'netlify', 'edge-functions', 'markdown-negotiation.js');
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
+const minimumLlmsUpdatedDate = '2026-06-01';
 
 const robotsPolicy = {
   allowed: [
@@ -270,6 +276,173 @@ function scanStale(content, loc, surface, hits) {
   }
 }
 
+function parseJsonFile(file, failures, type) {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch (error) {
+    failures.push({ type, file, message: error.message });
+    return undefined;
+  }
+}
+
+function sha256(content) {
+  return createHash('sha256').update(content).digest('hex');
+}
+
+function verifyDiscoveryHeaders(failures) {
+  if (!existsSync(headersPath)) {
+    failures.push({ type: 'missing-netlify-headers', file: headersPath });
+    return;
+  }
+
+  const headers = readFileSync(headersPath, 'utf8');
+  const requiredLinks = [
+    '</llms.txt>; rel="alternate"; type="text/plain"',
+    '</sitemap.xml>; rel="sitemap"; type="application/xml"',
+    '</.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json"',
+  ];
+
+  for (const requiredLink of requiredLinks) {
+    if (!headers.includes(requiredLink)) {
+      failures.push({ type: 'netlify-header-link', expected: requiredLink });
+    }
+  }
+
+  const requiredContentTypes = [
+    '/.well-known/api-catalog\n  Content-Type: application/linkset+json',
+    '/.well-known/agent-skills/index.json\n  Content-Type: application/json',
+    '/llms.txt\n  Content-Type: text/plain; charset=utf-8',
+  ];
+
+  for (const requiredContentType of requiredContentTypes) {
+    if (!headers.includes(requiredContentType)) {
+      failures.push({ type: 'netlify-header-content-type', expected: requiredContentType });
+    }
+  }
+}
+
+function verifyLlmsSurface(failures, staleHits) {
+  if (!existsSync(llmsPath)) {
+    failures.push({ type: 'missing-llms', file: llmsPath });
+    return;
+  }
+
+  const llms = readFileSync(llmsPath, 'utf8');
+  const lastUpdated = llms.match(/^# Last Updated:\s*(\d{4}-\d{2}-\d{2})$/m)?.[1];
+  if (!lastUpdated) {
+    failures.push({ type: 'llms-last-updated' });
+  } else if (lastUpdated < minimumLlmsUpdatedDate) {
+    failures.push({ type: 'llms-last-updated-stale', lastUpdated, minimum: minimumLlmsUpdatedDate });
+  }
+
+  const requiredFragments = [
+    'TS Finanse',
+    'mortgage-backed business loans',
+    'Loan Amount Range',
+    'Loan-to-Value',
+    'Program Partnerski',
+    'No percentage commission from total loan value',
+  ];
+
+  for (const fragment of requiredFragments) {
+    if (!llms.includes(fragment)) {
+      failures.push({ type: 'llms-required-fragment', fragment });
+    }
+  }
+
+  scanStale(llms, `${SITE_URL}/llms.txt`, 'llms', staleHits);
+}
+
+function verifyApiCatalog(failures) {
+  if (!existsSync(apiCatalogPath)) {
+    failures.push({ type: 'missing-api-catalog', file: apiCatalogPath });
+    return;
+  }
+
+  const catalog = parseJsonFile(apiCatalogPath, failures, 'api-catalog-json');
+  if (!catalog) return;
+
+  const linksets = Array.isArray(catalog.linkset) ? catalog.linkset : [];
+  const rootLinkset = linksets.find((entry) => entry && entry.anchor === `${SITE_URL}/`);
+  if (!rootLinkset) {
+    failures.push({ type: 'api-catalog-root-anchor' });
+    return;
+  }
+
+  const serviceDocs = Array.isArray(rootLinkset['service-doc']) ? rootLinkset['service-doc'] : [];
+  const serviceMeta = Array.isArray(rootLinkset['service-meta']) ? rootLinkset['service-meta'] : [];
+  if (!serviceDocs.some((entry) => entry.href === `${SITE_URL}/llms.txt` && entry.type === 'text/plain')) {
+    failures.push({ type: 'api-catalog-llms-link' });
+  }
+  if (!serviceMeta.some((entry) => entry.href === `${SITE_URL}/.well-known/agent-skills/index.json` && entry.type === 'application/json')) {
+    failures.push({ type: 'api-catalog-agent-skills-link' });
+  }
+}
+
+function verifyAgentSkills(failures, staleHits) {
+  if (!existsSync(agentSkillsIndexPath)) {
+    failures.push({ type: 'missing-agent-skills-index', file: agentSkillsIndexPath });
+    return;
+  }
+
+  const index = parseJsonFile(agentSkillsIndexPath, failures, 'agent-skills-index-json');
+  if (!index) return;
+
+  if (!Array.isArray(index.skills) || index.skills.length === 0) {
+    failures.push({ type: 'agent-skills-empty' });
+    return;
+  }
+
+  const names = new Set();
+  for (const skill of index.skills) {
+    if (!skill || typeof skill !== 'object') {
+      failures.push({ type: 'agent-skill-entry' });
+      continue;
+    }
+
+    if (!skill.name || names.has(skill.name)) {
+      failures.push({ type: 'agent-skill-name', name: skill.name });
+    }
+    names.add(skill.name);
+
+    if (skill.type !== 'markdown') {
+      failures.push({ type: 'agent-skill-type', name: skill.name, skillType: skill.type });
+    }
+    if (!skill.description) {
+      failures.push({ type: 'agent-skill-description', name: skill.name });
+    }
+
+    let skillUrl;
+    try {
+      skillUrl = new URL(skill.url);
+    } catch {
+      failures.push({ type: 'agent-skill-url', name: skill.name, url: skill.url });
+      continue;
+    }
+
+    if (skillUrl.origin !== SITE_URL || !skillUrl.pathname.startsWith('/.well-known/agent-skills/') || !skillUrl.pathname.endsWith('/SKILL.md')) {
+      failures.push({ type: 'agent-skill-url-scope', name: skill.name, url: skill.url });
+      continue;
+    }
+
+    const skillPath = join(root, 'dist', decodeURIComponent(skillUrl.pathname));
+    if (!existsSync(skillPath)) {
+      failures.push({ type: 'agent-skill-file', name: skill.name, file: skillPath });
+      continue;
+    }
+
+    const content = readFileSync(skillPath, 'utf8');
+    const actualSha256 = sha256(content);
+    if (skill.sha256 !== actualSha256) {
+      failures.push({ type: 'agent-skill-sha256', name: skill.name, expected: skill.sha256, actual: actualSha256 });
+    }
+    if (!content.includes('TS Finanse')) {
+      failures.push({ type: 'agent-skill-brand', name: skill.name });
+    }
+    scanStale(content, skill.url, 'agent-skill', staleHits);
+  }
+}
+
 function parseRobotsGroups(robots) {
   const groups = [];
   let currentGroup;
@@ -407,6 +580,10 @@ const sitemapLastmods = parseSitemapLastmods(sitemap);
 const failures = [];
 const staleHits = [];
 
+verifyDiscoveryHeaders(failures);
+verifyLlmsSurface(failures, staleHits);
+verifyApiCatalog(failures);
+verifyAgentSkills(failures, staleHits);
 verifyRobotsPolicy(failures);
 
 for (const loc of locs) {
