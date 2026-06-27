@@ -33,6 +33,12 @@ const SITE_URL = 'https://tsfinanse.com';
 const TITLE_SUFFIX = ' | TS Finanse';
 const MAX_META_TITLE_LENGTH = 70;
 const MAX_META_DESCRIPTION_LENGTH = 180;
+const OFFICIAL_REFERENCE_LINKS = [
+  ['KNF - ostrzeżenia publiczne', 'https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne'],
+  ['UOKiK - informacje publiczne', 'https://uokik.gov.pl/'],
+  ['Biznes.gov.pl - informacje dla przedsiębiorców', 'https://www.biznes.gov.pl/pl/portal/00120'],
+  ['KRS - wyszukiwarka podmiotów', 'https://prs.ms.gov.pl/krs'],
+];
 
 function canonicalPath(path) {
   if (path === '/') return '/';
@@ -355,6 +361,7 @@ function blogPostingSchema(post) {
     author: { '@type': 'Organization', name: 'TS Finanse', url: 'https://tsfinanse.com' },
     publisher: { '@type': 'Organization', name: 'TS Finanse', logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' } },
     image: absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp',
+    citation: OFFICIAL_REFERENCE_LINKS.map(([, url]) => url),
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
     ...(articleText ? { articleBody: articleText.slice(0, 5000) } : {}),
   };
@@ -984,6 +991,16 @@ ${related.map((item) => `<li><a href="${esc(canonicalPath(`/blog/${item.slug}`))
 </section>`;
 }
 
+function renderOfficialReferences() {
+  return `<section data-ai-sources="official">
+<h2>Źródła i weryfikacja</h2>
+<p>Przed decyzją finansową sprawdź aktualne rejestry, ostrzeżenia publiczne i informacje urzędowe.</p>
+<ul>
+${OFFICIAL_REFERENCE_LINKS.map(([label, url]) => `<li><a href="${esc(url)}">${esc(label)}</a></li>`).join('\n')}
+</ul>
+</section>`;
+}
+
 // ---------------------------------------------------------------------------
 // Noscript fallback content per route (for non-JS crawlers)
 // ---------------------------------------------------------------------------
@@ -1053,6 +1070,7 @@ ${post.image ? `<p><img src="${esc(absoluteImageUrl(post.image) || post.image)}"
 ${renderAnswerBlock(post)}
 ${renderArticleToc(post, publishedSlugs)}
 ${renderStaticPostContent(post, publishedSlugs)}
+${renderOfficialReferences()}
 ${renderRelatedPosts(post, allPosts)}
 ${tags}
 <p><a href="/blog/">Wszystkie wpisy na blogu TS Finanse</a> | <a href="/">Strona główna</a></p>

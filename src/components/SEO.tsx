@@ -20,6 +20,25 @@ const titleSuffix = ' | TS Finanse';
 const maxMetaTitleLength = 70;
 const maxMetaDescriptionLength = 180;
 
+export const officialReferenceLinks = [
+  {
+    label: 'KNF - ostrzeżenia publiczne',
+    url: 'https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne',
+  },
+  {
+    label: 'UOKiK - informacje publiczne',
+    url: 'https://uokik.gov.pl/',
+  },
+  {
+    label: 'Biznes.gov.pl - informacje dla przedsiębiorców',
+    url: 'https://www.biznes.gov.pl/pl/portal/00120',
+  },
+  {
+    label: 'KRS - wyszukiwarka podmiotów',
+    url: 'https://prs.ms.gov.pl/krs',
+  },
+] as const;
+
 interface BlogIndexPost {
   slug: string;
   title: string;
@@ -517,6 +536,7 @@ export const blogPostingSchema = (post: {
       },
     },
     image: absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp',
+    citation: officialReferenceLinks.map((reference) => reference.url),
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `https://tsfinanse.com/blog/${post.slug}/`,

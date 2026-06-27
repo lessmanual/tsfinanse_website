@@ -17,6 +17,12 @@ const maxMetaDescriptionLength = 180;
 const minAnswerBlockLength = 70;
 const maxAnswerBlockLength = 360;
 const minArticleTocLinks = 2;
+const officialReferenceUrls = [
+  'https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne',
+  'https://uokik.gov.pl/',
+  'https://www.biznes.gov.pl/pl/portal/00120',
+  'https://prs.ms.gov.pl/krs',
+];
 
 const expectedContentSignal = 'Content-Signal: search=yes, ai-train=no, ai-input=yes';
 
@@ -274,6 +280,44 @@ function verifyArticleToc({ html, markdown, loc, failures }) {
   for (const link of tocLinks) {
     if (!markdownLinks.includes(link.href)) {
       failures.push({ type: 'article-toc-markdown-mismatch', loc, href: link.href });
+    }
+  }
+}
+
+function extractOfficialReferenceLinksFromHtml(html) {
+  const block = html.match(/<section[^>]+data-ai-sources=["']official["'][^>]*>([\s\S]*?)<\/section>/i)?.[1] || '';
+  return new Set([...block.matchAll(/<a[^>]+href=["']([^"']+)["']/gi)].map((match) => match[1].trim()));
+}
+
+function extractOfficialReferenceLinksFromMarkdown(markdown) {
+  const start = markdown.indexOf('## Źródła i weryfikacja');
+  if (start === -1) return new Set();
+  const section = markdown.slice(start);
+  const nextSection = section.slice(1).search(/\n##\s+/);
+  const block = nextSection >= 0 ? section.slice(0, nextSection + 1) : section;
+  return new Set([...block.matchAll(/\]\((https?:\/\/[^)]+)\)/g)].map((match) => match[1].trim()));
+}
+
+function verifyOfficialReferences({ html, markdown, loc, failures }) {
+  const url = new URL(loc);
+  const isBlogPost = url.pathname.startsWith('/blog/') && url.pathname !== '/blog/';
+  if (!isBlogPost) return;
+
+  const htmlLinks = extractOfficialReferenceLinksFromHtml(html);
+  const markdownLinks = extractOfficialReferenceLinksFromMarkdown(markdown);
+  const objects = collectJsonLd(html, failures, loc);
+  const blogPosting = objects.find((entry) => entry && entry['@type'] === 'BlogPosting');
+  const citations = Array.isArray(blogPosting?.citation) ? blogPosting.citation : [];
+
+  for (const referenceUrl of officialReferenceUrls) {
+    if (!htmlLinks.has(referenceUrl)) {
+      failures.push({ type: 'official-reference-html-link', loc, referenceUrl });
+    }
+    if (!markdownLinks.has(referenceUrl)) {
+      failures.push({ type: 'official-reference-markdown-link', loc, referenceUrl });
+    }
+    if (!citations.includes(referenceUrl)) {
+      failures.push({ type: 'official-reference-citation', loc, referenceUrl });
     }
   }
 }
@@ -1212,6 +1256,7 @@ async function main() {
     if (!/^#\s+.+/m.test(markdown)) failures.push({ type: 'markdown-h1', loc });
     verifyAnswerBlock({ html, markdown, loc, failures });
     verifyArticleToc({ html, markdown, loc, failures });
+    verifyOfficialReferences({ html, markdown, loc, failures });
     verifyMarkdownCanonicalLinks({ markdown, loc, failures });
     scanStale(markdown, loc, 'markdown', staleHits);
 

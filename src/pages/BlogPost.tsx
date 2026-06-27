@@ -4,7 +4,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
-import { SEO, blogFaqPageSchema, blogPostingSchema, breadcrumbSchema } from '../components/SEO';
+import { SEO, blogFaqPageSchema, blogPostingSchema, breadcrumbSchema, officialReferenceLinks } from '../components/SEO';
 import { getAllPosts, getPostBySlug, Post, selectRelatedPosts } from '../lib/posts';
 import { ArrowLeft, Calendar, User, Tag, Clock } from 'lucide-react';
 
@@ -370,6 +370,33 @@ export default function BlogPost() {
               </Markdown>
             )}
           </div>
+
+          <section
+            data-ai-sources="official"
+            aria-labelledby="official-sources-heading"
+            className="mt-12 pt-8 border-t border-gray-100"
+          >
+            <h2 id="official-sources-heading" className="text-2xl font-bold text-[#3D1F1F] mb-4">
+              Źródła i weryfikacja
+            </h2>
+            <p className="text-base text-gray-700 leading-relaxed mb-4">
+              Przed decyzją finansową sprawdź aktualne rejestry, ostrzeżenia publiczne i informacje urzędowe.
+            </p>
+            <ul className="list-disc pl-6 space-y-2 text-base text-gray-700">
+              {officialReferenceLinks.map((reference) => (
+                <li key={reference.url}>
+                  <a
+                    href={reference.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#C5A572] font-medium hover:text-[#3D1F1F] hover:underline transition-colors"
+                  >
+                    {reference.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
 
           {/* Tags */}
           {post.tags && post.tags.length > 0 && (

@@ -17,6 +17,12 @@ if (existsSync('.env')) {
 
 const SITE_URL = 'https://tsfinanse.com';
 const DIST_DIR = resolve(process.cwd(), 'dist');
+const OFFICIAL_REFERENCE_LINKS = [
+  ['KNF - ostrzeżenia publiczne', 'https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne'],
+  ['UOKiK - informacje publiczne', 'https://uokik.gov.pl/'],
+  ['Biznes.gov.pl - informacje dla przedsiębiorców', 'https://www.biznes.gov.pl/pl/portal/00120'],
+  ['KRS - wyszukiwarka podmiotów', 'https://prs.ms.gov.pl/krs'],
+];
 
 function canonicalPath(path) {
   if (path === '/') return '/';
@@ -363,6 +369,10 @@ function renderArticleTocMarkdown(content = '') {
   return `## Spis treści\n\n${toc.map((item) => `- [${item.title}](#${item.id})`).join('\n')}`;
 }
 
+function renderOfficialReferencesMarkdown() {
+  return `## Źródła i weryfikacja\n\nPrzed decyzją finansową sprawdź aktualne rejestry, ostrzeżenia publiczne i informacje urzędowe.\n\n${OFFICIAL_REFERENCE_LINKS.map(([label, url]) => `- [${label}](${url})`).join('\n')}`;
+}
+
 function staticPageMarkdown({ title, description, path, content, publishedSlugs = new Set() }) {
   return `${frontmatter({
     title,
@@ -491,7 +501,9 @@ Autor: ${post.author}
 
 Data publikacji: ${post.date ? post.date.slice(0, 10) : ''}
 
-${markdownContent}${relatedMarkdown}`;
+${markdownContent}
+
+${renderOfficialReferencesMarkdown()}${relatedMarkdown}`;
 
     writeMarkdown(path, body);
   }
