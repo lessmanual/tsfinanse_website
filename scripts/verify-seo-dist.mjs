@@ -92,6 +92,12 @@ function datePart(value) {
   return String(value || '').slice(0, 10);
 }
 
+function isChronologicallyBefore(value, baseline) {
+  const valueTime = Date.parse(value || '');
+  const baselineTime = Date.parse(baseline || '');
+  return Number.isFinite(valueTime) && Number.isFinite(baselineTime) && valueTime < baselineTime;
+}
+
 function normaliseBlogPostUrl(rawUrl, validBlogLocs) {
   try {
     const url = new URL(rawUrl, SITE_URL);
@@ -146,6 +152,14 @@ function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
 
   if (!blogPosting.datePublished) failures.push({ type: 'blogposting-date-published', loc });
   if (!blogPosting.dateModified) failures.push({ type: 'blogposting-date-modified', loc });
+  if (isChronologicallyBefore(blogPosting.dateModified, blogPosting.datePublished)) {
+    failures.push({
+      type: 'blogposting-date-modified-before-published',
+      loc,
+      datePublished: blogPosting.datePublished,
+      dateModified: blogPosting.dateModified,
+    });
+  }
   if (lastmod && datePart(blogPosting.dateModified) !== lastmod) {
     failures.push({ type: 'blogposting-date-modified-lastmod', loc, dateModified: blogPosting.dateModified, lastmod });
   }
@@ -154,12 +168,20 @@ function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
   const modifiedMeta = extractMetaProperty(html, 'article:modified_time');
   if (!publishedMeta) failures.push({ type: 'article-published-meta', loc });
   if (!modifiedMeta) failures.push({ type: 'article-modified-meta', loc });
+  if (isChronologicallyBefore(modifiedMeta, publishedMeta)) {
+    failures.push({ type: 'article-modified-meta-before-published', loc, publishedMeta, modifiedMeta });
+  }
   if (lastmod && datePart(modifiedMeta) !== lastmod) {
     failures.push({ type: 'article-modified-meta-lastmod', loc, modifiedMeta, lastmod });
   }
 
+  const markdownPublished = markdown.match(/^date_published:\s+"([^"]+)"/m)?.[1];
   const markdownModified = markdown.match(/^date_modified:\s+"([^"]+)"/m)?.[1];
+  if (!markdownPublished) failures.push({ type: 'markdown-date-published', loc });
   if (!markdownModified) failures.push({ type: 'markdown-date-modified', loc });
+  if (isChronologicallyBefore(markdownModified, markdownPublished)) {
+    failures.push({ type: 'markdown-date-modified-before-published', loc, markdownPublished, markdownModified });
+  }
   if (lastmod && datePart(markdownModified) !== lastmod) {
     failures.push({ type: 'markdown-date-modified-lastmod', loc, markdownModified, lastmod });
   }

@@ -25,6 +25,18 @@ interface BlogIndexPost {
   updatedAt?: string;
 }
 
+function latestDateValue(first?: string, second?: string): string {
+  const firstValue = first || '';
+  const secondValue = second || '';
+  const firstTime = Date.parse(firstValue);
+  const secondTime = Date.parse(secondValue);
+
+  if (!Number.isFinite(firstTime)) return secondValue || firstValue;
+  if (!Number.isFinite(secondTime)) return firstValue;
+
+  return firstTime >= secondTime ? firstValue : secondValue;
+}
+
 function normalizeCanonicalPath(path: string) {
   const pathWithoutFragment = path.split('#')[0] || '/';
   const [pathname, search] = pathWithoutFragment.split('?');
@@ -49,6 +61,7 @@ export function SEO({
 }: SEOProps) {
   const fullTitle = title ? `${title} | TS Finanse` : defaultTitle;
   const canonical = canonicalUrl ? `${siteUrl}${normalizeCanonicalPath(canonicalUrl)}` : `${siteUrl}/`;
+  const normalisedModifiedTime = latestDateValue(modifiedTime, publishedTime);
 
   return (
     <Helmet>
@@ -70,8 +83,8 @@ export function SEO({
       {ogType === 'article' && publishedTime && (
         <meta property="article:published_time" content={publishedTime} />
       )}
-      {ogType === 'article' && modifiedTime && (
-        <meta property="article:modified_time" content={modifiedTime} />
+      {ogType === 'article' && normalisedModifiedTime && (
+        <meta property="article:modified_time" content={normalisedModifiedTime} />
       )}
 
       {/* Twitter Card */}
@@ -225,7 +238,7 @@ export const blogIndexSchemas = (posts: BlogIndexPost[]) => {
     description: post.description || '',
     url: `${siteUrl}${normalizeCanonicalPath(`/blog/${post.slug}/`)}`,
     datePublished: post.date,
-    dateModified: post.updatedAt || post.date,
+    dateModified: latestDateValue(post.updatedAt, post.date),
   }));
 
   return [
@@ -294,7 +307,7 @@ export const blogPostingSchema = (post: {
   headline: post.title,
   description: post.description,
   datePublished: post.date,
-  dateModified: post.updatedAt || post.date,
+  dateModified: latestDateValue(post.updatedAt, post.date),
   author: {
     '@type': 'Organization',
     name: post.author || 'TS Finanse',

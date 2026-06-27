@@ -23,6 +23,18 @@ function canonicalPath(path) {
   return path.endsWith('/') ? path : `${path}/`;
 }
 
+function latestDateValue(first, second) {
+  const firstValue = first || '';
+  const secondValue = second || '';
+  const firstTime = Date.parse(firstValue);
+  const secondTime = Date.parse(secondValue);
+
+  if (!Number.isFinite(firstTime)) return secondValue || firstValue;
+  if (!Number.isFinite(secondTime)) return firstValue;
+
+  return firstTime >= secondTime ? firstValue : secondValue;
+}
+
 // Static routes with priorities
 const staticRoutes = [
   { path: '/', priority: '1.0', changefreq: 'weekly', lastmod: null },
@@ -76,7 +88,7 @@ function generateSitemap(posts) {
   }
 
   for (const post of posts) {
-    const lastmod = (post.updated_at || post.published_at || today).split('T')[0];
+    const lastmod = (latestDateValue(post.updated_at, post.published_at) || today).split('T')[0];
     const postPath = canonicalPath(`/blog/${post.slug}`);
     xml += `  <url>\n`;
     xml += `    <loc>${SITE_URL}${postPath}</loc>\n`;

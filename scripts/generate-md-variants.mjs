@@ -23,6 +23,18 @@ function canonicalPath(path) {
   return path.endsWith('/') ? path : `${path}/`;
 }
 
+function latestDateValue(first, second) {
+  const firstValue = first || '';
+  const secondValue = second || '';
+  const firstTime = Date.parse(firstValue);
+  const secondTime = Date.parse(secondValue);
+
+  if (!Number.isFinite(firstTime)) return secondValue || firstValue;
+  if (!Number.isFinite(secondTime)) return firstValue;
+
+  return firstTime >= secondTime ? firstValue : secondValue;
+}
+
 function markdownOutputPath(routePath) {
   if (routePath === '/') return resolve(DIST_DIR, 'md', 'index.md');
   const normalised = routePath.endsWith('/') ? routePath.slice(0, -1) : routePath;
@@ -77,7 +89,7 @@ async function getBlogPosts() {
     category: post.category || 'Finansowanie',
     author: post.author || 'TS Finanse',
     date: post.published_at,
-    updatedAt: post.updated_at || post.published_at,
+    updatedAt: latestDateValue(post.updated_at, post.published_at),
   }));
 }
 

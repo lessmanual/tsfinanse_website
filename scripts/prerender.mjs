@@ -36,6 +36,18 @@ function canonicalPath(path) {
   return path.endsWith('/') ? path : `${path}/`;
 }
 
+function latestDateValue(first, second) {
+  const firstValue = first || '';
+  const secondValue = second || '';
+  const firstTime = Date.parse(firstValue);
+  const secondTime = Date.parse(secondValue);
+
+  if (!Number.isFinite(firstTime)) return secondValue || firstValue;
+  if (!Number.isFinite(secondTime)) return firstValue;
+
+  return firstTime >= secondTime ? firstValue : secondValue;
+}
+
 // ---------------------------------------------------------------------------
 // FAQ + HowTo schemas (must be defined before STATIC_ROUTES)
 // ---------------------------------------------------------------------------
@@ -269,7 +281,7 @@ async function getBlogPosts() {
       category: p.category || 'Finansowanie',
       author: p.author || 'TS Finanse',
       date: p.published_at,
-      updatedAt: p.updated_at,
+      updatedAt: latestDateValue(p.updated_at, p.published_at),
       image: p.featured_image,
     }));
   } catch (err) {

@@ -30,6 +30,18 @@ const relatedStopWords = new Set([
 const siteUrl = 'https://tsfinanse.com';
 let publishedSlugCache: Set<string> | null = null;
 
+function latestDateValue(first?: string | null, second?: string | null): string {
+  const firstValue = first || '';
+  const secondValue = second || '';
+  const firstTime = Date.parse(firstValue);
+  const secondTime = Date.parse(secondValue);
+
+  if (!Number.isFinite(firstTime)) return secondValue || firstValue;
+  if (!Number.isFinite(secondTime)) return firstValue;
+
+  return firstTime >= secondTime ? firstValue : secondValue;
+}
+
 function normalizeSlug(slug = '') {
   return decodeURIComponent(String(slug))
     .replace(/ł/g, 'l')
@@ -216,18 +228,22 @@ export async function getAllPosts(): Promise<Post[]> {
   const publishedSlugs = toPublishedSlugSet(data);
   publishedSlugCache = publishedSlugs;
 
-  return data.map(post => ({
-    slug: post.slug,
-    title: post.title,
-    date: post.published_at || post.created_at,
-    updatedAt: post.updated_at || post.published_at || post.created_at,
-    description: post.description || '',
-    content: normalizeArticleContent(post.content || '', publishedSlugs),
-    tags: post.tags || [],
-    category: post.category || 'Finansowanie',
-    featuredImage: post.featured_image,
-    author: post.author || 'TS Finanse',
-  }));
+  return data.map(post => {
+    const publishedAt = post.published_at || post.created_at;
+
+    return {
+      slug: post.slug,
+      title: post.title,
+      date: publishedAt,
+      updatedAt: latestDateValue(post.updated_at, publishedAt),
+      description: post.description || '',
+      content: normalizeArticleContent(post.content || '', publishedSlugs),
+      tags: post.tags || [],
+      category: post.category || 'Finansowanie',
+      featuredImage: post.featured_image,
+      author: post.author || 'TS Finanse',
+    };
+  });
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
@@ -250,11 +266,13 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
 
   const publishedSlugs = await getPublishedSlugSet();
 
+  const publishedAt = data.published_at || data.created_at;
+
   return {
     slug: data.slug,
     title: data.title,
-    date: data.published_at || data.created_at,
-    updatedAt: data.updated_at || data.published_at || data.created_at,
+    date: publishedAt,
+    updatedAt: latestDateValue(data.updated_at, publishedAt),
     description: data.description || '',
     content: normalizeArticleContent(data.content || '', publishedSlugs),
     tags: data.tags || [],
