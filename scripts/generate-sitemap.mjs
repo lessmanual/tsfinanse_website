@@ -76,7 +76,7 @@ async function getBlogPosts() {
   const supabase = createClient(supabaseUrl, supabaseKey);
   const { data, error } = await supabase
     .from('ts_finanse_posts')
-    .select('slug, title, description, featured_image, published_at, updated_at')
+    .select('slug, title, description, featured_image, tags, category, published_at, updated_at')
     .not('published_at', 'is', null)
     .lte('published_at', new Date().toISOString())
     .order('published_at', { ascending: false });
@@ -138,7 +138,7 @@ function generateRSS(posts) {
   const now = new Date().toUTCString();
 
   let rss = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n';
+  rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">\n';
   rss += '  <channel>\n';
   rss += '    <title>TS Finanse Blog</title>\n';
   rss += `    <link>${SITE_URL}/blog/</link>\n`;
@@ -153,10 +153,20 @@ function generateRSS(posts) {
     const updated = latestSeoSurfaceDate(latestDateValue(post.updated_at, post.published_at) || post.published_at);
     const updatedDate = new Date(updated).toISOString();
     const postUrl = `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`;
+    const creator = 'TS Finanse';
+    const tags = Array.isArray(post.tags) ? post.tags : [];
+    const categories = [...new Set([post.category || 'Finansowanie', ...tags]
+      .map((item) => String(item || '').trim())
+      .filter(Boolean))];
+
     rss += '    <item>\n';
     rss += `      <title>${escapeXml(post.title || post.slug)}</title>\n`;
     rss += `      <link>${postUrl}</link>\n`;
     rss += `      <guid isPermaLink="true">${postUrl}</guid>\n`;
+    rss += `      <dc:creator>${escapeXml(creator)}</dc:creator>\n`;
+    for (const category of categories) {
+      rss += `      <category>${escapeXml(category)}</category>\n`;
+    }
     rss += `      <pubDate>${pubDate}</pubDate>\n`;
     rss += `      <atom:updated>${updatedDate}</atom:updated>\n`;
     if (post.description) {

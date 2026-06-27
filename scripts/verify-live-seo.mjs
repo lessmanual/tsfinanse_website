@@ -1184,7 +1184,36 @@ function verifyHomepageEntitySchema({ html, failures }) {
   }
 }
 
-function verifyRssFeed({ rss, locs, sitemapLastmods, failures }) {
+function decodeXml(value = '') {
+  return String(value)
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+
+function normaliseRssSignal(value = '') {
+  return decodeXml(value).replace(/\s+/g, ' ').trim();
+}
+
+function rememberBlogTopicSignals({ html, loc, failures, blogTopicSignalsByLoc }) {
+  const objects = collectJsonLd(html, failures, loc);
+  const blogPosting = objects.find((entry) => entry && entry['@type'] === 'BlogPosting');
+  if (!blogPosting) return;
+
+  const keywords = Array.isArray(blogPosting.keywords) ? blogPosting.keywords : [];
+  const topics = [blogPosting.articleSection, ...keywords]
+    .map(normaliseRssSignal)
+    .filter(Boolean);
+
+  blogTopicSignalsByLoc.set(loc, {
+    authorName: normaliseRssSignal(blogPosting.author?.name || ''),
+    topics: [...new Set(topics)],
+  });
+}
+
+function verifyRssFeed({ rss, locs, sitemapLastmods, blogTopicSignalsByLoc, failures }) {
   const blogPostLocs = new Set(locs.filter((item) => {
     const pathname = new URL(item).pathname;
     return pathname.startsWith('/blog/') && pathname !== '/blog/';
@@ -1208,6 +1237,10 @@ function verifyRssFeed({ rss, locs, sitemapLastmods, failures }) {
     failures.push({ type: 'rss-atom-self-link' });
   }
 
+  if (!rss.includes('xmlns:dc="http://purl.org/dc/elements/1.1/"')) {
+    failures.push({ type: 'rss-dc-namespace' });
+  }
+
   if (!rss.includes('<ttl>5</ttl>')) {
     failures.push({ type: 'rss-ttl', expected: 5 });
   }
@@ -1224,6 +1257,27 @@ function verifyRssFeed({ rss, locs, sitemapLastmods, failures }) {
     }
     if (lastmod && datePart(updated) !== datePart(lastmod)) {
       failures.push({ type: 'rss-item-updated-lastmod', itemLink, updated, lastmod });
+    }
+
+    const expectedSignals = blogTopicSignalsByLoc.get(itemLink);
+    const creator = normaliseRssSignal(item.match(/<dc:creator>([\s\S]*?)<\/dc:creator>/)?.[1] || '');
+    if (!creator) {
+      failures.push({ type: 'rss-item-creator-missing', itemLink });
+    } else if (expectedSignals?.authorName && creator !== expectedSignals.authorName) {
+      failures.push({ type: 'rss-item-creator-mismatch', itemLink, creator, expected: expectedSignals.authorName });
+    }
+
+    const categories = [...item.matchAll(/<category>([\s\S]*?)<\/category>/g)]
+      .map((match) => normaliseRssSignal(match[1]))
+      .filter(Boolean);
+    if (categories.length === 0) {
+      failures.push({ type: 'rss-item-category-missing', itemLink });
+    }
+
+    for (const topic of expectedSignals?.topics || []) {
+      if (!categories.includes(topic)) {
+        failures.push({ type: 'rss-item-category-topic-missing', itemLink, topic });
+      }
     }
   }
 }
@@ -1811,6 +1865,7 @@ async function main() {
   const staleHits = [];
   const titlesByValue = new Map();
   const descriptionsByValue = new Map();
+  const blogTopicSignalsByLoc = new Map();
 
   const { response: homepageResponse } = await fetchText(`${SITE_URL}/`, {
     headers: { accept: 'text/html' },
@@ -1874,7 +1929,6 @@ async function main() {
     if (!contentType.toLowerCase().includes('xml') && !contentType.toLowerCase().includes('rss')) {
       failures.push({ type: 'rss-content-type', contentType });
     }
-    verifyRssFeed({ rss, locs, sitemapLastmods, failures });
   }
 
   for (const loc of locs) {
@@ -1945,6 +1999,12 @@ async function main() {
         lastmod: sitemapLastmods.get(loc),
         failures,
       });
+      rememberBlogTopicSignals({
+        html,
+        loc,
+        failures,
+        blogTopicSignalsByLoc,
+      });
       verifyBlogFaqSchema({
         html,
         markdown,
@@ -1968,6 +2028,10 @@ async function main() {
     if (url.pathname === '/') {
       verifyHomepageEntitySchema({ html, failures });
     }
+  }
+
+  if (rssResponse.ok) {
+    verifyRssFeed({ rss, locs, sitemapLastmods, blogTopicSignalsByLoc, failures });
   }
 
   verifyUniqueSnippetMetadata({ titlesByValue, descriptionsByValue, failures });
