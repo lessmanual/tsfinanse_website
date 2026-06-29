@@ -473,6 +473,7 @@ export const organizationSchema = {
   telephone: '+48506711242',
   address: {
     '@type': 'PostalAddress',
+    '@id': `${siteUrl}/#address`,
     streetAddress: 'ul. Gdańska 60',
     addressLocality: 'Reda',
     postalCode: '84-240',
@@ -480,6 +481,7 @@ export const organizationSchema = {
   },
   geo: {
     '@type': 'GeoCoordinates',
+    '@id': `${siteUrl}/#geo`,
     latitude: 54.6025,
     longitude: 18.3464,
   },
@@ -489,11 +491,14 @@ export const organizationSchema = {
   },
   contactPoint: {
     '@type': 'ContactPoint',
+    '@id': `${siteUrl}/#contact-point`,
+    url: `${siteUrl}/#contact`,
     telephone: '+48506711242',
     contactType: 'Customer Service',
     email: 'kontakt@tsfinanse.com',
     availableLanguage: ['pl'],
     areaServed: 'PL',
+    hoursAvailable: { '@id': `${siteUrl}/#opening-hours` },
   },
   sameAs: [
     // Add social media profiles when available
@@ -501,6 +506,7 @@ export const organizationSchema = {
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
+      '@id': `${siteUrl}/#opening-hours`,
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
       opens: '08:00',
       closes: '16:00',

@@ -1689,12 +1689,18 @@ function verifyHomepageEntitySchema({ html, failures }) {
       failures.push({ type: 'homepage-financial-service-address', loc, field, actual: address[field], expected });
     }
   }
+  if (address['@id'] !== `${SITE_URL}/#address`) {
+    failures.push({ type: 'homepage-financial-service-address-id', loc, address });
+  }
 
   if (financialService.areaServed?.['@type'] !== 'Country' || financialService.areaServed?.name !== 'Polska') {
     failures.push({ type: 'homepage-financial-service-area', loc, areaServed: financialService.areaServed });
   }
   if (financialService.geo?.['@type'] !== 'GeoCoordinates' || financialService.geo?.latitude !== 54.6025 || financialService.geo?.longitude !== 18.3464) {
     failures.push({ type: 'homepage-financial-service-geo', loc, geo: financialService.geo });
+  }
+  if (financialService.geo?.['@id'] !== `${SITE_URL}/#geo`) {
+    failures.push({ type: 'homepage-financial-service-geo-id', loc, geo: financialService.geo });
   }
 
   const contactPoint = financialService.contactPoint || {};
@@ -1708,12 +1714,22 @@ function verifyHomepageEntitySchema({ html, failures }) {
   ) {
     failures.push({ type: 'homepage-financial-service-contact', loc, contactPoint });
   }
+  if (
+    contactPoint['@id'] !== `${SITE_URL}/#contact-point`
+    || contactPoint.url !== `${SITE_URL}/#contact`
+    || contactPoint.hoursAvailable?.['@id'] !== `${SITE_URL}/#opening-hours`
+  ) {
+    failures.push({ type: 'homepage-financial-service-contact-id', loc, contactPoint });
+  }
 
   const hours = Array.isArray(financialService.openingHoursSpecification)
     ? financialService.openingHoursSpecification[0]
     : undefined;
   if (!hours || hours.opens !== '08:00' || hours.closes !== '16:00' || !Array.isArray(hours.dayOfWeek) || hours.dayOfWeek.length !== 5) {
     failures.push({ type: 'homepage-financial-service-hours', loc, openingHoursSpecification: financialService.openingHoursSpecification });
+  }
+  if (hours?.['@id'] !== `${SITE_URL}/#opening-hours`) {
+    failures.push({ type: 'homepage-financial-service-hours-id', loc, openingHoursSpecification: financialService.openingHoursSpecification });
   }
 
   const loan = objects.find((entry) => entry && entry['@type'] === 'LoanOrCredit');
