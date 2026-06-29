@@ -33,6 +33,7 @@ if (existsSync('.env')) {
 const DIST_DIR = resolve(process.cwd(), 'dist');
 const SITE_URL = 'https://tsfinanse.com';
 const TITLE_SUFFIX = ' | TS Finanse';
+const LOGO_IMAGE_URL = `${SITE_URL}/logo.webp`;
 const MAX_META_TITLE_LENGTH = 70;
 const MAX_META_DESCRIPTION_LENGTH = 180;
 const INDEXING_META_DIRECTIVE = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
@@ -60,6 +61,7 @@ function editorialOrganizationSchema() {
     url: EDITORIAL_TRUST_PROFILE.url,
     email: EDITORIAL_TRUST_PROFILE.email,
     telephone: EDITORIAL_TRUST_PROFILE.telephone,
+    logo: logoImageObjectSchema(),
   };
 }
 
@@ -115,6 +117,10 @@ function imageObjectSchema(imageUrl, id) {
     url: imageUrl,
     contentUrl: imageUrl,
   };
+}
+
+function logoImageObjectSchema() {
+  return imageObjectSchema(LOGO_IMAGE_URL, `${SITE_URL}/#logo`);
 }
 
 function latestDateValue(first, second) {
@@ -291,7 +297,7 @@ const SCHEMAS = {
     name: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
     alternateName: 'TS Finanse',
     url: 'https://tsfinanse.com',
-    logo: 'https://tsfinanse.com/logo.webp',
+    logo: logoImageObjectSchema(),
     description: 'Profesjonalne pożyczki hipoteczne dla przedsiębiorców. Finansowanie projektów deweloperskich i inwestycyjnych w całej Polsce.',
     email: 'kontakt@tsfinanse.com',
     telephone: '+48506711242',
@@ -450,7 +456,7 @@ function blogPostingSchema(post) {
     author: editorialOrganization,
     publisher: {
       ...editorialOrganization,
-      logo: { '@type': 'ImageObject', url: 'https://tsfinanse.com/logo.webp' },
+      logo: logoImageObjectSchema(),
     },
     reviewedBy: editorialOrganization,
     copyrightHolder: editorialOrganization,
@@ -765,6 +771,7 @@ function webPageSchema({ canonical, metaTitle, metaDescription, ogImage }) {
       '@id': `${SITE_URL}/#organization`,
       name: 'TS Finanse',
       url: SITE_URL,
+      logo: logoImageObjectSchema(),
     },
     breadcrumb: {
       '@id': `${canonical}#breadcrumb`,

@@ -47,6 +47,8 @@ const officialReferenceUrls = [
 ];
 const organizationSchemaId = `${SITE_URL}/#organization`;
 const websiteSchemaId = `${SITE_URL}/#website`;
+const logoSchemaId = `${SITE_URL}/#logo`;
+const logoImageUrl = `${SITE_URL}/logo.webp`;
 const websiteSearchUrlTemplate = `${SITE_URL}/blog/?q={search_term_string}`;
 const editorialTrustFragments = [
   'TS Finanse',
@@ -162,6 +164,14 @@ function isOrganizationReference(value) {
     && value['@id'] === organizationSchemaId
     && value.name === 'TS Finanse'
     && value.url === SITE_URL;
+}
+
+function isLogoImageObject(value) {
+  return value
+    && value['@type'] === 'ImageObject'
+    && value['@id'] === logoSchemaId
+    && value.url === logoImageUrl
+    && value.contentUrl === logoImageUrl;
 }
 
 function indexHtmlRedirectPathForLoc(loc) {
@@ -667,8 +677,21 @@ function verifyBlogEditorialTrust({ html, markdown, loc, failures }) {
     || author.legalName !== '"TRANSBUD" NOWAK SPÓŁKA JAWNA'
     || author.url !== SITE_URL
     || author.email !== 'kontakt@tsfinanse.com'
+    || !isLogoImageObject(author.logo)
   ) {
     failures.push({ type: 'blog-editorial-trust-author', loc, author });
+  }
+
+  const publisher = blogPosting.publisher || {};
+  if (
+    publisher['@type'] !== 'Organization'
+    || publisher['@id'] !== organizationSchemaId
+    || publisher.name !== 'TS Finanse'
+    || publisher.legalName !== '"TRANSBUD" NOWAK SPÓŁKA JAWNA'
+    || publisher.url !== SITE_URL
+    || !isLogoImageObject(publisher.logo)
+  ) {
+    failures.push({ type: 'blog-editorial-trust-publisher', loc, publisher });
   }
 
   const reviewedBy = blogPosting.reviewedBy || {};
@@ -678,12 +701,18 @@ function verifyBlogEditorialTrust({ html, markdown, loc, failures }) {
     || reviewedBy.name !== 'TS Finanse'
     || reviewedBy.legalName !== '"TRANSBUD" NOWAK SPÓŁKA JAWNA'
     || reviewedBy.url !== SITE_URL
+    || !isLogoImageObject(reviewedBy.logo)
   ) {
     failures.push({ type: 'blog-editorial-trust-reviewed-by', loc, reviewedBy });
   }
 
   const copyrightHolder = blogPosting.copyrightHolder || {};
-  if (copyrightHolder['@type'] !== 'Organization' || copyrightHolder['@id'] !== organizationSchemaId || copyrightHolder.name !== 'TS Finanse') {
+  if (
+    copyrightHolder['@type'] !== 'Organization'
+    || copyrightHolder['@id'] !== organizationSchemaId
+    || copyrightHolder.name !== 'TS Finanse'
+    || !isLogoImageObject(copyrightHolder.logo)
+  ) {
     failures.push({ type: 'blog-editorial-trust-copyright-holder', loc, copyrightHolder });
   }
 }
@@ -1126,6 +1155,9 @@ function verifyWebPageSchema({ html, loc, failures }) {
   if (webPage.publisher?.['@id'] !== organizationSchemaId || webPage.publisher?.name !== 'TS Finanse') {
     failures.push({ type: 'webpage-schema-publisher', loc, publisher: webPage.publisher });
   }
+  if (!isLogoImageObject(webPage.publisher?.logo)) {
+    failures.push({ type: 'webpage-schema-publisher-logo', loc, logo: webPage.publisher?.logo });
+  }
   if (webPage.breadcrumb?.['@id'] !== `${loc}#breadcrumb`) {
     failures.push({ type: 'webpage-schema-breadcrumb', loc, breadcrumb: webPage.breadcrumb });
   }
@@ -1532,7 +1564,6 @@ function verifyHomepageEntitySchema({ html, failures }) {
     ['@id', organizationSchemaId],
     ['name', '"TRANSBUD" NOWAK SPÓŁKA JAWNA'],
     ['url', SITE_URL],
-    ['logo', `${SITE_URL}/logo.webp`],
     ['email', 'kontakt@tsfinanse.com'],
     ['telephone', '+48506711242'],
     ['taxID', '9581565078'],
@@ -1542,6 +1573,9 @@ function verifyHomepageEntitySchema({ html, failures }) {
     if (financialService[field] !== expected) {
       failures.push({ type: 'homepage-financial-service-field', loc, field, actual: financialService[field], expected });
     }
+  }
+  if (!isLogoImageObject(financialService.logo)) {
+    failures.push({ type: 'homepage-financial-service-logo', loc, logo: financialService.logo });
   }
 
   const address = financialService.address || {};

@@ -16,6 +16,7 @@ const defaultDescription =
   'Profesjonalne pożyczki hipoteczne dla firm. Finansowanie projektów deweloperskich i inwestycyjnych od 1 do 20 mln PLN. Szybka decyzja, elastyczne warunki, obsługa w całej Polsce.';
 const siteUrl = 'https://tsfinanse.com';
 const defaultOgImage = `${siteUrl}/og-image.webp`;
+const logoImageUrl = `${siteUrl}/logo.webp`;
 const titleSuffix = ' | TS Finanse';
 const maxMetaTitleLength = 70;
 const maxMetaDescriptionLength = 180;
@@ -60,6 +61,7 @@ function editorialOrganizationSchema() {
     url: editorialTrustProfile.url,
     email: editorialTrustProfile.email,
     telephone: editorialTrustProfile.telephone,
+    logo: logoImageObjectSchema(),
   };
 }
 
@@ -111,6 +113,10 @@ function imageObjectSchema(imageUrl: string, id: string) {
     url: imageUrl,
     contentUrl: imageUrl,
   };
+}
+
+function logoImageObjectSchema() {
+  return imageObjectSchema(logoImageUrl, `${siteUrl}/#logo`);
 }
 
 function normaliseWhitespace(value = '') {
@@ -331,6 +337,7 @@ function webPageSchema({
       '@id': `${siteUrl}/#organization`,
       name: 'TS Finanse',
       url: siteUrl,
+      logo: logoImageObjectSchema(),
     },
     breadcrumb: {
       '@id': `${canonical}#breadcrumb`,
@@ -438,7 +445,7 @@ export const organizationSchema = {
   name: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
   alternateName: 'TS Finanse',
   url: 'https://tsfinanse.com',
-  logo: 'https://tsfinanse.com/logo.webp',
+  logo: logoImageObjectSchema(),
   description:
     'Profesjonalne pożyczki hipoteczne dla przedsiębiorców. Finansowanie projektów deweloperskich i inwestycyjnych w całej Polsce.',
   email: 'kontakt@tsfinanse.com',
@@ -664,10 +671,7 @@ export const blogPostingSchema = (post: {
       ...editorialOrganization,
       '@type': 'Organization',
       name: 'TS Finanse',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://tsfinanse.com/logo.webp',
-      },
+      logo: logoImageObjectSchema(),
     },
     reviewedBy: editorialOrganization,
     copyrightHolder: editorialOrganization,
