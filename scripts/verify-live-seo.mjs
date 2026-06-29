@@ -40,6 +40,7 @@ const officialReferenceUrls = [
   'https://www.biznes.gov.pl/pl/portal/00120',
   'https://prs.ms.gov.pl/krs',
 ];
+const organizationSchemaId = `${SITE_URL}/#organization`;
 const websiteSchemaId = `${SITE_URL}/#website`;
 const websiteSearchUrlTemplate = `${SITE_URL}/blog/?q={search_term_string}`;
 const editorialTrustFragments = [
@@ -504,6 +505,7 @@ function verifyBlogEditorialTrust({ html, markdown, loc, failures }) {
   const author = blogPosting.author || {};
   if (
     author['@type'] !== 'Organization'
+    || author['@id'] !== organizationSchemaId
     || author.name !== 'TS Finanse'
     || author.legalName !== '"TRANSBUD" NOWAK SPÓŁKA JAWNA'
     || author.url !== SITE_URL
@@ -515,6 +517,7 @@ function verifyBlogEditorialTrust({ html, markdown, loc, failures }) {
   const reviewedBy = blogPosting.reviewedBy || {};
   if (
     reviewedBy['@type'] !== 'Organization'
+    || reviewedBy['@id'] !== organizationSchemaId
     || reviewedBy.name !== 'TS Finanse'
     || reviewedBy.legalName !== '"TRANSBUD" NOWAK SPÓŁKA JAWNA'
     || reviewedBy.url !== SITE_URL
@@ -523,7 +526,7 @@ function verifyBlogEditorialTrust({ html, markdown, loc, failures }) {
   }
 
   const copyrightHolder = blogPosting.copyrightHolder || {};
-  if (copyrightHolder['@type'] !== 'Organization' || copyrightHolder.name !== 'TS Finanse') {
+  if (copyrightHolder['@type'] !== 'Organization' || copyrightHolder['@id'] !== organizationSchemaId || copyrightHolder.name !== 'TS Finanse') {
     failures.push({ type: 'blog-editorial-trust-copyright-holder', loc, copyrightHolder });
   }
 }
@@ -954,7 +957,7 @@ function verifyWebPageSchema({ html, loc, failures }) {
   if (webPage.isPartOf?.['@id'] !== `${SITE_URL}/#website`) {
     failures.push({ type: 'webpage-schema-is-part-of', loc, isPartOf: webPage.isPartOf });
   }
-  if (webPage.publisher?.name !== 'TS Finanse') {
+  if (webPage.publisher?.['@id'] !== organizationSchemaId || webPage.publisher?.name !== 'TS Finanse') {
     failures.push({ type: 'webpage-schema-publisher', loc, publisher: webPage.publisher });
   }
   if (webPage.breadcrumb?.['@id'] !== `${loc}#breadcrumb`) {
@@ -1264,6 +1267,7 @@ function verifyHomepageEntitySchema({ html, failures }) {
   }
 
   for (const [field, expected] of [
+    ['@id', organizationSchemaId],
     ['name', '"TRANSBUD" NOWAK SPÓŁKA JAWNA'],
     ['url', SITE_URL],
     ['logo', `${SITE_URL}/logo.webp`],

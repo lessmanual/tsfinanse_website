@@ -302,6 +302,7 @@ function webPageSchema({
     },
     publisher: {
       '@type': 'Organization',
+      '@id': `${siteUrl}/#organization`,
       name: 'TS Finanse',
       url: siteUrl,
     },
@@ -405,6 +406,7 @@ export function SEO({
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'FinancialService',
+  '@id': `${siteUrl}/#organization`,
   name: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
   alternateName: 'TS Finanse',
   url: 'https://tsfinanse.com',

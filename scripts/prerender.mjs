@@ -253,6 +253,7 @@ const SCHEMAS = {
   organization: {
     '@context': 'https://schema.org',
     '@type': 'FinancialService',
+    '@id': `${SITE_URL}/#organization`,
     name: '"TRANSBUD" NOWAK SPÓŁKA JAWNA',
     alternateName: 'TS Finanse',
     url: 'https://tsfinanse.com',
@@ -694,6 +695,7 @@ function webPageSchema({ canonical, metaTitle, metaDescription, ogImage }) {
     },
     publisher: {
       '@type': 'Organization',
+      '@id': `${SITE_URL}/#organization`,
       name: 'TS Finanse',
       url: SITE_URL,
     },
