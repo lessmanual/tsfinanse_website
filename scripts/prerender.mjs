@@ -98,6 +98,27 @@ function webPageMainEntityForCanonical(canonical) {
   return undefined;
 }
 
+function slugifyTopicTerm(value = '') {
+  return String(value)
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'temat';
+}
+
+function topicTermSchema(term, canonical) {
+  return {
+    '@type': 'DefinedTerm',
+    '@id': `${canonical}#topic-${slugifyTopicTerm(term)}`,
+    name: term,
+    url: canonical,
+  };
+}
+
 function absoluteImageUrl(rawUrl) {
   if (!rawUrl) return undefined;
 
@@ -438,6 +459,7 @@ function blogPostingSchema(post) {
   ]
     .filter((item) => typeof item === 'string' && item.trim())
     .map((item) => item.trim())));
+  const topicTerms = keywords.length > 0 ? keywords : ['Finansowanie'];
 
   return {
     '@context': 'https://schema.org',
@@ -451,6 +473,8 @@ function blogPostingSchema(post) {
     inLanguage: 'pl-PL',
     articleSection: post.category || 'Finansowanie',
     keywords,
+    about: topicTermSchema(topicTerms[0], canonical),
+    mentions: topicTerms.slice(1).map((term) => topicTermSchema(term, canonical)),
     isAccessibleForFree: true,
     ...(articleText ? { wordCount: articleText.split(/\s+/).filter(Boolean).length } : {}),
     author: editorialOrganization,

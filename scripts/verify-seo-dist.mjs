@@ -564,6 +564,44 @@ function htmlHasId(html, id) {
   return new RegExp(`<h[2-3][^>]+id=["']${escaped}["']`, 'i').test(html);
 }
 
+function slugifyTopicTerm(value = '') {
+  return String(value)
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'temat';
+}
+
+function topicTermSchemaId(loc, term) {
+  return `${loc}#topic-${slugifyTopicTerm(term)}`;
+}
+
+function topicTermsFromBlogPosting(blogPosting) {
+  const keywords = Array.isArray(blogPosting.keywords) ? blogPosting.keywords : [];
+  const topics = [blogPosting.articleSection, ...keywords]
+    .map(normaliseRssSignal)
+    .filter(Boolean);
+
+  return [...new Set(topics)];
+}
+
+function verifyTopicTermSchema({ term, expectedName, expectedId, loc, surface, failures }) {
+  if (
+    !term
+    || typeof term !== 'object'
+    || term['@type'] !== 'DefinedTerm'
+    || term['@id'] !== expectedId
+    || term.name !== expectedName
+    || term.url !== loc
+  ) {
+    failures.push({ type: 'blogposting-topic-term', loc, surface, expectedName, expectedId, term });
+  }
+}
+
 function verifyArticleToc({ html, markdown, loc, failures }) {
   const url = new URL(loc);
   const isBlogPost = url.pathname.startsWith('/blog/') && url.pathname !== '/blog/';
@@ -1387,6 +1425,35 @@ function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
   }
   if (blogPosting.url !== loc) {
     failures.push({ type: 'blogposting-url', loc, url: blogPosting.url });
+  }
+  const topicTerms = topicTermsFromBlogPosting(blogPosting);
+  if (topicTerms.length === 0) {
+    failures.push({ type: 'blogposting-topic-terms', loc });
+  } else {
+    verifyTopicTermSchema({
+      term: blogPosting.about,
+      expectedName: topicTerms[0],
+      expectedId: topicTermSchemaId(loc, topicTerms[0]),
+      loc,
+      surface: 'about',
+      failures,
+    });
+
+    const mentions = Array.isArray(blogPosting.mentions) ? blogPosting.mentions : [];
+    const expectedMentions = topicTerms.slice(1);
+    if (mentions.length !== expectedMentions.length) {
+      failures.push({ type: 'blogposting-topic-mentions-count', loc, expected: expectedMentions.length, actual: mentions.length });
+    }
+    expectedMentions.forEach((topic, index) => {
+      verifyTopicTermSchema({
+        term: mentions[index],
+        expectedName: topic,
+        expectedId: topicTermSchemaId(loc, topic),
+        loc,
+        surface: `mentions[${index}]`,
+        failures,
+      });
+    });
   }
   if (blogPosting.author?.name !== 'TS Finanse' || blogPosting.publisher?.name !== 'TS Finanse') {
     failures.push({ type: 'blogposting-attribution', loc, author: blogPosting.author, publisher: blogPosting.publisher });

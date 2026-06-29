@@ -307,6 +307,27 @@ function webPageMainEntityForCanonical(canonical: string) {
   return undefined;
 }
 
+function slugifyTopicTerm(value = '') {
+  return value
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'temat';
+}
+
+function topicTermSchema(term: string, canonicalUrl: string) {
+  return {
+    '@type': 'DefinedTerm',
+    '@id': `${canonicalUrl}#topic-${slugifyTopicTerm(term)}`,
+    name: term,
+    url: canonicalUrl,
+  };
+}
+
 function webPageSchema({
   canonical,
   name,
@@ -651,6 +672,7 @@ export const blogPostingSchema = (post: {
   const editorialOrganization = editorialOrganizationSchema();
   const canonicalUrl = `${siteUrl}${normalizeCanonicalPath(`/blog/${post.slug}/`)}`;
   const imageUrl = absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp';
+  const topicTerms = keywords.length > 0 ? keywords : ['Finansowanie'];
 
   return {
     '@context': 'https://schema.org',
@@ -664,6 +686,8 @@ export const blogPostingSchema = (post: {
     inLanguage: 'pl-PL',
     articleSection: post.category || 'Finansowanie',
     keywords,
+    about: topicTermSchema(topicTerms[0], canonicalUrl),
+    mentions: topicTerms.slice(1).map((term) => topicTermSchema(term, canonicalUrl)),
     isAccessibleForFree: true,
     ...(wordCount > 0 ? { wordCount } : {}),
     author: editorialOrganization,
