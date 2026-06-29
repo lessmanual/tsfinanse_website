@@ -126,12 +126,31 @@ git push origin temp-main:main
 
 Netlify powinno automatycznie zbudować i opublikować `dist`.
 
+## Post-Deploy Gate
+
+Po zakończonym deployu uruchom jeden bezpieczny gate:
+
+```bash
+npm run verify:postdeploy
+```
+
+Ten gate wykonuje:
+
+1. `npm run verify:live`,
+2. `node scripts/indexnow.mjs --dry-run --live-sitemap`.
+
+Nie wysyła IndexNow. Jeśli przejdzie, dopiero wtedy można wykonać realny submit:
+
+```bash
+npm run indexnow -- --live-sitemap
+```
+
 ## Live Smoke Po Deployu
 
 Po deployu sprawdź:
 
 ```bash
-npm run verify:live
+npm run verify:postdeploy
 curl -sI https://tsfinanse.com/ | sed -n '1,30p'
 curl -s https://tsfinanse.com/sitemap.xml | rg -c '<loc>'
 curl -s https://tsfinanse.com/blog/refinansowanie-kredytu-firmowego-kiedy-sie-oplaca/ | rg -n '<noscript>|TS Finanse - Pożyczki Hipoteczne dla Przedsiębiorców'
@@ -145,6 +164,7 @@ Oczekiwane:
 - blog post nie zawiera globalnego homepage fallback,
 - markdown response zaczyna się od frontmatter i `#` tytułu wpisu.
 - `npm run verify:live` zwraca `failureCount: 0` i `staleHitCount: 0`.
+- `npm run indexnow:dry-run -- --live-sitemap` w ramach `verify:postdeploy` pokazuje `urlCount: 73`.
 
 ## GitHub Pages
 

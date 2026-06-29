@@ -33,6 +33,7 @@
             "build": "node scripts/clean-dist.mjs && vite build && node scripts/generate-sitemap.mjs && node scripts/prerender.mjs && node scripts/generate-canonical-redirects.mjs && node scripts/generate-md-variants.mjs && node scripts/generate-llms-index.mjs && node scripts/prune-dist-artifacts.mjs && node scripts/verify-seo-dist.mjs",
             "verify:seo": "node scripts/prune-dist-artifacts.mjs && node scripts/verify-seo-dist.mjs",
             "verify:predeploy": "node scripts/verify-predeploy.mjs",
+            "verify:postdeploy": "node scripts/verify-postdeploy.mjs",
             "verify:live": "node scripts/verify-live-seo.mjs",
             "verify:gsc": "node scripts/verify-gsc-exports.mjs",
             "indexnow": "node scripts/indexnow.mjs",
