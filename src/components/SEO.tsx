@@ -673,6 +673,7 @@ export const blogPostingSchema = (post: {
   const canonicalUrl = `${siteUrl}${normalizeCanonicalPath(`/blog/${post.slug}/`)}`;
   const imageUrl = absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp';
   const topicTerms = keywords.length > 0 ? keywords : ['Finansowanie'];
+  const hasFaqSchema = extractBlogFaqEntries(post.content).length >= minBlogFaqEntries;
 
   return {
     '@context': 'https://schema.org',
@@ -706,6 +707,13 @@ export const blogPostingSchema = (post: {
       '@type': 'WebPage',
       '@id': canonicalUrl,
     },
+    ...(hasFaqSchema ? {
+      hasPart: {
+        '@type': 'FAQPage',
+        '@id': `${canonicalUrl}#faq`,
+        url: canonicalUrl,
+      },
+    } : {}),
   };
 };
 
@@ -723,6 +731,10 @@ export const blogFaqPageSchema = (post: {
     '@id': `${canonicalUrl}#faq`,
     url: canonicalUrl,
     mainEntityOfPage: canonicalUrl,
+    isPartOf: {
+      '@type': 'BlogPosting',
+      '@id': `${canonicalUrl}#article`,
+    },
     inLanguage: 'pl-PL',
     mainEntity: entries.map((entry) => ({
       '@type': 'Question',

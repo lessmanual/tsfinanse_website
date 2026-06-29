@@ -1224,6 +1224,7 @@ function verifySitemapHrefLangs({ sitemap, locs, failures }) {
 function verifyBlogFaqSchema({ html, markdown, loc, failures }) {
   const expectedEntries = extractExpectedFaqEntries(markdown);
   const objects = collectJsonLd(html, failures, loc);
+  const blogPosting = objects.find((entry) => entry && entry['@type'] === 'BlogPosting');
   const faqPage = objects.find((entry) => entry && entry['@type'] === 'FAQPage' && entry.url === loc);
 
   if (expectedEntries.length < minBlogFaqEntries) {
@@ -1238,6 +1239,17 @@ function verifyBlogFaqSchema({ html, markdown, loc, failures }) {
   if (faqPage.inLanguage !== 'pl-PL') failures.push({ type: 'blog-faq-language', loc, inLanguage: faqPage.inLanguage });
   if (faqPage.mainEntityOfPage !== loc || faqPage['@id'] !== `${loc}#faq`) {
     failures.push({ type: 'blog-faq-main-entity', loc, mainEntityOfPage: faqPage.mainEntityOfPage, id: faqPage['@id'] });
+  }
+  const expectedFaqId = `${loc}#faq`;
+  const expectedArticleId = `${loc}#article`;
+  const articleHasParts = Array.isArray(blogPosting?.hasPart)
+    ? blogPosting.hasPart
+    : (blogPosting?.hasPart ? [blogPosting.hasPart] : []);
+  if (!articleHasParts.some((part) => part?.['@id'] === expectedFaqId)) {
+    failures.push({ type: 'blog-faq-article-haspart', loc, expectedFaqId, hasPart: blogPosting?.hasPart });
+  }
+  if (faqPage.isPartOf?.['@id'] !== expectedArticleId) {
+    failures.push({ type: 'blog-faq-is-part-of', loc, expectedArticleId, isPartOf: faqPage.isPartOf });
   }
   if (!Array.isArray(faqPage.mainEntity)) {
     failures.push({ type: 'blog-faq-main-entity-list', loc });

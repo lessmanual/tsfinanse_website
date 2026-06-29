@@ -460,6 +460,7 @@ function blogPostingSchema(post) {
     .filter((item) => typeof item === 'string' && item.trim())
     .map((item) => item.trim())));
   const topicTerms = keywords.length > 0 ? keywords : ['Finansowanie'];
+  const hasFaqSchema = extractBlogFaqEntries(post.content || '').length >= minBlogFaqEntries;
 
   return {
     '@context': 'https://schema.org',
@@ -488,6 +489,13 @@ function blogPostingSchema(post) {
     image: imageObjectSchema(imageUrl, `${canonical}#primaryimage`),
     citation: OFFICIAL_REFERENCE_LINKS.map(([, url]) => url),
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+    ...(hasFaqSchema ? {
+      hasPart: {
+        '@type': 'FAQPage',
+        '@id': `${canonical}#faq`,
+        url: canonical,
+      },
+    } : {}),
     ...(articleText ? { articleBody: articleText.slice(0, 5000) } : {}),
   };
 }
@@ -713,6 +721,10 @@ function blogFaqPageSchema(post) {
     '@id': `${canonicalUrl}#faq`,
     url: canonicalUrl,
     mainEntityOfPage: canonicalUrl,
+    isPartOf: {
+      '@type': 'BlogPosting',
+      '@id': `${canonicalUrl}#article`,
+    },
     inLanguage: 'pl-PL',
     mainEntity: entries.map((entry) => ({
       '@type': 'Question',
