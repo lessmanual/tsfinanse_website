@@ -63,6 +63,15 @@ function editorialOrganizationSchema() {
   };
 }
 
+function organizationReferenceSchema() {
+  return {
+    '@type': 'FinancialService',
+    '@id': `${SITE_URL}/#organization`,
+    name: 'TS Finanse',
+    url: SITE_URL,
+  };
+}
+
 function canonicalPath(path) {
   if (path === '/') return '/';
   return path.endsWith('/') ? path : `${path}/`;
@@ -289,7 +298,7 @@ const SCHEMAS = {
     '@type': 'LoanOrCredit',
     name: 'Pożyczka Hipoteczna dla Przedsiębiorców',
     description: 'Pożyczki hipoteczne dla firm od 1 do 20 mln PLN. Finansowanie projektów deweloperskich, inwestycyjnych i operacyjnych.',
-    provider: { '@type': 'FinancialService', name: 'TS Finanse' },
+    provider: organizationReferenceSchema(),
     category: 'Mortgage Loan',
     currency: 'PLN',
     loanType: 'Business Loan',
@@ -300,20 +309,22 @@ const SCHEMAS = {
       priceCurrency: 'PLN',
       availability: 'https://schema.org/InStock',
       areaServed: { '@type': 'Country', name: 'Polska' },
+      seller: organizationReferenceSchema(),
     },
-    broker: { '@type': 'FinancialService', name: 'TS Finanse', url: 'https://tsfinanse.com' },
+    broker: organizationReferenceSchema(),
   },
   service: {
     '@context': 'https://schema.org',
     '@type': 'Service',
     serviceType: 'Pożyczki hipoteczne dla przedsiębiorców',
-    provider: { '@type': 'FinancialService', name: 'TS Finanse', url: 'https://tsfinanse.com' },
+    provider: organizationReferenceSchema(),
     areaServed: { '@type': 'Country', name: 'Polska' },
     description: 'Pożyczki dla firm pod zabezpieczenie hipoteczne od 1 do 20 mln PLN. Decyzja w 3 dni robocze, własny kapitał, obsługa w całej Polsce.',
     offers: {
       '@type': 'Offer',
       priceCurrency: 'PLN',
       availability: 'https://schema.org/InStock',
+      seller: organizationReferenceSchema(),
     },
   },
   breadcrumbHome: {
@@ -385,6 +396,7 @@ function blogPostingSchema(post) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
+    '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}#article`,
     headline: post.title,
     description: post.description,
     datePublished: post.date,
@@ -642,14 +654,23 @@ function blogFaqPageSchema(post) {
 }
 
 function blogIndexSchemas(posts) {
-  const blogPosts = posts.map((post) => ({
-    '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.description || '',
-    url: `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`,
-    datePublished: post.date,
-    dateModified: post.updatedAt || post.date,
-  }));
+  const editorialOrganization = editorialOrganizationSchema();
+  const blogPosts = posts.map((post) => {
+    const url = `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`;
+
+    return {
+      '@type': 'BlogPosting',
+      '@id': `${url}#article`,
+      headline: post.title,
+      description: post.description || '',
+      url,
+      datePublished: post.date,
+      dateModified: post.updatedAt || post.date,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      author: editorialOrganization,
+      publisher: editorialOrganization,
+    };
+  });
 
   return [
     {
@@ -659,7 +680,7 @@ function blogIndexSchemas(posts) {
       url: `${SITE_URL}/blog/`,
       inLanguage: 'pl-PL',
       description: 'Porady i analizy o finansowaniu przedsiębiorców, pożyczkach hipotecznych, faktoringu, leasingu i płynności firm.',
-      publisher: { '@type': 'Organization', name: 'TS Finanse', url: SITE_URL },
+      publisher: editorialOrganization,
       blogPost: blogPosts,
     },
     {

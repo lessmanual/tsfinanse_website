@@ -63,6 +63,15 @@ function editorialOrganizationSchema() {
   };
 }
 
+function organizationReferenceSchema() {
+  return {
+    '@type': 'FinancialService',
+    '@id': `${siteUrl}/#organization`,
+    name: 'TS Finanse',
+    url: siteUrl,
+  };
+}
+
 interface BlogIndexPost {
   slug: string;
   title: string;
@@ -461,10 +470,7 @@ export const loanProductSchema = {
   name: 'Pożyczka Hipoteczna dla Przedsiębiorców',
   description:
     'Pożyczki hipoteczne dla firm od 1 do 20 mln PLN. Finansowanie projektów deweloperskich, inwestycyjnych i operacyjnych.',
-  provider: {
-    '@type': 'FinancialService',
-    name: 'TS Finanse',
-  },
+  provider: organizationReferenceSchema(),
   category: 'Mortgage Loan',
   currency: 'PLN',
   loanType: 'Business Loan',
@@ -483,12 +489,9 @@ export const loanProductSchema = {
       '@type': 'Country',
       name: 'Polska',
     },
+    seller: organizationReferenceSchema(),
   },
-  broker: {
-    '@type': 'FinancialService',
-    name: 'TS Finanse',
-    url: 'https://tsfinanse.com',
-  },
+  broker: organizationReferenceSchema(),
 };
 
 export const breadcrumbSchema = (items: { name: string; url: string }[]) => ({
@@ -520,14 +523,23 @@ export const websiteSchema = {
 };
 
 export const blogIndexSchemas = (posts: BlogIndexPost[]) => {
-  const blogPosts = posts.map((post) => ({
-    '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.description || '',
-    url: `${siteUrl}${normalizeCanonicalPath(`/blog/${post.slug}/`)}`,
-    datePublished: post.date,
-    dateModified: latestDateValue(post.updatedAt, post.date),
-  }));
+  const editorialOrganization = editorialOrganizationSchema();
+  const blogPosts = posts.map((post) => {
+    const url = `${siteUrl}${normalizeCanonicalPath(`/blog/${post.slug}/`)}`;
+
+    return {
+      '@type': 'BlogPosting',
+      '@id': `${url}#article`,
+      headline: post.title,
+      description: post.description || '',
+      url,
+      datePublished: post.date,
+      dateModified: latestDateValue(post.updatedAt, post.date),
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      author: editorialOrganization,
+      publisher: editorialOrganization,
+    };
+  });
 
   return [
     {
@@ -537,11 +549,7 @@ export const blogIndexSchemas = (posts: BlogIndexPost[]) => {
       url: `${siteUrl}/blog/`,
       inLanguage: 'pl-PL',
       description: 'Porady i analizy o finansowaniu przedsiębiorców, pożyczkach hipotecznych, faktoringu, leasingu i płynności firm.',
-      publisher: {
-        '@type': 'Organization',
-        name: 'TS Finanse',
-        url: siteUrl,
-      },
+      publisher: editorialOrganization,
       blogPost: blogPosts,
     },
     {
@@ -564,11 +572,7 @@ export const serviceSchema = {
   '@context': 'https://schema.org',
   '@type': 'Service',
   serviceType: 'Pożyczki hipoteczne dla przedsiębiorców',
-  provider: {
-    '@type': 'FinancialService',
-    name: 'TS Finanse',
-    url: 'https://tsfinanse.com',
-  },
+  provider: organizationReferenceSchema(),
   areaServed: {
     '@type': 'Country',
     name: 'Polska',
@@ -578,6 +582,7 @@ export const serviceSchema = {
     '@type': 'Offer',
     priceCurrency: 'PLN',
     availability: 'https://schema.org/InStock',
+    seller: organizationReferenceSchema(),
   },
 };
 
@@ -605,6 +610,7 @@ export const blogPostingSchema = (post: {
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
+    '@id': `https://tsfinanse.com/blog/${post.slug}/#article`,
     headline: post.title,
     description: post.description,
     datePublished: post.date,

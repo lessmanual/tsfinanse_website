@@ -132,6 +132,18 @@ function markdownUrlForLoc(loc) {
   return `${SITE_URL}/md${normalised}.md`;
 }
 
+function articleSchemaIdForLoc(loc) {
+  return `${loc}#article`;
+}
+
+function isOrganizationReference(value) {
+  return value
+    && (value['@type'] === 'Organization' || value['@type'] === 'FinancialService')
+    && value['@id'] === organizationSchemaId
+    && value.name === 'TS Finanse'
+    && value.url === SITE_URL;
+}
+
 function indexHtmlRedirectPathForLoc(loc) {
   const pathname = new URL(loc).pathname;
   if (pathname === '/') return '/index.html';
@@ -1337,10 +1349,35 @@ function verifyBlogIndexSchema({ html, locs, failures }) {
     failures.push({ type: 'blog-index-schema', loc });
     return;
   }
+  if (!isOrganizationReference(blog.publisher)) {
+    failures.push({ type: 'blog-index-publisher-reference', loc, publisher: blog.publisher });
+  }
   if (!Array.isArray(blog.blogPost)) {
     failures.push({ type: 'blog-index-blogpost-list', loc });
   } else if (blog.blogPost.length !== blogPostLocs.length) {
     failures.push({ type: 'blog-index-blogpost-count', loc, expected: blogPostLocs.length, actual: blog.blogPost.length });
+  } else {
+    const expectedLocs = new Set(blogPostLocs);
+    for (const entry of blog.blogPost) {
+      if (!expectedLocs.has(entry.url)) {
+        failures.push({ type: 'blog-index-blogpost-url', loc, url: entry.url });
+        continue;
+      }
+      if (entry['@id'] !== articleSchemaIdForLoc(entry.url)
+        || entry.mainEntityOfPage?.['@id'] !== entry.url
+        || !isOrganizationReference(entry.author)
+        || !isOrganizationReference(entry.publisher)) {
+        failures.push({
+          type: 'blog-index-blogpost-entity-reference',
+          loc,
+          url: entry.url,
+          id: entry['@id'],
+          mainEntityOfPage: entry.mainEntityOfPage,
+          author: entry.author,
+          publisher: entry.publisher,
+        });
+      }
+    }
   }
 
   if (!itemList) {
@@ -1456,7 +1493,9 @@ function verifyHomepageEntitySchema({ html, failures }) {
   const loan = objects.find((entry) => entry && entry['@type'] === 'LoanOrCredit');
   if (
     !loan
-    || loan.provider?.name !== 'TS Finanse'
+    || !isOrganizationReference(loan.provider)
+    || !isOrganizationReference(loan.broker)
+    || !isOrganizationReference(loan.offers?.seller)
     || loan.currency !== 'PLN'
     || loan.loanType !== 'Business Loan'
     || loan.amount?.minValue !== 1000000
@@ -1469,8 +1508,8 @@ function verifyHomepageEntitySchema({ html, failures }) {
   const service = objects.find((entry) => entry && entry['@type'] === 'Service' && entry.serviceType === 'Pożyczki hipoteczne dla przedsiębiorców');
   if (
     !service
-    || service.provider?.name !== 'TS Finanse'
-    || service.provider?.url !== SITE_URL
+    || !isOrganizationReference(service.provider)
+    || !isOrganizationReference(service.offers?.seller)
     || service.areaServed?.name !== 'Polska'
     || service.offers?.availability !== 'https://schema.org/InStock'
   ) {
