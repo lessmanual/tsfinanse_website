@@ -526,13 +526,15 @@ export const loanProductSchema = {
   loanType: 'Business Loan',
   amount: {
     '@type': 'MonetaryAmount',
+    '@id': `${siteUrl}/#loan-amount`,
     currency: 'PLN',
     minValue: 1000000,
     maxValue: 20000000,
   },
   offers: {
     '@type': 'Offer',
-    url: 'https://tsfinanse.com',
+    '@id': `${siteUrl}/#loan-offer`,
+    url: `${siteUrl}/`,
     priceCurrency: 'PLN',
     availability: 'https://schema.org/InStock',
     areaServed: {
@@ -540,6 +542,7 @@ export const loanProductSchema = {
       name: 'Polska',
     },
     seller: organizationReferenceSchema(),
+    itemOffered: { '@id': `${siteUrl}/#loan-product` },
   },
   broker: organizationReferenceSchema(),
 };
@@ -644,9 +647,16 @@ export const serviceSchema = {
   description: 'Pożyczki dla firm pod zabezpieczenie hipoteczne od 1 do 20 mln PLN. Decyzja w 3 dni robocze, własny kapitał, obsługa w całej Polsce.',
   offers: {
     '@type': 'Offer',
+    '@id': `${siteUrl}/#service-offer`,
+    url: `${siteUrl}/`,
     priceCurrency: 'PLN',
     availability: 'https://schema.org/InStock',
+    areaServed: {
+      '@type': 'Country',
+      name: 'Polska',
+    },
     seller: organizationReferenceSchema(),
+    itemOffered: { '@id': `${siteUrl}/#service` },
   },
 };
 

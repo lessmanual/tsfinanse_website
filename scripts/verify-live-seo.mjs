@@ -1601,6 +1601,32 @@ function verifyHomepageEntitySchema({ html, failures }) {
   ) {
     failures.push({ type: 'homepage-loan-schema', loc, loan });
   }
+  if (loan) {
+    const amount = loan.amount || {};
+    if (
+      amount['@type'] !== 'MonetaryAmount'
+      || amount['@id'] !== `${SITE_URL}/#loan-amount`
+      || amount.currency !== 'PLN'
+      || amount.minValue !== 1000000
+      || amount.maxValue !== 20000000
+    ) {
+      failures.push({ type: 'homepage-loan-amount-id', loc, amount: loan.amount });
+    }
+
+    const offer = loan.offers || {};
+    if (
+      offer['@type'] !== 'Offer'
+      || offer['@id'] !== `${SITE_URL}/#loan-offer`
+      || offer.url !== loc
+      || offer.priceCurrency !== 'PLN'
+      || offer.availability !== 'https://schema.org/InStock'
+      || offer.areaServed?.name !== 'Polska'
+      || !isOrganizationReference(offer.seller)
+      || offer.itemOffered?.['@id'] !== `${SITE_URL}/#loan-product`
+    ) {
+      failures.push({ type: 'homepage-loan-offer-id', loc, offer: loan.offers });
+    }
+  }
 
   const service = objects.find((entry) => entry && entry['@type'] === 'Service' && entry.serviceType === 'Pożyczki hipoteczne dla przedsiębiorców');
   if (
@@ -1614,6 +1640,21 @@ function verifyHomepageEntitySchema({ html, failures }) {
     || service.offers?.availability !== 'https://schema.org/InStock'
   ) {
     failures.push({ type: 'homepage-service-schema', loc, service });
+  }
+  if (service) {
+    const offer = service.offers || {};
+    if (
+      offer['@type'] !== 'Offer'
+      || offer['@id'] !== `${SITE_URL}/#service-offer`
+      || offer.url !== loc
+      || offer.priceCurrency !== 'PLN'
+      || offer.availability !== 'https://schema.org/InStock'
+      || offer.areaServed?.name !== 'Polska'
+      || !isOrganizationReference(offer.seller)
+      || offer.itemOffered?.['@id'] !== `${SITE_URL}/#service`
+    ) {
+      failures.push({ type: 'homepage-service-offer-id', loc, offer: service.offers });
+    }
   }
 
   const faqPage = objects.find((entry) => entry && entry['@type'] === 'FAQPage');
