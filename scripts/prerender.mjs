@@ -74,6 +74,14 @@ function organizationReferenceSchema() {
   };
 }
 
+function polandAreaServedSchema() {
+  return {
+    '@type': 'Country',
+    '@id': `${SITE_URL}/#area-served-poland`,
+    name: 'Polska',
+  };
+}
+
 function canonicalPath(path) {
   if (path === '/') return '/';
   return path.endsWith('/') ? path : `${path}/`;
@@ -446,7 +454,7 @@ const SCHEMAS = {
     telephone: '+48506711242',
     address: { '@type': 'PostalAddress', '@id': `${SITE_URL}/#address`, streetAddress: 'ul. Gdańska 60', addressLocality: 'Reda', postalCode: '84-240', addressCountry: 'PL' },
     geo: { '@type': 'GeoCoordinates', '@id': `${SITE_URL}/#geo`, latitude: 54.6025, longitude: 18.3464 },
-    areaServed: { '@type': 'Country', name: 'Polska' },
+    areaServed: polandAreaServedSchema(),
     contactPoint: {
       '@type': 'ContactPoint',
       '@id': `${SITE_URL}/#contact-point`,
@@ -490,7 +498,7 @@ const SCHEMAS = {
       url: `${SITE_URL}/`,
       priceCurrency: 'PLN',
       availability: 'https://schema.org/InStock',
-      areaServed: { '@type': 'Country', name: 'Polska' },
+      areaServed: polandAreaServedSchema(),
       seller: organizationReferenceSchema(),
       itemOffered: { '@id': `${SITE_URL}/#loan-product` },
     },
@@ -504,7 +512,7 @@ const SCHEMAS = {
     serviceType: 'Pożyczki hipoteczne dla przedsiębiorców',
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/` },
     provider: organizationReferenceSchema(),
-    areaServed: { '@type': 'Country', name: 'Polska' },
+    areaServed: polandAreaServedSchema(),
     description: 'Pożyczki dla firm pod zabezpieczenie hipoteczne od 1 do 20 mln PLN. Decyzja w 3 dni robocze, własny kapitał, obsługa w całej Polsce.',
     offers: {
       '@type': 'Offer',
@@ -512,7 +520,7 @@ const SCHEMAS = {
       url: `${SITE_URL}/`,
       priceCurrency: 'PLN',
       availability: 'https://schema.org/InStock',
-      areaServed: { '@type': 'Country', name: 'Polska' },
+      areaServed: polandAreaServedSchema(),
       seller: organizationReferenceSchema(),
       itemOffered: { '@id': `${SITE_URL}/#service` },
     },

@@ -49,6 +49,7 @@ const organizationSchemaId = `${SITE_URL}/#organization`;
 const websiteSchemaId = `${SITE_URL}/#website`;
 const websiteSearchActionSchemaId = `${SITE_URL}/#site-search-action`;
 const websiteSearchEntryPointSchemaId = `${SITE_URL}/#site-search-entrypoint`;
+const areaServedCountrySchemaId = `${SITE_URL}/#area-served-poland`;
 const logoSchemaId = `${SITE_URL}/#logo`;
 const logoImageUrl = `${SITE_URL}/logo.webp`;
 const websiteSearchUrlTemplate = `${SITE_URL}/blog/?q={search_term_string}`;
@@ -1756,6 +1757,9 @@ function verifyHomepageEntitySchema({ html, failures }) {
   if (financialService.areaServed?.['@type'] !== 'Country' || financialService.areaServed?.name !== 'Polska') {
     failures.push({ type: 'homepage-financial-service-area', loc, areaServed: financialService.areaServed });
   }
+  if (financialService.areaServed?.['@id'] !== areaServedCountrySchemaId) {
+    failures.push({ type: 'homepage-financial-service-area-id', loc, areaServed: financialService.areaServed });
+  }
   if (financialService.geo?.['@type'] !== 'GeoCoordinates' || financialService.geo?.latitude !== 54.6025 || financialService.geo?.longitude !== 18.3464) {
     failures.push({ type: 'homepage-financial-service-geo', loc, geo: financialService.geo });
   }
@@ -1834,6 +1838,9 @@ function verifyHomepageEntitySchema({ html, failures }) {
     ) {
       failures.push({ type: 'homepage-loan-offer-id', loc, offer: loan.offers });
     }
+    if (offer.areaServed?.['@id'] !== areaServedCountrySchemaId) {
+      failures.push({ type: 'homepage-loan-offer-area-id', loc, areaServed: offer.areaServed });
+    }
   }
 
   const service = objects.find((entry) => entry && entry['@type'] === 'Service' && entry.serviceType === 'Pożyczki hipoteczne dla przedsiębiorców');
@@ -1850,6 +1857,10 @@ function verifyHomepageEntitySchema({ html, failures }) {
     failures.push({ type: 'homepage-service-schema', loc, service });
   }
   if (service) {
+    if (service.areaServed?.['@id'] !== areaServedCountrySchemaId) {
+      failures.push({ type: 'homepage-service-area-id', loc, areaServed: service.areaServed });
+    }
+
     const offer = service.offers || {};
     if (
       offer['@type'] !== 'Offer'
@@ -1862,6 +1873,9 @@ function verifyHomepageEntitySchema({ html, failures }) {
       || offer.itemOffered?.['@id'] !== `${SITE_URL}/#service`
     ) {
       failures.push({ type: 'homepage-service-offer-id', loc, offer: service.offers });
+    }
+    if (offer.areaServed?.['@id'] !== areaServedCountrySchemaId) {
+      failures.push({ type: 'homepage-service-offer-area-id', loc, areaServed: offer.areaServed });
     }
   }
 

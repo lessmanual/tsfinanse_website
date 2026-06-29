@@ -74,6 +74,14 @@ function organizationReferenceSchema() {
   };
 }
 
+function polandAreaServedSchema() {
+  return {
+    '@type': 'Country',
+    '@id': `${siteUrl}/#area-served-poland`,
+    name: 'Polska',
+  };
+}
+
 interface BlogIndexPost {
   slug: string;
   title: string;
@@ -494,10 +502,7 @@ export const organizationSchema = {
     latitude: 54.6025,
     longitude: 18.3464,
   },
-  areaServed: {
-    '@type': 'Country',
-    name: 'Polska',
-  },
+  areaServed: polandAreaServedSchema(),
   contactPoint: {
     '@type': 'ContactPoint',
     '@id': `${siteUrl}/#contact-point`,
@@ -552,10 +557,7 @@ export const loanProductSchema = {
     url: `${siteUrl}/`,
     priceCurrency: 'PLN',
     availability: 'https://schema.org/InStock',
-    areaServed: {
-      '@type': 'Country',
-      name: 'Polska',
-    },
+    areaServed: polandAreaServedSchema(),
     seller: organizationReferenceSchema(),
     itemOffered: { '@id': `${siteUrl}/#loan-product` },
   },
@@ -673,10 +675,7 @@ export const serviceSchema = {
   serviceType: 'Pożyczki hipoteczne dla przedsiębiorców',
   mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/` },
   provider: organizationReferenceSchema(),
-  areaServed: {
-    '@type': 'Country',
-    name: 'Polska',
-  },
+  areaServed: polandAreaServedSchema(),
   description: 'Pożyczki dla firm pod zabezpieczenie hipoteczne od 1 do 20 mln PLN. Decyzja w 3 dni robocze, własny kapitał, obsługa w całej Polsce.',
   offers: {
     '@type': 'Offer',
@@ -684,10 +683,7 @@ export const serviceSchema = {
     url: `${siteUrl}/`,
     priceCurrency: 'PLN',
     availability: 'https://schema.org/InStock',
-    areaServed: {
-      '@type': 'Country',
-      name: 'Polska',
-    },
+    areaServed: polandAreaServedSchema(),
     seller: organizationReferenceSchema(),
     itemOffered: { '@id': `${siteUrl}/#service` },
   },
