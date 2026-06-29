@@ -136,6 +136,22 @@ function articleSchemaIdForLoc(loc) {
   return `${loc}#article`;
 }
 
+function blogSchemaIdForLoc(loc) {
+  return `${loc}#blog`;
+}
+
+function itemListSchemaIdForLoc(loc) {
+  return `${loc}#itemlist`;
+}
+
+function expectedWebPageMainEntityId(loc) {
+  const pathname = new URL(loc).pathname;
+  if (pathname === '/') return organizationSchemaId;
+  if (pathname === '/blog/') return blogSchemaIdForLoc(loc);
+  if (pathname.startsWith('/blog/')) return articleSchemaIdForLoc(loc);
+  return undefined;
+}
+
 function isOrganizationReference(value) {
   return value
     && (value['@type'] === 'Organization' || value['@type'] === 'FinancialService')
@@ -1103,6 +1119,15 @@ function verifyWebPageSchema({ html, loc, failures }) {
   if (webPage.breadcrumb?.['@id'] !== `${loc}#breadcrumb`) {
     failures.push({ type: 'webpage-schema-breadcrumb', loc, breadcrumb: webPage.breadcrumb });
   }
+  const expectedMainEntityId = expectedWebPageMainEntityId(loc);
+  if (expectedMainEntityId && webPage.mainEntity?.['@id'] !== expectedMainEntityId) {
+    failures.push({
+      type: 'webpage-schema-main-entity',
+      loc,
+      expected: expectedMainEntityId,
+      mainEntity: webPage.mainEntity,
+    });
+  }
 }
 
 function verifyWebSiteSearchSchema({ html, loc, failures }) {
@@ -1352,6 +1377,14 @@ function verifyBlogIndexSchema({ html, locs, failures }) {
     failures.push({ type: 'blog-index-schema', loc });
     return;
   }
+  if (blog['@id'] !== blogSchemaIdForLoc(loc) || blog.mainEntityOfPage?.['@id'] !== loc) {
+    failures.push({
+      type: 'blog-index-schema-id',
+      loc,
+      id: blog['@id'],
+      mainEntityOfPage: blog.mainEntityOfPage,
+    });
+  }
   if (!isOrganizationReference(blog.publisher)) {
     failures.push({ type: 'blog-index-publisher-reference', loc, publisher: blog.publisher });
   }
@@ -1386,6 +1419,15 @@ function verifyBlogIndexSchema({ html, locs, failures }) {
   if (!itemList) {
     failures.push({ type: 'blog-index-itemlist-schema', loc });
     return;
+  }
+  if (itemList['@id'] !== itemListSchemaIdForLoc(loc) || itemList.url !== loc || itemList.mainEntityOfPage?.['@id'] !== loc) {
+    failures.push({
+      type: 'blog-index-itemlist-id',
+      loc,
+      id: itemList['@id'],
+      url: itemList.url,
+      mainEntityOfPage: itemList.mainEntityOfPage,
+    });
   }
   if (itemList.numberOfItems !== blogPostLocs.length) {
     failures.push({ type: 'blog-index-itemlist-count', loc, expected: blogPostLocs.length, actual: itemList.numberOfItems });

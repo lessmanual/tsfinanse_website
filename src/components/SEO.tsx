@@ -284,6 +284,14 @@ function markdownUrlForCanonical(canonical: string) {
   return `${siteUrl}/md${normalised}.md`;
 }
 
+function webPageMainEntityForCanonical(canonical: string) {
+  const pathname = new URL(canonical).pathname;
+  if (pathname === '/') return { '@id': `${siteUrl}/#organization` };
+  if (pathname === '/blog/') return { '@id': `${canonical}#blog` };
+  if (pathname.startsWith('/blog/')) return { '@id': `${canonical}#article` };
+  return undefined;
+}
+
 function webPageSchema({
   canonical,
   name,
@@ -318,6 +326,11 @@ function webPageSchema({
     breadcrumb: {
       '@id': `${canonical}#breadcrumb`,
     },
+    ...(webPageMainEntityForCanonical(canonical)
+      ? {
+          mainEntity: webPageMainEntityForCanonical(canonical),
+        }
+      : {}),
     ...(image
       ? {
           primaryImageOfPage: {
@@ -554,8 +567,10 @@ export const blogIndexSchemas = (posts: BlogIndexPost[]) => {
     {
       '@context': 'https://schema.org',
       '@type': 'Blog',
+      '@id': `${siteUrl}/blog/#blog`,
       name: 'Blog TS Finanse',
       url: `${siteUrl}/blog/`,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/blog/` },
       inLanguage: 'pl-PL',
       description: 'Porady i analizy o finansowaniu przedsiębiorców, pożyczkach hipotecznych, faktoringu, leasingu i płynności firm.',
       publisher: editorialOrganization,
@@ -564,7 +579,10 @@ export const blogIndexSchemas = (posts: BlogIndexPost[]) => {
     {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
+      '@id': `${siteUrl}/blog/#itemlist`,
       name: 'Artykuły bloga TS Finanse',
+      url: `${siteUrl}/blog/`,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/blog/` },
       itemListOrder: 'https://schema.org/ItemListOrderDescending',
       numberOfItems: blogPosts.length,
       itemListElement: posts.map((post, index) => ({
