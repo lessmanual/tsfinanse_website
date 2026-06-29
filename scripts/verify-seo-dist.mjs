@@ -1410,6 +1410,11 @@ function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
   if (!blogPosting.datePublished) failures.push({ type: 'blogposting-date-published', loc });
   if (!blogPosting.dateModified) failures.push({ type: 'blogposting-date-modified', loc });
   if (blogPosting.inLanguage !== 'pl-PL') failures.push({ type: 'blogposting-language', loc, inLanguage: blogPosting.inLanguage });
+  const abstract = normaliseRssSignal(blogPosting.abstract || '');
+  const description = normaliseRssSignal(blogPosting.description || '');
+  if (!abstract || abstract !== description || abstract.length < minMetaDescriptionLength) {
+    failures.push({ type: 'blogposting-abstract', loc, abstract: blogPosting.abstract, description: blogPosting.description });
+  }
   if (!blogPosting.articleSection) failures.push({ type: 'blogposting-article-section', loc });
   if (!Array.isArray(blogPosting.keywords) || blogPosting.keywords.length === 0) {
     failures.push({ type: 'blogposting-keywords', loc, keywords: blogPosting.keywords });

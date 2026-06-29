@@ -680,6 +680,7 @@ export const blogPostingSchema = (post: {
     '@id': `${canonicalUrl}#article`,
     headline: post.title,
     description: post.description,
+    abstract: post.description,
     url: canonicalUrl,
     datePublished: post.date,
     dateModified: latestDateValue(post.updatedAt, post.date),

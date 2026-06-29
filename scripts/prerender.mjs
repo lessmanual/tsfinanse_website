@@ -467,6 +467,7 @@ function blogPostingSchema(post) {
     '@id': `${canonical}#article`,
     headline: post.title,
     description: post.description,
+    abstract: post.description,
     url: canonical,
     datePublished: post.date,
     dateModified: post.updatedAt || post.date,
