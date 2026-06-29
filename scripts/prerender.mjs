@@ -217,6 +217,59 @@ function compactMetaDescription(rawDescription = '') {
 // FAQ + HowTo schemas (must be defined before STATIC_ROUTES)
 // ---------------------------------------------------------------------------
 
+const homepageFaqEntries = [
+  {
+    question: 'Co to jest pozycja senioralna w hipotece?',
+    answer:
+      'Pozycja senioralna oznacza, że TS Finanse jest jedynym podmiotem wpisanym w hipotece i ma pierwszeństwo w zaspokojeniu swoich roszczeń.',
+  },
+  {
+    question: 'Jak szybko mogę otrzymać decyzję?',
+    answer:
+      'Analizę wstępną przeprowadzamy w ciągu 24 godzin. Pełna decyzja kredytowa może zapaść w 3 dni robocze od otrzymania kompletu dokumentów.',
+  },
+  {
+    question: 'Jakie dokumenty są wymagane?',
+    answer:
+      'Podstawowe dokumenty to: odpis KRS/CEIDG, ostatnie sprawozdanie finansowe, dokumentacja nieruchomości, wycena nieruchomości.',
+  },
+  {
+    question: 'Co to jest LTV i dlaczego max 60%?',
+    answer:
+      'LTV to stosunek wartości pożyczki do wartości nieruchomości. Przy LTV 60% dla nieruchomości wartej 10 mln PLN można otrzymać maksymalnie 6 mln PLN.',
+  },
+  {
+    question: 'Czy mogę spłacić pożyczkę wcześniej?',
+    answer:
+      'Tak, oferujemy możliwość wcześniejszej spłaty. Szczegóły dotyczące ewentualnych prowizji są zawarte w indywidualnej umowie.',
+  },
+  {
+    question: 'Jakie nieruchomości są akceptowane?',
+    answer:
+      'Mieszkania, domy, lokale komercyjne, działki inwestycyjne i nieruchomości komercyjne z całej Polski.',
+  },
+  {
+    question: 'Czym różnicie się od banku?',
+    answer:
+      'Mamy własny kapitał, więc nie jesteśmy ograniczeni regulacjami bankowymi. Szybsze decyzje, elastyczność i możliwość finansowania projektów odrzucanych przez banki.',
+  },
+  {
+    question: 'Jakie są koszty pożyczki?',
+    answer:
+      'Oprocentowanie ustalamy indywidualnie w zależności od płynności zabezpieczenia. Wszystkie koszty są transparentnie przedstawione w ofercie.',
+  },
+  {
+    question: 'Czy współpracujecie z pośrednikami?',
+    answer:
+      'Tak, oferujemy program partnerski dla pośredników kredytowych. Kontakt: kontakt@tsfinanse.com',
+  },
+  {
+    question: 'Czy finansujecie startupy?',
+    answer:
+      'Nie. Pożyczki udzielamy wyłącznie firmom prowadzącym działalność gospodarczą, które posiadają nieruchomość do zabezpieczenia.',
+  },
+];
+
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -224,18 +277,21 @@ const faqSchema = {
   url: `${SITE_URL}/`,
   mainEntityOfPage: `${SITE_URL}/`,
   inLanguage: 'pl-PL',
-  mainEntity: [
-    { '@type': 'Question', name: 'Co to jest pozycja senioralna w hipotece?', acceptedAnswer: { '@type': 'Answer', text: 'Pozycja senioralna oznacza, że TS Finanse jest jedynym podmiotem wpisanym w hipotece i ma pierwszeństwo w zaspokojeniu swoich roszczeń.' } },
-    { '@type': 'Question', name: 'Jak szybko mogę otrzymać decyzję?', acceptedAnswer: { '@type': 'Answer', text: 'Analizę wstępną przeprowadzamy w ciągu 24 godzin. Pełna decyzja kredytowa może zapaść w 3 dni robocze od otrzymania kompletu dokumentów.' } },
-    { '@type': 'Question', name: 'Jakie dokumenty są wymagane?', acceptedAnswer: { '@type': 'Answer', text: 'Podstawowe dokumenty to: odpis KRS/CEIDG, ostatnie sprawozdanie finansowe, dokumentacja nieruchomości, wycena nieruchomości.' } },
-    { '@type': 'Question', name: 'Co to jest LTV i dlaczego max 60%?', acceptedAnswer: { '@type': 'Answer', text: 'LTV to stosunek wartości pożyczki do wartości nieruchomości. Przy LTV 60% dla nieruchomości wartej 10 mln PLN można otrzymać maksymalnie 6 mln PLN.' } },
-    { '@type': 'Question', name: 'Czy mogę spłacić pożyczkę wcześniej?', acceptedAnswer: { '@type': 'Answer', text: 'Tak, oferujemy możliwość wcześniejszej spłaty. Szczegóły dotyczące ewentualnych prowizji są zawarte w indywidualnej umowie.' } },
-    { '@type': 'Question', name: 'Jakie nieruchomości są akceptowane?', acceptedAnswer: { '@type': 'Answer', text: 'Mieszkania, domy, lokale komercyjne, działki inwestycyjne i nieruchomości komercyjne z całej Polski.' } },
-    { '@type': 'Question', name: 'Czym różnicie się od banku?', acceptedAnswer: { '@type': 'Answer', text: 'Mamy własny kapitał, więc nie jesteśmy ograniczeni regulacjami bankowymi. Szybsze decyzje, elastyczność i możliwość finansowania projektów odrzucanych przez banki.' } },
-    { '@type': 'Question', name: 'Jakie są koszty pożyczki?', acceptedAnswer: { '@type': 'Answer', text: 'Oprocentowanie ustalamy indywidualnie w zależności od płynności zabezpieczenia. Wszystkie koszty są transparentnie przedstawione w ofercie.' } },
-    { '@type': 'Question', name: 'Czy współpracujecie z pośrednikami?', acceptedAnswer: { '@type': 'Answer', text: 'Tak, oferujemy program partnerski dla pośredników kredytowych. Kontakt: kontakt@tsfinanse.com' } },
-    { '@type': 'Question', name: 'Czy finansujecie startupy?', acceptedAnswer: { '@type': 'Answer', text: 'Nie. Pożyczki udzielamy wyłącznie firmom prowadzącym działalność gospodarczą, które posiadają nieruchomość do zabezpieczenia.' } },
-  ],
+  mainEntity: homepageFaqEntries.map((entry, index) => {
+    const questionId = `${SITE_URL}/#faq-question-${index + 1}`;
+    return {
+      '@type': 'Question',
+      '@id': questionId,
+      name: entry.question,
+      isPartOf: { '@id': `${SITE_URL}/#faq` },
+      acceptedAnswer: {
+        '@type': 'Answer',
+        '@id': `${SITE_URL}/#faq-answer-${index + 1}`,
+        text: entry.answer,
+        parentItem: { '@id': questionId },
+      },
+    };
+  }),
 };
 
 const howToSchema = {

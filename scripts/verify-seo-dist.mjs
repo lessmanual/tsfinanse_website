@@ -1759,6 +1759,25 @@ function verifyHomepageEntitySchema({ html, failures }) {
     || faqPage.mainEntity.length < 5
   ) {
     failures.push({ type: 'homepage-faq-schema', loc, faqPage });
+  } else {
+    faqPage.mainEntity.forEach((item, index) => {
+      const expectedQuestionId = `${SITE_URL}/#faq-question-${index + 1}`;
+      const expectedAnswerId = `${SITE_URL}/#faq-answer-${index + 1}`;
+      const acceptedAnswer = item?.acceptedAnswer;
+
+      if (item?.['@id'] !== expectedQuestionId) {
+        failures.push({ type: 'homepage-faq-question-id', loc, expectedQuestionId, question: item });
+      }
+      if (item?.isPartOf?.['@id'] !== `${SITE_URL}/#faq`) {
+        failures.push({ type: 'homepage-faq-question-is-part-of', loc, expectedFaqId: `${SITE_URL}/#faq`, isPartOf: item?.isPartOf });
+      }
+      if (acceptedAnswer?.['@id'] !== expectedAnswerId) {
+        failures.push({ type: 'homepage-faq-answer-id', loc, expectedAnswerId, answer: acceptedAnswer });
+      }
+      if (acceptedAnswer?.parentItem?.['@id'] !== expectedQuestionId) {
+        failures.push({ type: 'homepage-faq-answer-parent-item', loc, expectedQuestionId, parentItem: acceptedAnswer?.parentItem });
+      }
+    });
   }
 
   const howTo = objects.find((entry) => entry && entry['@type'] === 'HowTo');
