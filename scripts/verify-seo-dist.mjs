@@ -47,6 +47,8 @@ const officialReferenceUrls = [
 ];
 const organizationSchemaId = `${SITE_URL}/#organization`;
 const websiteSchemaId = `${SITE_URL}/#website`;
+const websiteSearchActionSchemaId = `${SITE_URL}/#site-search-action`;
+const websiteSearchEntryPointSchemaId = `${SITE_URL}/#site-search-entrypoint`;
 const logoSchemaId = `${SITE_URL}/#logo`;
 const logoImageUrl = `${SITE_URL}/logo.webp`;
 const websiteSearchUrlTemplate = `${SITE_URL}/blog/?q={search_term_string}`;
@@ -1273,8 +1275,24 @@ function verifyWebSiteSearchSchema({ html, loc, failures }) {
   if (action['@type'] !== 'SearchAction') {
     failures.push({ type: 'website-search-action-type', loc, actual: action['@type'] });
   }
+  if (action['@id'] !== websiteSearchActionSchemaId) {
+    failures.push({
+      type: 'website-search-action-id',
+      loc,
+      actual: action['@id'],
+      expected: websiteSearchActionSchemaId,
+    });
+  }
   if (target['@type'] !== 'EntryPoint' || target.urlTemplate !== websiteSearchUrlTemplate) {
     failures.push({ type: 'website-search-action-target', loc, target, expected: websiteSearchUrlTemplate });
+  }
+  if (target['@id'] !== websiteSearchEntryPointSchemaId) {
+    failures.push({
+      type: 'website-search-entrypoint-id',
+      loc,
+      actual: target['@id'],
+      expected: websiteSearchEntryPointSchemaId,
+    });
   }
   if (action['query-input'] !== 'required name=search_term_string') {
     failures.push({ type: 'website-search-action-query-input', loc, actual: action['query-input'] });

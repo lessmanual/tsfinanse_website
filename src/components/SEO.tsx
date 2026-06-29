@@ -593,8 +593,10 @@ export const websiteSchema = {
   inLanguage: 'pl-PL',
   potentialAction: {
     '@type': 'SearchAction',
+    '@id': `${siteUrl}/#site-search-action`,
     target: {
       '@type': 'EntryPoint',
+      '@id': `${siteUrl}/#site-search-entrypoint`,
       urlTemplate: 'https://tsfinanse.com/blog/?q={search_term_string}',
     },
     'query-input': 'required name=search_term_string',
