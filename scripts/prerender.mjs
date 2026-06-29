@@ -176,6 +176,10 @@ function compactMetaDescription(rawDescription = '') {
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
+  '@id': `${SITE_URL}/#faq`,
+  url: `${SITE_URL}/`,
+  mainEntityOfPage: `${SITE_URL}/`,
+  inLanguage: 'pl-PL',
   mainEntity: [
     { '@type': 'Question', name: 'Co to jest pozycja senioralna w hipotece?', acceptedAnswer: { '@type': 'Answer', text: 'Pozycja senioralna oznacza, że TS Finanse jest jedynym podmiotem wpisanym w hipotece i ma pierwszeństwo w zaspokojeniu swoich roszczeń.' } },
     { '@type': 'Question', name: 'Jak szybko mogę otrzymać decyzję?', acceptedAnswer: { '@type': 'Answer', text: 'Analizę wstępną przeprowadzamy w ciągu 24 godzin. Pełna decyzja kredytowa może zapaść w 3 dni robocze od otrzymania kompletu dokumentów.' } },
@@ -193,6 +197,10 @@ const faqSchema = {
 const howToSchema = {
   '@context': 'https://schema.org',
   '@type': 'HowTo',
+  '@id': `${SITE_URL}/#how-to`,
+  url: `${SITE_URL}/`,
+  mainEntityOfPage: `${SITE_URL}/`,
+  inLanguage: 'pl-PL',
   name: 'Jak uzyskać pożyczkę hipoteczną dla firmy w TS Finanse',
   description: 'Prosty 5-krokowy proces uzyskania pożyczki hipotecznej dla przedsiębiorców.',
   totalTime: 'P14D',
@@ -296,8 +304,11 @@ const SCHEMAS = {
   loanProduct: {
     '@context': 'https://schema.org',
     '@type': 'LoanOrCredit',
+    '@id': `${SITE_URL}/#loan-product`,
+    url: SITE_URL,
     name: 'Pożyczka Hipoteczna dla Przedsiębiorców',
     description: 'Pożyczki hipoteczne dla firm od 1 do 20 mln PLN. Finansowanie projektów deweloperskich, inwestycyjnych i operacyjnych.',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/` },
     provider: organizationReferenceSchema(),
     category: 'Mortgage Loan',
     currency: 'PLN',
@@ -316,7 +327,10 @@ const SCHEMAS = {
   service: {
     '@context': 'https://schema.org',
     '@type': 'Service',
+    '@id': `${SITE_URL}/#service`,
+    url: SITE_URL,
     serviceType: 'Pożyczki hipoteczne dla przedsiębiorców',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/` },
     provider: organizationReferenceSchema(),
     areaServed: { '@type': 'Country', name: 'Polska' },
     description: 'Pożyczki dla firm pod zabezpieczenie hipoteczne od 1 do 20 mln PLN. Decyzja w 3 dni robocze, własny kapitał, obsługa w całej Polsce.',
@@ -330,11 +344,13 @@ const SCHEMAS = {
   breadcrumbHome: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${SITE_URL}/#breadcrumb`,
     itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' }],
   },
   breadcrumbBlog: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${SITE_URL}/blog/#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
       { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://tsfinanse.com/blog/' },
@@ -343,6 +359,7 @@ const SCHEMAS = {
   breadcrumbPartner: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${SITE_URL}/programpartnerski/#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
       { '@type': 'ListItem', position: 2, name: 'Program Partnerski', item: 'https://tsfinanse.com/programpartnerski/' },
@@ -351,6 +368,7 @@ const SCHEMAS = {
   breadcrumbPrivacy: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${SITE_URL}/polityka-prywatnosci/#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
       { '@type': 'ListItem', position: 2, name: 'Polityka Prywatności', item: 'https://tsfinanse.com/polityka-prywatnosci/' },
@@ -359,6 +377,7 @@ const SCHEMAS = {
   breadcrumbCookies: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${SITE_URL}/polityka-cookies/#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
       { '@type': 'ListItem', position: 2, name: 'Polityka Cookies', item: 'https://tsfinanse.com/polityka-cookies/' },
@@ -367,6 +386,7 @@ const SCHEMAS = {
   breadcrumbTerms: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${SITE_URL}/regulamin/#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
       { '@type': 'ListItem', position: 2, name: 'Regulamin', item: 'https://tsfinanse.com/regulamin/' },
@@ -375,6 +395,7 @@ const SCHEMAS = {
   breadcrumbRodo: {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${SITE_URL}/rodo/#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
       { '@type': 'ListItem', position: 2, name: 'Klauzula Informacyjna RODO', item: 'https://tsfinanse.com/rodo/' },
@@ -1311,6 +1332,7 @@ async function main() {
         {
           '@context': 'https://schema.org',
           '@type': 'BreadcrumbList',
+          '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}#breadcrumb`,
           itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'Strona główna', item: `${SITE_URL}/` },
             { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog/` },

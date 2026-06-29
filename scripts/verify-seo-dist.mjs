@@ -1040,6 +1040,9 @@ function verifyBreadcrumbSchema({ html, loc, failures }) {
     failures.push({ type: 'breadcrumb-schema-missing', loc });
     return;
   }
+  if (breadcrumb['@id'] !== `${loc}#breadcrumb`) {
+    failures.push({ type: 'breadcrumb-schema-id', loc, actual: breadcrumb['@id'], expected: `${loc}#breadcrumb` });
+  }
 
   const items = Array.isArray(breadcrumb.itemListElement) ? breadcrumb.itemListElement : [];
   if (!items.length) {
@@ -1493,6 +1496,9 @@ function verifyHomepageEntitySchema({ html, failures }) {
   const loan = objects.find((entry) => entry && entry['@type'] === 'LoanOrCredit');
   if (
     !loan
+    || loan['@id'] !== `${SITE_URL}/#loan-product`
+    || loan.url !== SITE_URL
+    || loan.mainEntityOfPage?.['@id'] !== loc
     || !isOrganizationReference(loan.provider)
     || !isOrganizationReference(loan.broker)
     || !isOrganizationReference(loan.offers?.seller)
@@ -1508,12 +1514,41 @@ function verifyHomepageEntitySchema({ html, failures }) {
   const service = objects.find((entry) => entry && entry['@type'] === 'Service' && entry.serviceType === 'Pożyczki hipoteczne dla przedsiębiorców');
   if (
     !service
+    || service['@id'] !== `${SITE_URL}/#service`
+    || service.url !== SITE_URL
+    || service.mainEntityOfPage?.['@id'] !== loc
     || !isOrganizationReference(service.provider)
     || !isOrganizationReference(service.offers?.seller)
     || service.areaServed?.name !== 'Polska'
     || service.offers?.availability !== 'https://schema.org/InStock'
   ) {
     failures.push({ type: 'homepage-service-schema', loc, service });
+  }
+
+  const faqPage = objects.find((entry) => entry && entry['@type'] === 'FAQPage');
+  if (
+    !faqPage
+    || faqPage['@id'] !== `${SITE_URL}/#faq`
+    || faqPage.url !== loc
+    || faqPage.mainEntityOfPage !== loc
+    || faqPage.inLanguage !== 'pl-PL'
+    || !Array.isArray(faqPage.mainEntity)
+    || faqPage.mainEntity.length < 5
+  ) {
+    failures.push({ type: 'homepage-faq-schema', loc, faqPage });
+  }
+
+  const howTo = objects.find((entry) => entry && entry['@type'] === 'HowTo');
+  if (
+    !howTo
+    || howTo['@id'] !== `${SITE_URL}/#how-to`
+    || howTo.url !== loc
+    || howTo.mainEntityOfPage !== loc
+    || howTo.inLanguage !== 'pl-PL'
+    || !Array.isArray(howTo.step)
+    || howTo.step.length < 5
+  ) {
+    failures.push({ type: 'homepage-howto-schema', loc, howTo });
   }
 }
 

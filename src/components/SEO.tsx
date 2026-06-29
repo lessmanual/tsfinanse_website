@@ -467,9 +467,12 @@ export const organizationSchema = {
 export const loanProductSchema = {
   '@context': 'https://schema.org',
   '@type': 'LoanOrCredit',
+  '@id': `${siteUrl}/#loan-product`,
+  url: siteUrl,
   name: 'Pożyczka Hipoteczna dla Przedsiębiorców',
   description:
     'Pożyczki hipoteczne dla firm od 1 do 20 mln PLN. Finansowanie projektów deweloperskich, inwestycyjnych i operacyjnych.',
+  mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/` },
   provider: organizationReferenceSchema(),
   category: 'Mortgage Loan',
   currency: 'PLN',
@@ -494,16 +497,22 @@ export const loanProductSchema = {
   broker: organizationReferenceSchema(),
 };
 
-export const breadcrumbSchema = (items: { name: string; url: string }[]) => ({
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: items.map((item, index) => ({
-    '@type': 'ListItem',
-    position: index + 1,
-    name: item.name,
-    item: `${siteUrl}${normalizeCanonicalPath(item.url)}`,
-  })),
-});
+export const breadcrumbSchema = (items: { name: string; url: string }[]) => {
+  const lastItem = items[items.length - 1] || { url: '/' };
+  const breadcrumbUrl = `${siteUrl}${normalizeCanonicalPath(lastItem.url)}`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    '@id': `${breadcrumbUrl}#breadcrumb`,
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: `${siteUrl}${normalizeCanonicalPath(item.url)}`,
+    })),
+  };
+};
 
 export const websiteSchema = {
   '@context': 'https://schema.org',
@@ -571,7 +580,10 @@ export const blogIndexSchemas = (posts: BlogIndexPost[]) => {
 export const serviceSchema = {
   '@context': 'https://schema.org',
   '@type': 'Service',
+  '@id': `${siteUrl}/#service`,
+  url: siteUrl,
   serviceType: 'Pożyczki hipoteczne dla przedsiębiorców',
+  mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/` },
   provider: organizationReferenceSchema(),
   areaServed: {
     '@type': 'Country',
@@ -670,6 +682,10 @@ export const blogFaqPageSchema = (post: {
 export const faqPageSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
+  '@id': `${siteUrl}/#faq`,
+  url: `${siteUrl}/`,
+  mainEntityOfPage: `${siteUrl}/`,
+  inLanguage: 'pl-PL',
   mainEntity: [
     {
       '@type': 'Question',
@@ -757,6 +773,10 @@ export const faqPageSchema = {
 export const howToSchema = {
   '@context': 'https://schema.org',
   '@type': 'HowTo',
+  '@id': `${siteUrl}/#how-to`,
+  url: `${siteUrl}/`,
+  mainEntityOfPage: `${siteUrl}/`,
+  inLanguage: 'pl-PL',
   name: 'Jak uzyskać pożyczkę hipoteczną dla firmy w TS Finanse',
   description: 'Prosty 5-krokowy proces uzyskania pożyczki hipotecznej dla przedsiębiorców.',
   totalTime: 'P14D',
