@@ -2049,6 +2049,14 @@ function scanStale(content, loc, surface, hits) {
   }
 }
 
+function countBy(items, keyForItem) {
+  return items.reduce((counts, item) => {
+    const key = keyForItem(item);
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
+}
+
 function parseJsonFile(file, failures, type) {
   try {
     return JSON.parse(readFileSync(file, 'utf8'));
@@ -2662,6 +2670,8 @@ const result = {
   notFoundArtifact: notFoundPath,
   failureCount: failures.length,
   staleHitCount: staleHits.length,
+  failureTypeCounts: countBy(failures, (failure) => failure.type || 'unknown'),
+  staleHitSurfaceCounts: countBy(staleHits, (hit) => hit.surface || 'unknown'),
   failures: failures.slice(0, 20),
   staleHits: staleHits.slice(0, 20),
 };

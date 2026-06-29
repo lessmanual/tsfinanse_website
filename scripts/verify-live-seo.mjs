@@ -1917,6 +1917,14 @@ function scanStale(content, loc, surface, hits) {
   }
 }
 
+function countBy(items, keyForItem) {
+  return items.reduce((counts, item) => {
+    const key = keyForItem(item);
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
+}
+
 function parseJson(raw, failures, type, url) {
   try {
     return JSON.parse(raw);
@@ -2688,6 +2696,8 @@ async function main() {
     unknownUrl404Count: unknownUrl404Targets.length,
     failureCount: failures.length,
     staleHitCount: staleHits.length,
+    failureTypeCounts: countBy(failures, (failure) => failure.type || 'unknown'),
+    staleHitSurfaceCounts: countBy(staleHits, (hit) => hit.surface || 'unknown'),
     failures: failures.slice(0, 30),
     staleHits: staleHits.slice(0, 30),
   };
