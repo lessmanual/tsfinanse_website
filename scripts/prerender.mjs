@@ -726,14 +726,21 @@ function blogFaqPageSchema(post) {
       '@id': `${canonicalUrl}#article`,
     },
     inLanguage: 'pl-PL',
-    mainEntity: entries.map((entry) => ({
-      '@type': 'Question',
-      name: entry.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: entry.answer,
-      },
-    })),
+    mainEntity: entries.map((entry, index) => {
+      const questionId = `${canonicalUrl}#faq-question-${index + 1}`;
+      return {
+        '@type': 'Question',
+        '@id': questionId,
+        name: entry.question,
+        isPartOf: { '@id': `${canonicalUrl}#faq` },
+        acceptedAnswer: {
+          '@type': 'Answer',
+          '@id': `${canonicalUrl}#faq-answer-${index + 1}`,
+          text: entry.answer,
+          parentItem: { '@id': questionId },
+        },
+      };
+    }),
   };
 }
 

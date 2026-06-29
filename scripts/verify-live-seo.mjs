@@ -1267,16 +1267,31 @@ function verifyBlogFaqSchema({ html, markdown, loc, failures }) {
   }
 
   const questions = new Set();
-  for (const item of faqPage.mainEntity) {
+  faqPage.mainEntity.forEach((item, index) => {
+    const expectedQuestionId = `${loc}#faq-question-${index + 1}`;
+    const expectedAnswerId = `${loc}#faq-answer-${index + 1}`;
     if (item?.['@type'] !== 'Question') failures.push({ type: 'blog-faq-question-type', loc, item });
+    if (item?.['@id'] !== expectedQuestionId) {
+      failures.push({ type: 'blog-faq-question-id', loc, expectedQuestionId, question: item });
+    }
+    if (item?.isPartOf?.['@id'] !== `${loc}#faq`) {
+      failures.push({ type: 'blog-faq-question-is-part-of', loc, expectedFaqId: `${loc}#faq`, isPartOf: item?.isPartOf });
+    }
     const question = item?.name;
     if (!question || !question.includes('?') || questions.has(question)) failures.push({ type: 'blog-faq-question', loc, question });
     questions.add(question);
-    const answer = item?.acceptedAnswer?.text;
-    if (item?.acceptedAnswer?.['@type'] !== 'Answer' || typeof answer !== 'string' || answer.length < 40) {
+    const acceptedAnswer = item?.acceptedAnswer;
+    const answer = acceptedAnswer?.text;
+    if (acceptedAnswer?.['@type'] !== 'Answer' || typeof answer !== 'string' || answer.length < 40) {
       failures.push({ type: 'blog-faq-answer', loc, question, answer });
     }
-  }
+    if (acceptedAnswer?.['@id'] !== expectedAnswerId) {
+      failures.push({ type: 'blog-faq-answer-id', loc, expectedAnswerId, answer: acceptedAnswer });
+    }
+    if (acceptedAnswer?.parentItem?.['@id'] !== expectedQuestionId) {
+      failures.push({ type: 'blog-faq-answer-parent-item', loc, expectedQuestionId, parentItem: acceptedAnswer?.parentItem });
+    }
+  });
 }
 
 function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
