@@ -114,6 +114,25 @@ edge rewrite kieruje do:
 
 Normalne requesty HTML oraz assety, sitemap, robots, `llms.txt`, `.well-known` i `/md/*` są pomijane.
 
+## Release Gate
+
+Przed produkcyjnym pushem uruchom:
+
+```bash
+npm run verify:release -- \
+  --coverage-dir "/Users/bartlomiejchudzik/Downloads/tsfinanse.com-Coverage-2026-06-27" \
+  --performance-dir "/Users/bartlomiejchudzik/Downloads/tsfinanse.com-Performance-on-Search-2026-06-27"
+```
+
+Ten gate wykonuje:
+
+1. tracked worktree clean check,
+2. `git fetch origin main`,
+3. fast-forward release check: branch `temp-main`, `behind=0`, `ahead>=1`, `merge-base=origin/main`,
+4. pełny `npm run verify:predeploy`.
+
+Nie pushuje i nie wysyła IndexNow.
+
 ## Deploy
 
 Deploy produkcyjny jest publikacją całego serwisu, więc w pracy agentowej wymaga jawnej zgody Bartka.
