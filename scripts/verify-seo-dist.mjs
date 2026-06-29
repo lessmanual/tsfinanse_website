@@ -144,6 +144,10 @@ function itemListSchemaIdForLoc(loc) {
   return `${loc}#itemlist`;
 }
 
+function primaryImageSchemaIdForLoc(loc) {
+  return `${loc}#primaryimage`;
+}
+
 function expectedWebPageMainEntityId(loc) {
   const pathname = new URL(loc).pathname;
   if (pathname === '/') return organizationSchemaId;
@@ -1029,6 +1033,12 @@ function isAbsoluteHttpUrl(value) {
   }
 }
 
+function imageUrlFromSchema(value) {
+  if (typeof value === 'string') return value;
+  if (!value || typeof value !== 'object') return undefined;
+  return value.url || value.contentUrl;
+}
+
 function collectJsonLd(html, failures, loc) {
   const objects = [];
   const scripts = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
@@ -1128,6 +1138,23 @@ function verifyWebPageSchema({ html, loc, failures }) {
       mainEntity: webPage.mainEntity,
     });
   }
+
+  const primaryImage = webPage.primaryImageOfPage || {};
+  const expectedImageUrl = extractMetaProperty(html, 'og:image');
+  if (
+    primaryImage['@type'] !== 'ImageObject'
+    || primaryImage['@id'] !== primaryImageSchemaIdForLoc(loc)
+    || primaryImage.url !== expectedImageUrl
+    || primaryImage.contentUrl !== expectedImageUrl
+  ) {
+    failures.push({
+      type: 'webpage-primary-image-object',
+      loc,
+      expectedId: primaryImageSchemaIdForLoc(loc),
+      expectedUrl: expectedImageUrl,
+      primaryImageOfPage: webPage.primaryImageOfPage,
+    });
+  }
 }
 
 function verifyWebSiteSearchSchema({ html, loc, failures }) {
@@ -1188,7 +1215,8 @@ function verifyBlogImageSignals({ html, loc, sitemapImages, failures }) {
   const sitemapImage = sitemapImageLocs[0];
   const ogImage = extractMetaProperty(html, 'og:image');
   const twitterImage = extractMetaName(html, 'twitter:image');
-  const blogPostingImage = typeof blogPosting?.image === 'string' ? blogPosting.image : undefined;
+  const blogPostingImage = blogPosting?.image;
+  const blogPostingImageUrl = imageUrlFromSchema(blogPostingImage);
 
   if (sitemapImageLocs.length !== 1) {
     failures.push({ type: 'blog-sitemap-image-count', loc, actual: sitemapImageLocs.length });
@@ -1198,7 +1226,7 @@ function verifyBlogImageSignals({ html, loc, sitemapImages, failures }) {
     ['sitemap', sitemapImage],
     ['og', ogImage],
     ['twitter', twitterImage],
-    ['blogposting', blogPostingImage],
+    ['blogposting', blogPostingImageUrl],
   ]) {
     if (!imageUrl || !isAbsoluteHttpUrl(imageUrl)) {
       failures.push({ type: 'blog-image-absolute-url', loc, surface, imageUrl });
@@ -1211,8 +1239,25 @@ function verifyBlogImageSignals({ html, loc, sitemapImages, failures }) {
   if (sitemapImage && twitterImage && sitemapImage !== twitterImage) {
     failures.push({ type: 'blog-image-twitter-sitemap', loc, sitemapImage, twitterImage });
   }
-  if (sitemapImage && blogPostingImage && sitemapImage !== blogPostingImage) {
-    failures.push({ type: 'blog-image-schema-sitemap', loc, sitemapImage, blogPostingImage });
+  if (sitemapImage && blogPostingImageUrl && sitemapImage !== blogPostingImageUrl) {
+    failures.push({ type: 'blog-image-schema-sitemap', loc, sitemapImage, blogPostingImage: blogPostingImageUrl });
+  }
+
+  if (
+    !blogPostingImage
+    || typeof blogPostingImage !== 'object'
+    || blogPostingImage['@type'] !== 'ImageObject'
+    || blogPostingImage['@id'] !== primaryImageSchemaIdForLoc(loc)
+    || blogPostingImage.url !== sitemapImage
+    || blogPostingImage.contentUrl !== sitemapImage
+  ) {
+    failures.push({
+      type: 'blogposting-image-object',
+      loc,
+      expectedId: primaryImageSchemaIdForLoc(loc),
+      expectedUrl: sitemapImage,
+      image: blogPostingImage,
+    });
   }
 
   if (sitemapImage?.startsWith(SITE_URL)) {
@@ -1307,6 +1352,9 @@ function verifyBlogFreshness({ html, markdown, loc, lastmod, failures }) {
   }
   if (blogPosting.mainEntityOfPage?.['@id'] !== loc) {
     failures.push({ type: 'blogposting-main-entity', loc, mainEntityOfPage: blogPosting.mainEntityOfPage });
+  }
+  if (blogPosting.url !== loc) {
+    failures.push({ type: 'blogposting-url', loc, url: blogPosting.url });
   }
   if (blogPosting.author?.name !== 'TS Finanse' || blogPosting.publisher?.name !== 'TS Finanse') {
     failures.push({ type: 'blogposting-attribution', loc, author: blogPosting.author, publisher: blogPosting.publisher });

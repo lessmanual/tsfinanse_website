@@ -108,6 +108,15 @@ function absoluteImageUrl(rawUrl) {
   }
 }
 
+function imageObjectSchema(imageUrl, id) {
+  return {
+    '@type': 'ImageObject',
+    '@id': id,
+    url: imageUrl,
+    contentUrl: imageUrl,
+  };
+}
+
 function latestDateValue(first, second) {
   const firstValue = first || '';
   const secondValue = second || '';
@@ -415,6 +424,8 @@ function blogPostingSchema(post) {
   const normalizedContent = normalizeArticleContent(post.content || '', new Set());
   const articleText = stripHtml(normalizedContent);
   const editorialOrganization = editorialOrganizationSchema();
+  const canonical = `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`;
+  const imageUrl = absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp';
   const keywords = Array.from(new Set([
     post.category || 'Finansowanie',
     ...(Array.isArray(post.tags) ? post.tags : []),
@@ -425,9 +436,10 @@ function blogPostingSchema(post) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}#article`,
+    '@id': `${canonical}#article`,
     headline: post.title,
     description: post.description,
+    url: canonical,
     datePublished: post.date,
     dateModified: post.updatedAt || post.date,
     inLanguage: 'pl-PL',
@@ -442,9 +454,9 @@ function blogPostingSchema(post) {
     },
     reviewedBy: editorialOrganization,
     copyrightHolder: editorialOrganization,
-    image: absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp',
+    image: imageObjectSchema(imageUrl, `${canonical}#primaryimage`),
     citation: OFFICIAL_REFERENCE_LINKS.map(([, url]) => url),
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
     ...(articleText ? { articleBody: articleText.slice(0, 5000) } : {}),
   };
 }
@@ -764,10 +776,7 @@ function webPageSchema({ canonical, metaTitle, metaDescription, ogImage }) {
       : {}),
     ...(ogImage
       ? {
-          primaryImageOfPage: {
-            '@type': 'ImageObject',
-            url: ogImage,
-          },
+          primaryImageOfPage: imageObjectSchema(ogImage, `${canonical}#primaryimage`),
         }
       : {}),
   };

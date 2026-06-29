@@ -104,6 +104,15 @@ function absoluteImageUrl(rawUrl?: string) {
   }
 }
 
+function imageObjectSchema(imageUrl: string, id: string) {
+  return {
+    '@type': 'ImageObject',
+    '@id': id,
+    url: imageUrl,
+    contentUrl: imageUrl,
+  };
+}
+
 function normaliseWhitespace(value = '') {
   return String(value).replace(/\s+/g, ' ').trim();
 }
@@ -333,10 +342,7 @@ function webPageSchema({
       : {}),
     ...(image
       ? {
-          primaryImageOfPage: {
-            '@type': 'ImageObject',
-            url: image,
-          },
+          primaryImageOfPage: imageObjectSchema(image, `${canonical}#primaryimage`),
         }
       : {}),
   };
@@ -636,13 +642,16 @@ export const blogPostingSchema = (post: {
     .map((item) => item.trim())));
   const wordCount = countWords(post.content);
   const editorialOrganization = editorialOrganizationSchema();
+  const canonicalUrl = `${siteUrl}${normalizeCanonicalPath(`/blog/${post.slug}/`)}`;
+  const imageUrl = absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp';
 
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    '@id': `https://tsfinanse.com/blog/${post.slug}/#article`,
+    '@id': `${canonicalUrl}#article`,
     headline: post.title,
     description: post.description,
+    url: canonicalUrl,
     datePublished: post.date,
     dateModified: latestDateValue(post.updatedAt, post.date),
     inLanguage: 'pl-PL',
@@ -662,11 +671,11 @@ export const blogPostingSchema = (post: {
     },
     reviewedBy: editorialOrganization,
     copyrightHolder: editorialOrganization,
-    image: absoluteImageUrl(post.image) || 'https://tsfinanse.com/og-image.webp',
+    image: imageObjectSchema(imageUrl, `${canonicalUrl}#primaryimage`),
     citation: officialReferenceLinks.map((reference) => reference.url),
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://tsfinanse.com/blog/${post.slug}/`,
+      '@id': canonicalUrl,
     },
   };
 };
