@@ -831,6 +831,29 @@ export const faqPageSchema = {
   }),
 };
 
+const homepageHowToSteps = [
+  {
+    name: 'Kontakt',
+    text: 'Wyślij zapytanie przez formularz na stronie lub email na kontakt@tsfinanse.com.',
+  },
+  {
+    name: 'Analiza',
+    text: 'Nasz zespół analizuje wniosek i kontaktuje się w ciągu 24 godzin.',
+  },
+  {
+    name: 'Oferta',
+    text: 'Przygotowujemy indywidualną ofertę finansowania dopasowaną do Twoich potrzeb.',
+  },
+  {
+    name: 'Finalizacja',
+    text: 'Podpisanie umowy pożyczki i obsługa notarialna ustanowienia hipoteki.',
+  },
+  {
+    name: 'Wypłata',
+    text: 'Uruchomienie środków na Twoje konto - możesz rozwijać firmę.',
+  },
+] as const;
+
 export const howToSchema = {
   '@context': 'https://schema.org',
   '@type': 'HowTo',
@@ -841,36 +864,16 @@ export const howToSchema = {
   name: 'Jak uzyskać pożyczkę hipoteczną dla firmy w TS Finanse',
   description: 'Prosty 5-krokowy proces uzyskania pożyczki hipotecznej dla przedsiębiorców.',
   totalTime: 'P14D',
-  step: [
-    {
+  step: homepageHowToSteps.map((step, index) => {
+    const stepId = `${siteUrl}/#how-to-step-${index + 1}`;
+    return {
       '@type': 'HowToStep',
-      position: 1,
-      name: 'Kontakt',
-      text: 'Wyślij zapytanie przez formularz na stronie lub email na kontakt@tsfinanse.com.',
-    },
-    {
-      '@type': 'HowToStep',
-      position: 2,
-      name: 'Analiza',
-      text: 'Nasz zespół analizuje wniosek i kontaktuje się w ciągu 24 godzin.',
-    },
-    {
-      '@type': 'HowToStep',
-      position: 3,
-      name: 'Oferta',
-      text: 'Przygotowujemy indywidualną ofertę finansowania dopasowaną do Twoich potrzeb.',
-    },
-    {
-      '@type': 'HowToStep',
-      position: 4,
-      name: 'Finalizacja',
-      text: 'Podpisanie umowy pożyczki i obsługa notarialna ustanowienia hipoteki.',
-    },
-    {
-      '@type': 'HowToStep',
-      position: 5,
-      name: 'Wypłata',
-      text: 'Uruchomienie środków na Twoje konto - możesz rozwijać firmę.',
-    },
-  ],
+      '@id': stepId,
+      url: stepId,
+      position: index + 1,
+      name: step.name,
+      text: step.text,
+      isPartOf: { '@id': `${siteUrl}/#how-to` },
+    };
+  }),
 };

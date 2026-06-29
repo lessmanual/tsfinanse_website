@@ -1659,6 +1659,25 @@ function verifyHomepageEntitySchema({ html, failures }) {
     || howTo.step.length < 5
   ) {
     failures.push({ type: 'homepage-howto-schema', loc, howTo });
+  } else {
+    howTo.step.forEach((step, index) => {
+      const expectedStepId = `${SITE_URL}/#how-to-step-${index + 1}`;
+      if (step?.['@type'] !== 'HowToStep') {
+        failures.push({ type: 'homepage-howto-step-type', loc, position: index + 1, step });
+      }
+      if (step?.['@id'] !== expectedStepId) {
+        failures.push({ type: 'homepage-howto-step-id', loc, expectedStepId, step });
+      }
+      if (step?.url !== expectedStepId) {
+        failures.push({ type: 'homepage-howto-step-url', loc, expectedStepId, url: step?.url });
+      }
+      if (step?.isPartOf?.['@id'] !== `${SITE_URL}/#how-to`) {
+        failures.push({ type: 'homepage-howto-step-is-part-of', loc, expectedHowToId: `${SITE_URL}/#how-to`, isPartOf: step?.isPartOf });
+      }
+      if (step?.position !== index + 1 || typeof step?.name !== 'string' || !step.name.trim() || typeof step?.text !== 'string' || step.text.length < 20) {
+        failures.push({ type: 'homepage-howto-step-content', loc, position: index + 1, step });
+      }
+    });
   }
 }
 
