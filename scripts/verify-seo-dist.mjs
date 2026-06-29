@@ -1145,17 +1145,40 @@ function verifyBreadcrumbSchema({ html, loc, failures }) {
 
   const first = items[0];
   const last = items[items.length - 1];
-  if (first?.item !== `${SITE_URL}/`) {
+  const breadcrumbItemUrl = (item) => {
+    if (typeof item?.item === 'string') return item.item;
+    if (item?.item && typeof item.item === 'object') return item.item.url;
+    return undefined;
+  };
+  if (breadcrumbItemUrl(first) !== `${SITE_URL}/`) {
     failures.push({ type: 'breadcrumb-schema-first-item', loc, actual: first?.item });
   }
-  if (last?.item !== loc) {
+  if (breadcrumbItemUrl(last) !== loc) {
     failures.push({ type: 'breadcrumb-schema-last-item', loc, expected: loc, actual: last?.item });
   }
 
   items.forEach((item, index) => {
     const expectedPosition = index + 1;
+    const expectedItemUrl = index === 0
+      ? `${SITE_URL}/`
+      : index === items.length - 1
+        ? loc
+        : `${SITE_URL}/blog/`;
+    const expectedItemSchemaId = `${expectedItemUrl}#webpage`;
+    const expectedListItemId = `${loc}#breadcrumb-item-${expectedPosition}`;
     if (item?.['@type'] !== 'ListItem') {
       failures.push({ type: 'breadcrumb-schema-item-type', loc, position: expectedPosition, actual: item?.['@type'] });
+    }
+    if (item?.['@id'] !== expectedListItemId) {
+      failures.push({ type: 'breadcrumb-schema-listitem-id', loc, position: expectedPosition, actual: item?.['@id'], expected: expectedListItemId });
+    }
+    if (
+      item?.item?.['@type'] !== 'WebPage'
+      || item.item?.['@id'] !== expectedItemSchemaId
+      || item.item?.url !== expectedItemUrl
+      || item.item?.name !== item.name
+    ) {
+      failures.push({ type: 'breadcrumb-schema-item-reference', loc, position: expectedPosition, item: item?.item, expectedItemSchemaId, expectedItemUrl });
     }
     if (item?.position !== expectedPosition) {
       failures.push({ type: 'breadcrumb-schema-position', loc, expected: expectedPosition, actual: item?.position });
@@ -1615,6 +1638,25 @@ function verifyBlogIndexSchema({ html, locs, failures }) {
     failures.push({ type: 'blog-index-itemlist-elements', loc });
   } else if (itemList.itemListElement.length !== blogPostLocs.length) {
     failures.push({ type: 'blog-index-itemlist-element-count', loc, expected: blogPostLocs.length, actual: itemList.itemListElement.length });
+  } else {
+    itemList.itemListElement.forEach((entry, index) => {
+      const expectedPosition = index + 1;
+      const expectedUrl = blogPostLocs[index];
+      const expectedListItemId = `${loc}#item-${expectedPosition}`;
+      const expectedArticleId = articleSchemaIdForLoc(expectedUrl);
+      if (
+        entry?.['@type'] !== 'ListItem'
+        || entry['@id'] !== expectedListItemId
+        || entry.position !== expectedPosition
+        || entry.url !== expectedUrl
+        || entry.item?.['@id'] !== expectedArticleId
+        || entry.item?.url !== expectedUrl
+        || typeof entry.name !== 'string'
+        || !entry.name.trim()
+      ) {
+        failures.push({ type: 'blog-index-itemlist-item-reference', loc, position: expectedPosition, entry, expectedListItemId, expectedArticleId, expectedUrl });
+      }
+    });
   }
 }
 

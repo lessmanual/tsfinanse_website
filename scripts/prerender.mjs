@@ -90,6 +90,44 @@ function markdownUrlForCanonical(canonical) {
   return `${SITE_URL}/md${normalised}.md`;
 }
 
+function webPageReferenceSchema(url, name) {
+  return {
+    '@type': 'WebPage',
+    '@id': `${url}#webpage`,
+    url,
+    name,
+  };
+}
+
+function canonicalUrlFromPathOrUrl(value) {
+  if (String(value).startsWith('http')) {
+    return `${SITE_URL}${canonicalPath(new URL(value).pathname)}`;
+  }
+  return `${SITE_URL}${canonicalPath(value)}`;
+}
+
+function breadcrumbListSchema(items) {
+  const lastItem = items[items.length - 1] || { url: '/' };
+  const breadcrumbUrl = canonicalUrlFromPathOrUrl(lastItem.url);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    '@id': `${breadcrumbUrl}#breadcrumb`,
+    itemListElement: items.map((item, index) => {
+      const itemUrl = canonicalUrlFromPathOrUrl(item.url);
+
+      return {
+        '@type': 'ListItem',
+        '@id': `${breadcrumbUrl}#breadcrumb-item-${index + 1}`,
+        position: index + 1,
+        name: item.name,
+        item: webPageReferenceSchema(itemUrl, item.name),
+      };
+    }),
+  };
+}
+
 function webPageMainEntityForCanonical(canonical) {
   const pathname = new URL(canonical).pathname;
   if (pathname === '/') return { '@id': `${SITE_URL}/#organization` };
@@ -480,65 +518,32 @@ const SCHEMAS = {
     },
   },
   breadcrumbHome: {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    '@id': `${SITE_URL}/#breadcrumb`,
-    itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' }],
+    ...breadcrumbListSchema([{ name: 'Strona główna', url: '/' }]),
   },
-  breadcrumbBlog: {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    '@id': `${SITE_URL}/blog/#breadcrumb`,
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://tsfinanse.com/blog/' },
-    ],
-  },
-  breadcrumbPartner: {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    '@id': `${SITE_URL}/programpartnerski/#breadcrumb`,
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Program Partnerski', item: 'https://tsfinanse.com/programpartnerski/' },
-    ],
-  },
-  breadcrumbPrivacy: {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    '@id': `${SITE_URL}/polityka-prywatnosci/#breadcrumb`,
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Polityka Prywatności', item: 'https://tsfinanse.com/polityka-prywatnosci/' },
-    ],
-  },
-  breadcrumbCookies: {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    '@id': `${SITE_URL}/polityka-cookies/#breadcrumb`,
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Polityka Cookies', item: 'https://tsfinanse.com/polityka-cookies/' },
-    ],
-  },
-  breadcrumbTerms: {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    '@id': `${SITE_URL}/regulamin/#breadcrumb`,
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Regulamin', item: 'https://tsfinanse.com/regulamin/' },
-    ],
-  },
-  breadcrumbRodo: {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    '@id': `${SITE_URL}/rodo/#breadcrumb`,
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Strona główna', item: 'https://tsfinanse.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Klauzula Informacyjna RODO', item: 'https://tsfinanse.com/rodo/' },
-    ],
-  },
+  breadcrumbBlog: breadcrumbListSchema([
+    { name: 'Strona główna', url: '/' },
+    { name: 'Blog', url: '/blog/' },
+  ]),
+  breadcrumbPartner: breadcrumbListSchema([
+    { name: 'Strona główna', url: '/' },
+    { name: 'Program Partnerski', url: '/programpartnerski/' },
+  ]),
+  breadcrumbPrivacy: breadcrumbListSchema([
+    { name: 'Strona główna', url: '/' },
+    { name: 'Polityka Prywatności', url: '/polityka-prywatnosci/' },
+  ]),
+  breadcrumbCookies: breadcrumbListSchema([
+    { name: 'Strona główna', url: '/' },
+    { name: 'Polityka Cookies', url: '/polityka-cookies/' },
+  ]),
+  breadcrumbTerms: breadcrumbListSchema([
+    { name: 'Strona główna', url: '/' },
+    { name: 'Regulamin', url: '/regulamin/' },
+  ]),
+  breadcrumbRodo: breadcrumbListSchema([
+    { name: 'Strona główna', url: '/' },
+    { name: 'Klauzula Informacyjna RODO', url: '/rodo/' },
+  ]),
 };
 
 function blogPostingSchema(post) {
@@ -879,12 +884,23 @@ function blogIndexSchemas(posts) {
       mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/` },
       itemListOrder: 'https://schema.org/ItemListOrderDescending',
       numberOfItems: blogPosts.length,
-      itemListElement: posts.map((post, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        url: `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`,
-        name: post.title,
-      })),
+      itemListElement: posts.map((post, index) => {
+        const url = `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}`;
+
+        return {
+          '@type': 'ListItem',
+          '@id': `${SITE_URL}/blog/#item-${index + 1}`,
+          position: index + 1,
+          url,
+          name: post.title,
+          item: {
+            '@type': 'BlogPosting',
+            '@id': `${url}#article`,
+            url,
+            name: post.title,
+          },
+        };
+      }),
     },
   ];
 }
@@ -1502,14 +1518,11 @@ async function main() {
         blogPostingSchema(post),
         blogFaqPageSchema(post),
         {
-          '@context': 'https://schema.org',
-          '@type': 'BreadcrumbList',
-          '@id': `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}#breadcrumb`,
-          itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'Strona główna', item: `${SITE_URL}/` },
-            { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog/` },
-            { '@type': 'ListItem', position: 3, name: post.title, item: `${SITE_URL}${canonicalPath(`/blog/${post.slug}`)}` },
-          ],
+          ...breadcrumbListSchema([
+            { name: 'Strona główna', url: '/' },
+            { name: 'Blog', url: '/blog/' },
+            { name: post.title, url: `/blog/${post.slug}/` },
+          ]),
         },
       ],
     };

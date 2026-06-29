@@ -119,6 +119,15 @@ function logoImageObjectSchema() {
   return imageObjectSchema(logoImageUrl, `${siteUrl}/#logo`);
 }
 
+function webPageReferenceSchema(url: string, name: string) {
+  return {
+    '@type': 'WebPage',
+    '@id': `${url}#webpage`,
+    url,
+    name,
+  };
+}
+
 function normaliseWhitespace(value = '') {
   return String(value).replace(/\s+/g, ' ').trim();
 }
@@ -561,12 +570,17 @@ export const breadcrumbSchema = (items: { name: string; url: string }[]) => {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     '@id': `${breadcrumbUrl}#breadcrumb`,
-    itemListElement: items.map((item, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: item.name,
-      item: `${siteUrl}${normalizeCanonicalPath(item.url)}`,
-    })),
+    itemListElement: items.map((item, index) => {
+      const itemUrl = `${siteUrl}${normalizeCanonicalPath(item.url)}`;
+
+      return {
+        '@type': 'ListItem',
+        '@id': `${breadcrumbUrl}#breadcrumb-item-${index + 1}`,
+        position: index + 1,
+        name: item.name,
+        item: webPageReferenceSchema(itemUrl, item.name),
+      };
+    }),
   };
 };
 
@@ -628,12 +642,23 @@ export const blogIndexSchemas = (posts: BlogIndexPost[]) => {
       mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/blog/` },
       itemListOrder: 'https://schema.org/ItemListOrderDescending',
       numberOfItems: blogPosts.length,
-      itemListElement: posts.map((post, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        url: `${siteUrl}${normalizeCanonicalPath(`/blog/${post.slug}/`)}`,
-        name: post.title,
-      })),
+      itemListElement: posts.map((post, index) => {
+        const url = `${siteUrl}${normalizeCanonicalPath(`/blog/${post.slug}/`)}`;
+
+        return {
+          '@type': 'ListItem',
+          '@id': `${siteUrl}/blog/#item-${index + 1}`,
+          position: index + 1,
+          url,
+          name: post.title,
+          item: {
+            '@type': 'BlogPosting',
+            '@id': `${url}#article`,
+            url,
+            name: post.title,
+          },
+        };
+      }),
     },
   ];
 };
