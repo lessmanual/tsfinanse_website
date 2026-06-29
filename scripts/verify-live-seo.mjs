@@ -1956,7 +1956,8 @@ function verifyDiscoveryHeaders(headers, failures) {
 
 function verifyDiscoveryFileCache({ response, url, failures }) {
   const cacheControl = response.headers.get('cache-control') || '';
-  if (!cacheControl.toLowerCase().includes('public, max-age=300')) {
+  const normalisedCacheControl = cacheControl.toLowerCase().replace(/\s+/g, '');
+  if (!normalisedCacheControl.includes('public,max-age=300')) {
     failures.push({
       type: 'discovery-cache-header',
       url,

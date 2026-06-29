@@ -259,8 +259,10 @@ function parseRedirectRules(source) {
     .map((line) => line.trim())
     .filter((line) => line && !line.startsWith('#'))
     .map((line) => {
-      const [from, to, status] = line.split(/\s+/);
-      return { from, to, status };
+      const [from, to, rawStatus] = line.split(/\s+/);
+      const force = rawStatus?.endsWith('!') || false;
+      const status = force ? rawStatus.slice(0, -1) : rawStatus;
+      return { from, to, status, force };
     });
 }
 
@@ -276,8 +278,13 @@ function readRedirectRulesForSitemap(sitemapPath) {
   };
 }
 
-function hasRedirectRule(rules, { from, to, status = '301' }) {
-  return rules.some((rule) => rule.from === from && rule.to === to && rule.status === status);
+function hasRedirectRule(rules, { from, to, status = '301', force }) {
+  return rules.some((rule) => (
+    rule.from === from
+    && rule.to === to
+    && rule.status === status
+    && (force === undefined || rule.force === force)
+  ));
 }
 
 function groupCoverageIssues(coverageRows) {

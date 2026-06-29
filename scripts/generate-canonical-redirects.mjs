@@ -29,6 +29,10 @@ function noSlashPathForLoc(loc) {
   return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 }
 
+function redirectLine(from, to, { force = false } = {}) {
+  return `${from}  ${to}  ${force ? '301!' : '301'}`;
+}
+
 function stripPreviousGeneratedBlock(source) {
   const start = source.indexOf(GENERATED_START);
   if (start === -1) return source.trimEnd();
@@ -54,13 +58,13 @@ function buildRedirectBlock(locs) {
   const noSlashRules = locs
     .map((loc) => {
       const from = noSlashPathForLoc(loc);
-      return from ? `${from}  ${redirectTargetForLoc(loc)}  301` : undefined;
+      return from ? redirectLine(from, redirectTargetForLoc(loc)) : undefined;
     })
     .filter(Boolean);
 
   const rules = [
     '# Collapse static index.html artefact URLs into canonical sitemap URLs.',
-    ...locs.map((loc) => `${indexHtmlPathForLoc(loc)}  ${redirectTargetForLoc(loc)}  301`),
+    ...locs.map((loc) => redirectLine(indexHtmlPathForLoc(loc), redirectTargetForLoc(loc), { force: true })),
     '# Collapse no-slash variants into canonical trailing-slash sitemap URLs.',
     ...noSlashRules,
     '# Collapse contact alias variants into the homepage contact section.',
