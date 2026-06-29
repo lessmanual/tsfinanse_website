@@ -773,6 +773,7 @@ function buildMetaTags(route) {
   tags += `    <title>${esc(metaTitle)}</title>\n`;
   tags += `    <meta name="title" content="${esc(metaTitle)}" />\n`;
   tags += `    <meta name="description" content="${esc(metaDescription)}" />\n`;
+  tags += `    <meta http-equiv="content-language" content="pl-PL" />\n`;
   tags += `    <link rel="canonical" href="${canonical}" />\n`;
   tags += `    <link rel="alternate" hreflang="pl-PL" href="${canonical}" />\n`;
   tags += `    <link rel="alternate" hreflang="x-default" href="${canonical}" />\n`;

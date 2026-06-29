@@ -352,6 +352,7 @@ export function SEO({
       <title>{fullTitle}</title>
       <meta name="title" content={fullTitle} />
       <meta name="description" content={metaDescription} />
+      <meta httpEquiv="content-language" content="pl-PL" />
       <link rel="canonical" href={canonical} />
       <link rel="alternate" hrefLang="pl-PL" href={canonical} />
       <link rel="alternate" hrefLang="x-default" href={canonical} />

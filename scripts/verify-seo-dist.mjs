@@ -30,6 +30,8 @@ const minAnswerBlockLength = 70;
 const maxAnswerBlockLength = 360;
 const minArticleTocLinks = 2;
 const expectedIndexingMetaDirective = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+const expectedHtmlLanguage = 'pl-PL';
+const expectedOpenGraphLocale = 'pl_PL';
 const minLegalStaticTextLength = 1500;
 const legalStaticContentPaths = new Set([
   '/polityka-prywatnosci/',
@@ -306,9 +308,44 @@ function extractMetaName(html, name) {
     || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${escaped}["']`, 'i'))?.[1];
 }
 
+function extractMetaHttpEquiv(html, httpEquiv) {
+  const escaped = httpEquiv.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return html.match(new RegExp(`<meta[^>]+http-equiv=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i'))?.[1]
+    || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+http-equiv=["']${escaped}["']`, 'i'))?.[1];
+}
+
+function countMetaHttpEquiv(html, httpEquiv) {
+  const escaped = httpEquiv.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return (html.match(new RegExp(`<meta\\b[^>]*http-equiv=["']${escaped}["'][^>]*>`, 'gi')) || []).length;
+}
+
+function extractHtmlLanguage(html) {
+  return html.match(/<html[^>]*\blang=["']([^"']+)["']/i)?.[1];
+}
+
 function hasNoindexNofollow(value = '') {
   const tokens = String(value).toLowerCase().split(',').map((token) => token.trim());
   return tokens.includes('noindex') && tokens.includes('nofollow');
+}
+
+function verifyLanguageMetadata({ html, loc, failures }) {
+  const htmlLanguage = extractHtmlLanguage(html);
+  const contentLanguage = extractMetaHttpEquiv(html, 'content-language');
+  const openGraphLocale = extractMetaProperty(html, 'og:locale');
+
+  if (htmlLanguage !== expectedHtmlLanguage) {
+    failures.push({ type: 'html-language', loc, actual: htmlLanguage, expected: expectedHtmlLanguage });
+  }
+  if (contentLanguage !== expectedHtmlLanguage) {
+    failures.push({ type: 'content-language', loc, actual: contentLanguage, expected: expectedHtmlLanguage });
+  }
+  const contentLanguageCount = countMetaHttpEquiv(html, 'content-language');
+  if (contentLanguageCount !== 1) {
+    failures.push({ type: 'content-language-count', loc, actual: contentLanguageCount, expected: 1 });
+  }
+  if (openGraphLocale !== expectedOpenGraphLocale) {
+    failures.push({ type: 'og-locale', loc, actual: openGraphLocale, expected: expectedOpenGraphLocale });
+  }
 }
 
 function verifyNotFoundArtifact(failures) {
@@ -2063,6 +2100,7 @@ for (const loc of locs) {
   htmlByLoc.set(loc, html);
   const canonical = extractCanonical(html);
   if (canonical !== expectedCanonical) failures.push({ type: 'canonical', loc, canonical });
+  verifyLanguageMetadata({ html, loc, failures });
   verifySnippetMetadata({ html, loc, failures, titlesByValue, descriptionsByValue });
   if (!hasAlternateMarkdown(html, markdownUrlForLoc(expectedCanonical))) failures.push({ type: 'missing-markdown-alternate', loc });
   if (!hasAlternateHrefLang(html, 'pl-PL', expectedCanonical)) failures.push({ type: 'missing-hreflang-pl', loc });
