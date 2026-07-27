@@ -147,16 +147,23 @@ release graph: 17 nodes
 Workflow:
 
 1. Waliduje i normalizuje dane oraz odrzuca wypełniony honeypot.
-2. Traktuje powtórzony `submissionId` z 30-dniowego okresu retencji idempotentnie, bez kolejnego zapisu i maili.
+2. Traktuje dostarczony `submissionId` idempotentnie, bez kolejnego zapisu i maili. Rekord ze statusem `received` można bezpiecznie ponowić po błędzie dostawcy poczty.
 3. Limituje zgłoszenia w ciągu godziny: 3 dla tej samej pary email + telefon, 5 dla tego samego adresu IP i 20 globalnie.
 4. Zapisuje lead w tabeli `TS Finanse Contact Leads` przed wysyłką maili.
-5. Wysyła powiadomienie do `kontakt@tsfinanse.com`, potem potwierdzenie do osoby wypełniającej formularz.
+5. Wysyła powiadomienie do `kontakt@tsfinanse.com`, oznacza rekord jako `team_notified`, potem wysyła potwierdzenie do osoby wypełniającej formularz.
 
 Tabela n8n ma 30-dniową retencję wykonywaną codziennie o 03:15. Do limitu IP zapisuje pseudonimowy klucz, nie surowy adres. Dostęp do danych jest ograniczony do projektu LessManual w n8n. Zmienna Netlify `VITE_N8N_WEBHOOK_URL` jest legacy i celowo ignorowana. Jedyny obsługiwany override to:
 
 ```text
 VITE_TS_FINANSE_CONTACT_WEBHOOK_URL
 ```
+
+Oba nody Gmail korzystają obecnie z credentialu `lessmanual` i nazwy nadawcy `TS Finanse`. Credential `TS Finanse` wymaga ponownego połączenia z Google. Nie przełączaj na niego workflowu bez rzeczywistego testu wysyłki, ponieważ sam readback credential ID nie potwierdza ważności refresh tokenu.
+
+Ostatni produkcyjny test 2026-07-27:
+
+- execution `151878`: powiadomienie i potwierdzenie wysłane, rekord `team_notified`, odpowiedź `{"ok":true}`,
+- execution `151882`: ten sam UUID zakończony bez ponownej wysyłki.
 
 Kolejność publikacji:
 
