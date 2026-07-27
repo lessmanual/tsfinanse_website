@@ -141,6 +141,7 @@ Formularz korzysta z workflowu n8n:
 TS Finanse Contact Form v2
 workflow ID: xhh9ftHzuYByeTQX
 webhook: https://n8n.lessmanual.cloud/webhook/28e97a25-9bbd-437a-ab78-7e890e371aec
+release graph: 17 nodes
 ```
 
 Workflow:
@@ -227,7 +228,7 @@ Przy problemie z formularzem najpierw przywróć poprzedni successful deploy w N
 Rollback przez Git:
 
 ```bash
-git revert <contact-form-commit>
+git revert 39b368fe4ed5cfe2d58a1b15419c0244c52ae66c
 git push origin main
 ```
 
