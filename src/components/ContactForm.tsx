@@ -4,6 +4,7 @@ import { Mail, Phone, MapPin, Send, CheckCircle, XCircle, Loader2 } from 'lucide
 import { Link } from 'react-router-dom';
 
 type FormData = {
+  website: string;
   fullName: string;
   companyName: string;
   nip: string;
@@ -19,8 +20,12 @@ type FormData = {
 
 type SubmissionState = 'idle' | 'loading' | 'success' | 'error';
 
-// Get n8n webhook URL from environment variable
-const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || '';
+const FORM_SUBMISSION_ERROR = 'Nie udało się wysłać formularza. Spróbuj ponownie później.';
+
+// Ignore the legacy key because its production Netlify value points to the wrong workflow.
+const CONTACT_WEBHOOK_URL =
+  import.meta.env.VITE_TS_FINANSE_CONTACT_WEBHOOK_URL ||
+  'https://n8n.lessmanual.cloud/webhook/28e97a25-9bbd-437a-ab78-7e890e371aec';
 
 export function ContactForm() {
   const [submissionState, setSubmissionState] = useState<SubmissionState>('idle');
@@ -40,6 +45,8 @@ export function ContactForm() {
     try {
       // Prepare payload for n8n
       const payload = {
+        submissionId: crypto.randomUUID(),
+        website: data.website,
         fullName: data.fullName,
         companyName: data.companyName,
         nip: data.nip,
@@ -56,11 +63,7 @@ export function ContactForm() {
       };
 
       // Send to n8n webhook
-      if (!N8N_WEBHOOK_URL) {
-        throw new Error('Webhook URL not configured. Please set VITE_N8N_WEBHOOK_URL in .env file.');
-      }
-
-      const response = await fetch(N8N_WEBHOOK_URL, {
+      const response = await fetch(CONTACT_WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,8 +71,12 @@ export function ContactForm() {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const responseBody = (await response.json().catch(() => null)) as
+        | { ok?: unknown; error?: unknown }
+        | null;
+
+      if (!response.ok || responseBody?.ok !== true) {
+        throw new Error(typeof responseBody?.error === 'string' ? responseBody.error : FORM_SUBMISSION_ERROR);
       }
 
       // Success
@@ -84,9 +91,9 @@ export function ContactForm() {
       console.error('Form submission error:', error);
       setSubmissionState('error');
       setErrorMessage(
-        error instanceof Error
+        error instanceof Error && !(error instanceof TypeError)
           ? error.message
-          : 'Wystąpił błąd podczas wysyłania formularza. Spróbuj ponownie później.'
+          : FORM_SUBMISSION_ERROR
       );
     }
   };
@@ -164,7 +171,18 @@ export function ContactForm() {
 
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="relative space-y-6">
+              <div aria-hidden="true" className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden">
+                <label htmlFor="website">Pozostaw to pole puste</label>
+                <input
+                  id="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  {...register('website')}
+                />
+              </div>
+
               {/* Full Name Field */}
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">

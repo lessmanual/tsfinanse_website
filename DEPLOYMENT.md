@@ -133,6 +133,37 @@ Ten gate wykonuje:
 
 Nie pushuje i nie wysyła IndexNow.
 
+## Formularz kontaktowy
+
+Formularz korzysta z workflowu n8n:
+
+```text
+TS Finanse Contact Form v2
+workflow ID: xhh9ftHzuYByeTQX
+webhook: https://n8n.lessmanual.cloud/webhook/28e97a25-9bbd-437a-ab78-7e890e371aec
+```
+
+Workflow:
+
+1. Waliduje i normalizuje dane oraz odrzuca wypełniony honeypot.
+2. Traktuje powtórzony `submissionId` z 30-dniowego okresu retencji idempotentnie, bez kolejnego zapisu i maili.
+3. Limituje zgłoszenia w ciągu godziny: 3 dla tej samej pary email + telefon, 5 dla tego samego adresu IP i 20 globalnie.
+4. Zapisuje lead w tabeli `TS Finanse Contact Leads` przed wysyłką maili.
+5. Wysyła powiadomienie do `kontakt@tsfinanse.com`, potem potwierdzenie do osoby wypełniającej formularz.
+
+Tabela n8n ma 30-dniową retencję wykonywaną codziennie o 03:15. Do limitu IP zapisuje pseudonimowy klucz, nie surowy adres. Dostęp do danych jest ograniczony do projektu LessManual w n8n. Zmienna Netlify `VITE_N8N_WEBHOOK_URL` jest legacy i celowo ignorowana. Jedyny obsługiwany override to:
+
+```text
+VITE_TS_FINANSE_CONTACT_WEBHOOK_URL
+```
+
+Kolejność publikacji:
+
+1. Opublikuj workflow `xhh9ftHzuYByeTQX`.
+2. Sprawdź preflight CORS i nieprawidłowy POST, bez wysyłania maili.
+3. Wykonaj produkcyjny push strony.
+4. Po deployu wyślij jedno kontrolowane zgłoszenie i potwierdź oba maile.
+
 ## Deploy
 
 Deploy produkcyjny jest publikacją całego serwisu, więc w pracy agentowej wymaga jawnej zgody Bartka.
@@ -191,15 +222,17 @@ Oczekiwane:
 
 ## Rollback
 
-Najprostszy rollback po złym deployu:
+Przy problemie z formularzem najpierw przywróć poprzedni successful deploy w Netlify. Po potwierdzeniu, że strona znów korzysta ze starej wersji, wyłącz workflow `xhh9ftHzuYByeTQX` w n8n. Stary workflow pozostaje aktywny jako techniczny fallback, ale ma znany błąd braku powiadomienia TS Finanse.
+
+Rollback przez Git:
 
 ```bash
-git revert HEAD
+git revert <contact-form-commit>
 git push origin main
 ```
 
-Jeśli Netlify deployment UI jest dostępne, można też przywrócić poprzedni successful deploy z panelu Netlify.
+Zmianę kursora można zostawić na produkcji albo cofnąć osobnym revertem. Nie ustawiaj `VITE_N8N_WEBHOOK_URL` jako sposobu rollbacku, bo jego legacy wartość wskazuje błędny routing formularza.
 
 ## Ostatnia aktualizacja
 
-2026-06-27
+2026-07-27
