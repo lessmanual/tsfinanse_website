@@ -431,6 +431,14 @@
     line-height: 1.5;
   }
 
+  button:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled, button[aria-disabled="true"], button[aria-busy="true"] {
+    cursor: not-allowed;
+  }
+
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) input {
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
